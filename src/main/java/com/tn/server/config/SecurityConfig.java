@@ -23,8 +23,8 @@ public class SecurityConfig {
 
                 // 3. 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/h2-console/**").permitAll() // 이 두 곳은 프리패스!
-                        .anyRequest().permitAll() // 나머지는 다 검사해!
+                        .requestMatchers("/health", "/h2-console/**").permitAll()
+                        .anyRequest().permitAll()
                 );
 
         return http.build();
