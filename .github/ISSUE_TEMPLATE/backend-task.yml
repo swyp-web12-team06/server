@@ -1,6 +1,7 @@
 name: "⚙ Backend 작업"
 description: "백엔드 작업 생성"
 labels: ["team: Backend"]
+projects: ["swyp-web12-team06/2"]
 body:
   - type: textarea
     id: description
