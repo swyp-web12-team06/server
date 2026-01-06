@@ -24,7 +24,12 @@ public class SecurityConfig {
                 // 3. 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health", "/h2-console/**").permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(userInfo ->
+                                userInfo.userService(customOAuth2UserService)
+                        )
                 );
 
         return http.build();
