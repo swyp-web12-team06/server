@@ -1,36 +1,72 @@
 package com.tn.server.config;
 
+import com.tn.server.auth.*;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. CSRF 보안 설정
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable) //CSRF 보안 비활성화 (JWT 쓸 땐 필요 없음)
+                .httpBasic(AbstractHttpConfigurer::disable) //ID/PW 직접 인증 안 씀
+                .formLogin(AbstractHttpConfigurer::disable) //로그인 폼 안 씀
 
-                // 2. H2 콘솔 화면 깨짐 방지 설정
+                // H2 콘솔 화면 깨짐 방지 설정
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
 
-                // 3. 경로별 권한 설정
+                //세션 사용 안 함 (STATELESS 모드)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/h2-console/**").permitAll()
+                        .requestMatchers("/health", "/h2-console/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/auth/reissue").permitAll()
+                        .requestMatchers("/user/signup").hasAnyRole("GUEST", "USER")
+                        .requestMatchers("/user/me/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                //인증 안 된 사용자가 들어오면 401 에러
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) //401
+                        .accessDeniedHandler(customAccessDeniedHandler) //403 지금 여기선 안쓰임.
+                )
+                // 소셜 로그인 설정
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService)
                         )
-                );
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
+                )
+                //필터 순서 설정
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
