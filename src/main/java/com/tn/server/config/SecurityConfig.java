@@ -44,18 +44,23 @@ public class SecurityConfig {
 
                 // 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/h2-console/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/health", "/h2-console/**", "/favicon.ico","/error",
+                                "/login/**", "/oauth2/**").permitAll()
                         .requestMatchers("/auth/reissue").permitAll()
-                        .requestMatchers("/user/signup").hasAnyRole("GUEST", "USER")
-                        .requestMatchers("/user/me/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
+                        .requestMatchers("/user/me/**").hasRole("USER")
+                        .requestMatchers("/credit/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/image/{imageId}/download").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/product/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.PATCH, "/product/**").hasRole("USER")
+                        .requestMatchers("/user/signup", "/auth/logout").authenticated()
                         .anyRequest().authenticated()
                 )
-                //인증 안 된 사용자가 들어오면 401 에러
+
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) //401
-                        .accessDeniedHandler(customAccessDeniedHandler) //403 지금 여기선 안쓰임.
+                        .accessDeniedHandler(customAccessDeniedHandler) //403
                 )
                 // 소셜 로그인 설정
                 .oauth2Login(oauth -> oauth

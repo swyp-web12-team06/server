@@ -13,18 +13,14 @@ public class OAuthAttributes {
     private Map<String, Object> attributes;
     private String nameAttributeKey;
     private String email;
-    private String nickname;
-    private String profileImageUrl;
     private String provider;
     private String providerId;
 
     @Builder
-    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String nickname, String email, String profileImageUrl, String provider, String providerId) {
+    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String email, String provider, String providerId) {
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
-        this.nickname = nickname;
         this.email = email;
-        this.profileImageUrl = profileImageUrl;
         this.provider = provider;
         this.providerId = providerId;
     }
@@ -43,7 +39,6 @@ public class OAuthAttributes {
     private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
         return OAuthAttributes.builder()
                 .email((String) attributes.get("email"))
-                .profileImageUrl((String) attributes.get("picture"))
                 .provider("google")
                 .providerId((String) attributes.get("sub"))
                 .attributes(attributes)
@@ -60,7 +55,6 @@ public class OAuthAttributes {
 
         return OAuthAttributes.builder()
                 .email((String) kakaoAccount.get("email"))
-                .profileImageUrl((String) profile.get("profile_image_url"))
                 .provider("kakao")
                 .providerId(String.valueOf(attributes.get("id")))
                 .attributes(attributes)
@@ -74,7 +68,6 @@ public class OAuthAttributes {
 
         return OAuthAttributes.builder()
                 .email((String) response.get("email"))
-                .profileImageUrl((String) response.get("profile_image"))
                 .provider("naver")
                 .providerId((String) response.get("id"))
                 .attributes(attributes)
@@ -86,7 +79,6 @@ public class OAuthAttributes {
         return User.builder()
                 .nickname("Guest_" + UUID.randomUUID().toString().substring(0, 8))
                 .email(email)
-                .profileImageUrl(profileImageUrl)
                 .role(role)
                 .provider(provider)
                 .providerId(providerId)
