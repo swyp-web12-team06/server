@@ -1,7 +1,10 @@
 package com.tn.server.auth;
 import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.time.Instant;
 
+@Getter
 @Entity
 @Table(name = "refresh_tokens")
 public class RefreshToken {

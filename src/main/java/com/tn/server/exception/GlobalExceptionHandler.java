@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 1. 우리가 만든 BusinessException 처리
+    // BusinessException 처리
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
         log.error("BusinessException 발생: {}", e.getErrorCode().getMessage());
@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(errorCode.name(), errorCode.getMessage()));
     }
 
-    // 2. 그 외 알 수 없는 에러 처리 (500)
+    // 그 외 알 수 없는 에러 처리 (500)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
         log.error("Unhandled Exception: ", e);
