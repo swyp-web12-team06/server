@@ -56,7 +56,7 @@ public class User {
     @ColumnDefault("false")
     private Boolean isDeleted = false;
 
-    @Column(nullable = false)
+    @Column(name = "credit_balance", nullable = false)
     @ColumnDefault("0")
     private Integer creditBalance = 0;
 
@@ -101,6 +101,7 @@ public class User {
         this.provider = provider;
         this.providerId = providerId;
     }
+
     public void updateNickname(String newNickname) {
         if (newNickname == null || newNickname.isBlank()) {
             throw new BusinessException(ErrorCode.NICKNAME_MISSING);
@@ -165,5 +166,14 @@ public class User {
 
     public String getRoleKey() {
         return this.role.getKey();
+    }
+
+    // 잔액 차감 로직 (비즈니스 메서드)
+    public void decreaseCredit(int amount) {
+        if (this.creditBalance < amount) {
+            // 명세서에 있는 400 에러 코드 적용
+            throw new BusinessException(ErrorCode.INSUFFICIENT_CREDIT);
+        }
+        this.creditBalance -= amount;
     }
 }
