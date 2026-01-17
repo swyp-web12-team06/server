@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
+import org.apache.logging.log4j.message.ParameterizedMessage;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class) // 생성일 자동 주입
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Prompt {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "prompt_id")
@@ -28,7 +27,6 @@ public class Prompt {
     @Column(name = "user_id", nullable = false)
     private Long sellerId;
 
-
     // ManyToOne으로 카테고리 ID 매핑
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
@@ -37,17 +35,20 @@ public class Prompt {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "model_id", nullable = false)
     private AiModel aiModel;
-
+  
+    @Column(nullable = false)
     private String title;
 
     @Column(columnDefinition = "TEXT") // 설명은 길 수 있음
     private String description;
-
+  
+    @Column(nullable = false)
     private Integer price;
 
     @Column(name = "master_prompt", columnDefinition = "TEXT")
     private String masterPrompt;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PromptStatus status;
 
