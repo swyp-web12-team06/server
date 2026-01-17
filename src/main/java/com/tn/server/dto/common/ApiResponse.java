@@ -1,5 +1,6 @@
 package com.tn.server.dto.common;
 
+import com.tn.server.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,5 +13,15 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> success(String message, T data) {
         return new ApiResponse<>("SUCCESS", message, data);
+    }
+
+    // ErrorCode 메시지 그대로 사용
+    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+        return new ApiResponse<>(errorCode.getCode(), errorCode.getMessage(), null);
+    }
+
+    // 메세지 커스톰 해서 내보냄
+    public static <T> ApiResponse<T> error(ErrorCode errorCode, String customMessage) {
+        return new ApiResponse<>(errorCode.getCode(), customMessage, null);
     }
 }
