@@ -1,9 +1,10 @@
 package com.tn.server.service;
 
-import com.tn.server.common.exception.BusinessException;
+import com.tn.server.exception.BusinessException;
 import com.tn.server.domain.*;
 import com.tn.server.dto.library.LibraryResponse;
 import com.tn.server.dto.library.LibrarySalesResponse;
+import com.tn.server.exception.ErrorCode;
 import com.tn.server.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class LibraryService {
 
         return purchases.stream().map(purchase -> {
             Prompt prompt = promptRepository.findById(purchase.getPromptId())
-                    .orElseThrow(() -> new BusinessException("PROMPT_NOT_FOUND", "프롬프트 정보를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
             List<GeneratedImage> images = generatedImageRepository.findByPurchaseId(purchase.getId());
 

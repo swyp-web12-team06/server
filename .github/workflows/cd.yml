@@ -74,4 +74,11 @@ jobs:
               -e DB_PORT=3306 \
               -e DB_USER=${{ secrets.DB_USER }} \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+              -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+              -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+              -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
+              -e KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
+              -e NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
+              -e NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
               ${{ secrets.DOCKER_USERNAME }}/tn-server:latest
