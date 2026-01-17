@@ -77,7 +77,6 @@ public class OAuthAttributes {
 
     public User toEntity(String provider, Role role) {
         return User.builder()
-                .nickname("Guest_" + UUID.randomUUID().toString().substring(0, 8))
                 .email(email)
                 .role(role)
                 .provider(provider)

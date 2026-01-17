@@ -9,6 +9,7 @@ import java.time.Instant;
 @Table(name = "refresh_tokens")
 public class RefreshToken {
     @Id
+    @Column(name = "token_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
