@@ -1,5 +1,6 @@
 package com.tn.server.domain;
 
+import com.tn.server.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -22,10 +23,9 @@ public class Prompt {
     @Column(name = "prompt_id")
     private Long id;
 
-    // Member 객체 대신 ID만 저장 (협업 충돌 방지)
-    // 이후 멤버 객체로 전환 검토
-    @Column(name = "user_id", nullable = false)
-    private Long sellerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User seller;
 
     // ManyToOne으로 카테고리 ID 매핑
     @ManyToOne(fetch = FetchType.LAZY)
@@ -67,9 +67,9 @@ public class Prompt {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Prompt(Long sellerId, Category category, AiModel aiModel, String title,
+    public Prompt(User seller, Category category, AiModel aiModel, String title,
                   String description, Integer price, String masterPrompt, String previewImageUrl) {
-        this.sellerId = sellerId;
+        this.seller = seller;
         this.category = category;
         this.aiModel = aiModel;
         this.title = title;

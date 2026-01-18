@@ -81,4 +81,5 @@ jobs:
               -e KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
               -e NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
               -e NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
+              -e PORTONE_API_SECRET=${{secrets.PORTONE_API_SECRET}} \
               ${{ secrets.DOCKER_USERNAME }}/tn-server:latest

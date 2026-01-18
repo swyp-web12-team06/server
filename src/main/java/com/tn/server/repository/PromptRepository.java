@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PromptRepository extends JpaRepository<Prompt, Long> {
-    List<Prompt> findBySellerIdOrderByCreatedAtDesc(Long sellerId);
+    List<Prompt> findBySeller_IdOrderByCreatedAtDesc(Long sellerId);
 }

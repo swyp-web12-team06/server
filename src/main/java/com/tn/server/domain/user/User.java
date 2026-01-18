@@ -168,6 +168,11 @@ public class User {
         return this.role.getKey();
     }
 
+    // 크레딧 충전 메서드
+    public void addCredit(int amount) {
+        this.creditBalance += amount;
+    }
+
     // 잔액 차감 로직 (비즈니스 메서드)
     public void decreaseCredit(int amount) {
         if (this.creditBalance < amount) {
