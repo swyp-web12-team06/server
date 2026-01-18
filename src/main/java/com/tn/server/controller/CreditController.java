@@ -5,12 +5,15 @@ import com.tn.server.dto.payment.CreditResponse;
 import com.tn.server.service.CreditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/credit") // 팀장님 설정 유지
+@RequestMapping("/credit")
 @RequiredArgsConstructor
 public class CreditController {
 
@@ -18,18 +21,17 @@ public class CreditController {
 
     // 잔액 조회 API
     @GetMapping("/balance")
-    public ResponseEntity<CreditResponse> getBalance() {
-        Long userId = 1L; // 테스트 - 1번 유저
+    public ResponseEntity<CreditResponse> getBalance(@AuthenticationPrincipal UserDetails user) {
+        Long userId = Long.parseLong(user.getUsername());
 
-        // Long -> CreditResponse 변환
         Integer currentCredit = creditService.getCreditBalance(userId);
         return ResponseEntity.ok(new CreditResponse(currentCredit));
     }
 
     // 히스토리 조회 API
     @GetMapping("/history")
-    public ResponseEntity<List<CreditHistoryDto>> getHistory() {
-        Long userId = 1L; // 테스트 - 1번 유저
+    public ResponseEntity<List<CreditHistoryDto>> getHistory(@AuthenticationPrincipal UserDetails user) {
+        Long userId = Long.parseLong(user.getUsername());
 
         List<CreditHistoryDto> history = creditService.getCreditHistory(userId);
         return ResponseEntity.ok(history);

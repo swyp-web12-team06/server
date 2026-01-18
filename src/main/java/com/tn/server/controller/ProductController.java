@@ -24,18 +24,10 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<Long> registerProduct(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserDetails user,
             @RequestBody @Valid ProductCreateRequest request
     ) {
-        // 임시 ID 1번으로 설정
-        Long userId = 1L;
-
-        // 스프링 시큐리티 구현 후 연결
-        if (userDetails != null) {
-            userId = Long.parseLong(userDetails.getUsername());
-        }
-
-
+        Long userId = Long.parseLong(user.getUsername());
         Long productId = productService.registerProduct(userId, request);
 
         return ResponseEntity.ok(productId);

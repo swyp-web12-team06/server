@@ -32,7 +32,7 @@ public class CreditService {
     // 결제 검증 및 충전: 결제 검증 + DB 반영 + 실패 시 자동 환불(보상 트랜잭션)
     // =====================================================================
     @Transactional
-    public String completePayment(String paymentId) {
+    public String completePayment(Long userId, String paymentId) {
         try {
             // 포트원 서버에서 결제 정보 조회 (동기 호출)
             Payment payment = paymentClient.getPayment(paymentId).join();
@@ -50,8 +50,8 @@ public class CreditService {
                 // 테스트 중이라 일단 통과
             }
 
-            // 유저 조회 (테스트용 1번 유저)
-            User user = userRepository.findById(1L)
+            // 유저 조회 (로그인된 유저)
+            User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
             // PaymentHistory 저장 (PG사 거래 내역)
@@ -73,7 +73,7 @@ public class CreditService {
                     .build();
             creditTransactionRepository.save(transaction);
 
-            // 7. [지갑] 유저 잔액 증가
+            // 유저 잔액 증가
             user.addCredit((int) paidAmount);
 
             log.info("✅ 충전 성공: 유저ID={}, 금액={}, paymentId={}", user.getId(), paidAmount, paymentId);

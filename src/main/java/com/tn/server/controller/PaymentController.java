@@ -6,6 +6,8 @@ import com.tn.server.dto.payment.PaymentCompleteResponse;
 import com.tn.server.service.CreditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,10 +28,14 @@ public class PaymentController {
 
     // 결제 검증 및 완료 처리
     @PostMapping("/api/payment/complete")
-    public ResponseEntity<PaymentCompleteResponse> completePayment(@RequestBody PaymentCompleteRequest request) {
+    public ResponseEntity<PaymentCompleteResponse> completePayment(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestBody PaymentCompleteRequest request) {
         try {
+            Long userId = Long.parseLong(user.getUsername());
+
             // 서비스 로직 수행
-            String status = creditService.completePayment(request.getPaymentId());
+            String status = creditService.completePayment(userId, request.getPaymentId());
 
             // 성공 시 status 반환 (HTML이 "PAID"를 기다림)
             return ResponseEntity.ok(new PaymentCompleteResponse(status, request.getPaymentId()));
