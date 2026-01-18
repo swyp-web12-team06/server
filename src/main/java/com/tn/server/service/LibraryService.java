@@ -70,7 +70,7 @@ public class LibraryService {
      * 판매자가 등록한 프롬프트의 판매 현황(누적 판매수, 수익)을 조회합니다.
      */
     public List<LibrarySalesResponse> getMySalesList(Long userId) {
-        List<Prompt> myPrompts = promptRepository.findBySellerIdOrderByCreatedAtDesc(userId);
+        List<Prompt> myPrompts = promptRepository.findBySeller_IdOrderByCreatedAtDesc(userId);
 
         return myPrompts.stream().map(prompt -> {
             // 해당 프롬프트의 총 판매 개수 계산

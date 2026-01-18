@@ -23,7 +23,7 @@ public class ProductListResponse {
                 .title(prompt.getTitle())
                 .price(prompt.getPrice())
                 .previewImageUrl(prompt.getPreviewImageUrl())
-                .sellerId(prompt.getSellerId())
+                .sellerId(prompt.getSeller().getId())
                 .createdAt(prompt.getCreatedAt())
                 .build();
     }
