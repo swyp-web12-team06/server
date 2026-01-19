@@ -29,7 +29,7 @@ public class ProductDetailResponse {
                 .categoryName(prompt.getCategory().getName())
                 .modelName(prompt.getAiModel().getName())
                 .previewImageUrl(prompt.getPreviewImageUrl())
-                .sellerId(prompt.getSellerId())
+                .sellerId(prompt.getSeller().getId())
                 .createdAt(prompt.getCreatedAt())
                 .updatedAt(prompt.getUpdatedAt())
                 .build();
