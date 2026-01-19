@@ -88,6 +88,11 @@ public class GlobalExceptionHandler {
             return ErrorCode.MARKETING_CONSENT_MISSING;
         }
 
+        // 소개글 길이 관련 에러
+        if ("bio".equals(field)) {
+            if ("Size".equals(code)) return ErrorCode.BIO_TOO_LONG;
+        }
+
         // 그 외 알 수 없는 에러는 일반 파라미터 에러로 처리
         return ErrorCode.INVALID_PARAMETER;
     }

@@ -2,6 +2,7 @@ package com.tn.server.domain.user;
 
 import com.tn.server.exception.BusinessException;
 import com.tn.server.exception.ErrorCode;
+import java.time.temporal.ChronoUnit;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -28,7 +29,7 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String email;
 
     @Column(unique = true, length = 15)
@@ -52,9 +53,8 @@ public class User {
     @Column(length = 200)
     private String bio;
 
-    @Column(nullable = false)
-    @ColumnDefault("false")
-    private Boolean isDeleted = false;
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
 
     @Column(name = "credit_balance", nullable = false)
     @ColumnDefault("0")
@@ -111,6 +111,16 @@ public class User {
             return; // 기존 닉네임과 같으면 아무 일도 하지 않음
         }
 
+        // 닉네임은 30일에 한 번만 변경 가능
+        if (this.nicknameUpdatedAt != null) {
+            // 마지막 변경일과 현재 시간 사이의 날짜 차이 계산
+            long daysSinceLastUpdate = ChronoUnit.DAYS.between(this.nicknameUpdatedAt, Instant.now());
+
+            if (daysSinceLastUpdate < 30) {
+                throw new BusinessException(ErrorCode.NICKNAME_UPDATE_LIMIT_EXCEEDED);
+            }
+        }
+
         if (!NICKNAME_PATTERN.matcher(newNickname).matches()) {
             throw new BusinessException(ErrorCode.NICKNAME_INVALID_FORMAT);
         }
@@ -134,6 +144,11 @@ public class User {
             }
             this.bio = bio.isEmpty() ? null : bio;
         }
+    }
+
+    public User updateEmail(String email) {
+        this.email = email;
+        return this;
     }
 
     public void resetCreatedAt() {
@@ -181,4 +196,25 @@ public class User {
         }
         this.creditBalance -= amount;
     }
+
+    //회원 탈퇴
+    public void withdraw() {
+        this.deletedAt = Instant.now();
+        this.role = Role.GUEST;
+        this.email = null;
+        this.nickname = null;
+        this.profileImageUrl = null;
+        this.bio = null;
+        this.nicknameUpdatedAt = null;
+        this.creditBalance = 0;
+        this.termsAgreed = false;
+        this.termsAgreedAt = null;
+        this.marketingConsent = false;
+        this.marketingConsentedAt = null;
+    }
+
+    public void clearDeletedAt() {
+        this.deletedAt=null;
+    }
+
 }

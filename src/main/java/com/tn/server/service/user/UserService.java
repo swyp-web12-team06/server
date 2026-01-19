@@ -1,9 +1,12 @@
 package com.tn.server.service.user;
 
 import com.tn.server.auth.JwtTokenProvider;
+import com.tn.server.auth.repository.RefreshTokenRepository;
 import com.tn.server.domain.user.Role;
 import com.tn.server.domain.user.User;
 import com.tn.server.dto.user.SignupRequest;
+import com.tn.server.dto.user.UserProfileResponse;
+import com.tn.server.dto.user.UserUpdateRequest;
 import com.tn.server.exception.BusinessException;
 import com.tn.server.exception.ErrorCode;
 import com.tn.server.repository.user.UserRepository;
@@ -13,12 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
+    @Transactional
     public String signup(Long userId, SignupRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -36,6 +40,51 @@ public class UserService {
         user.agreeToTerms(request.marketingConsent());
         user.upgradeToUser(); // GUEST -> USER로 등업
         user.resetCreatedAt();
+        user.clearDeletedAt();
         return jwtTokenProvider.createAccessToken(user.getId(), user.getRole());
+    }
+
+    @Transactional
+    public void withdraw(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // 이미 탈퇴한 회원인지 확인
+        if (user.getDeletedAt() != null) {
+            throw new BusinessException(ErrorCode.ALREADY_DELETED);
+        }
+
+        // userId로 refresh token 찾아서 삭제 (모든 기기)
+        refreshTokenRepository.deleteByUserId(userId);
+
+        user.withdraw();
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileResponse getMyProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return UserProfileResponse.from(user);
+    }
+
+    @Transactional
+    public void updateProfile(Long userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // 닉네임 변경 시 중복 체크
+        // 요청 닉네임 존재 && 기존 닉네임과 다를 때만 체크
+        if (request.nickname() != null && !request.nickname().equals(user.getNickname())) {
+            if (userRepository.existsByNickname(request.nickname())) {
+                throw new BusinessException(ErrorCode.NICKNAME_DUPLICATION);
+            }
+        }
+
+        user.updateProfile(
+                request.nickname(),
+                request.profileImageUrl(),
+                request.bio()
+        );
     }
 }
