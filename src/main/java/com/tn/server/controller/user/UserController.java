@@ -1,6 +1,7 @@
 package com.tn.server.controller.user;
 
 import com.tn.server.dto.common.ApiResponse;
+import com.tn.server.dto.user.PublicUserProfileResponse;
 import com.tn.server.dto.user.SignupRequest;
 import com.tn.server.dto.user.UserProfileResponse;
 import com.tn.server.dto.user.UserUpdateRequest;
@@ -74,6 +75,18 @@ public class UserController  {
         return ResponseEntity.ok()
                 .body(ApiResponse.success("프로필이 수정되었습니다."));
     }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<PublicUserProfileResponse>> getUserProfile(
+            @PathVariable Long userId
+    ) {
+        PublicUserProfileResponse response = userService.getPublicProfile(userId);
+
+        return ResponseEntity.ok()
+                .body(ApiResponse.success("조회 성공", response));
+    }
+
+
 
 
 }

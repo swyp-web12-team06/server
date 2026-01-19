@@ -4,6 +4,7 @@ import com.tn.server.auth.JwtTokenProvider;
 import com.tn.server.auth.repository.RefreshTokenRepository;
 import com.tn.server.domain.user.Role;
 import com.tn.server.domain.user.User;
+import com.tn.server.dto.user.PublicUserProfileResponse;
 import com.tn.server.dto.user.SignupRequest;
 import com.tn.server.dto.user.UserProfileResponse;
 import com.tn.server.dto.user.UserUpdateRequest;
@@ -86,5 +87,13 @@ public class UserService {
                 request.profileImageUrl(),
                 request.bio()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public PublicUserProfileResponse getPublicProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return PublicUserProfileResponse.from(user);
     }
 }
