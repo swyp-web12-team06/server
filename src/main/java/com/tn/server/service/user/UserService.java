@@ -10,6 +10,7 @@ import com.tn.server.dto.user.UserProfileResponse;
 import com.tn.server.dto.user.UserUpdateRequest;
 import com.tn.server.exception.BusinessException;
 import com.tn.server.exception.ErrorCode;
+import com.tn.server.repository.PromptRepository;
 import com.tn.server.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PromptRepository promptRepository;
 
     @Transactional
     public String signup(Long userId, SignupRequest request) {
@@ -54,6 +56,9 @@ public class UserService {
         if (user.getDeletedAt() != null) {
             throw new BusinessException(ErrorCode.ALREADY_DELETED);
         }
+
+        // 판매중인 Prompt 일괄 삭제. is_deleted=true
+        promptRepository.softDeleteAllByUserId(userId);
 
         // userId로 refresh token 찾아서 삭제 (모든 기기)
         refreshTokenRepository.deleteByUserId(userId);
