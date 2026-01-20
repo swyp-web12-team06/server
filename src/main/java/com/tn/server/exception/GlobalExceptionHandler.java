@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @RestControllerAdvice
@@ -65,6 +66,19 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ErrorCode.INVALID_PARAMETER, fieldError.getDefaultMessage()));
     }
 
+    // 숫자가 와야 할 PathVariable에 문자가 왔을 때 발생하는 예외 처리
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        // userId 파라미터에서 에러가 난 경우
+        if ("userId".equals(e.getName())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(ErrorCode.INVALID_USER_ID));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ErrorCode.INVALID_PARAMETER));
+    }
+
 
     //필드명, 위반 타입을 보고 ErrorCode와 매핑
     private ErrorCode mapToErrorCode(String field, String code) {
@@ -86,6 +100,11 @@ public class GlobalExceptionHandler {
         }
         if ("marketingConsent".equals(field)) {
             return ErrorCode.MARKETING_CONSENT_MISSING;
+        }
+
+        // 소개글 길이 관련 에러
+        if ("bio".equals(field)) {
+            if ("Size".equals(code)) return ErrorCode.BIO_TOO_LONG;
         }
 
         // 그 외 알 수 없는 에러는 일반 파라미터 에러로 처리

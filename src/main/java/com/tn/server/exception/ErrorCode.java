@@ -18,6 +18,8 @@ public enum ErrorCode {
     VARIABLE_OPTION_MISMATCH(HttpStatus.BAD_REQUEST, "옵션 매칭 실패"),
     ALREADY_PURCHASED(HttpStatus.BAD_REQUEST, "이미 구매한 상품입니다."),
     INSUFFICIENT_CREDIT(HttpStatus.BAD_REQUEST, "잔액이 부족합니다."),
+    NICKNAME_UPDATE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "닉네임은 30일에 한 번만 변경할 수 있습니다."),
+    INVALID_USER_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID 형식입니다."),
 
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
@@ -34,6 +36,7 @@ public enum ErrorCode {
     USER_NOT_FOUND_LOGOUT(HttpStatus.NOT_FOUND, "이미 로그아웃 된 사용자입니다."),
     IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 이미지를 찾을 수 없습니다."),
     PROMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "프롬프트 정보를 찾을 수 없습니다."),
+    ALREADY_DELETED(HttpStatus.NOT_FOUND, "이미 탈퇴한 사용자입니다."),
 
     // 409 Conflict
     NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "이미 사용중인 닉네임입니다."),
