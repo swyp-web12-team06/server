@@ -21,5 +21,5 @@ VALUES (2, 'DALL-E 3', 2, true, NOW(), NOW());
 INSERT INTO ai_models (model_id, name, order_index, is_active, created_at, updated_at)
 VALUES (3, 'Stable Diffusion', 3, true, NOW(), NOW());
 
-INSERT INTO users (email, nickname, role, credit_balance, is_banned, is_deleted, provider, provider_id, terms_agreed, marketing_consent, created_at, updated_at)
-VALUES ('test@test.com', '테스트유저', 'USER', 0, false, false, 'local', 'test-001', true, false, NOW(), NOW());
+INSERT INTO users (email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, created_at, updated_at)
+VALUES ('test@test.com', '테스트유저', 'USER', 0, false, null, 'local', 'test-001', true, false, NOW(), NOW());
