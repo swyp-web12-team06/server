@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ImageManager {
 
     /**
-     * 1. 서버 경유 업로드 (잘 안 쓰지만 비상용)
+     * 1. 서버 경유 업로드 (비상용)
      * @return 공개면 Full URL, 비밀이면 Key 반환
      */
     String upload(MultipartFile file, String directoryPath, boolean isSecret);

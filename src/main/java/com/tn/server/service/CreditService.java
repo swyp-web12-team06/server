@@ -4,6 +4,8 @@ import com.tn.server.domain.*;
 import com.tn.server.domain.user.User;
 import com.tn.server.dto.payment.CreditHistoryDto;
 import com.tn.server.repository.CreditTransactionRepository;
+import com.tn.server.exception.BusinessException;
+import com.tn.server.exception.ErrorCode;
 import com.tn.server.repository.PaymentHistoryRepository;
 import com.tn.server.repository.user.UserRepository;
 import io.portone.sdk.server.payment.PaidPayment;
@@ -39,7 +41,7 @@ public class CreditService {
 
             // 결제 상태 검증 (결제 완료 상태인지 확인)
             if (!(payment instanceof PaidPayment paidPayment)) {
-                throw new IllegalStateException("결제가 완료되지 않았거나 이미 취소되었습니다.");
+                throw new BusinessException(ErrorCode.PAYMENT_NOT_COMPLETED);
             }
 
             // 금액 검증 (DB에 있는 상품 가격과 비교 필요)
@@ -52,7 +54,7 @@ public class CreditService {
 
             // 유저 조회 (로그인된 유저)
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
             // PaymentHistory 저장 (PG사 거래 내역)
             PaymentHistory history = PaymentHistory.builder()
@@ -103,7 +105,7 @@ public class CreditService {
             }
 
             // 프론트엔드에 에러 응답 전달
-            throw new RuntimeException("결제 처리 중 오류가 발생하여 자동 취소되었습니다.");
+            throw new BusinessException(ErrorCode.PAYMENT_PROCESSING_FAILED);
         }
     }
 
@@ -111,7 +113,7 @@ public class CreditService {
     @Transactional(readOnly = true)
     public Integer getCreditBalance(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         return user.getCreditBalance();
     }
 

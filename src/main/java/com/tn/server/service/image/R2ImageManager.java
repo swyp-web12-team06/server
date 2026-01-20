@@ -1,6 +1,8 @@
 package com.tn.server.service.image;
 
 import lombok.RequiredArgsConstructor;
+import com.tn.server.exception.BusinessException;
+import com.tn.server.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -56,7 +58,7 @@ public class R2ImageManager implements ImageManager {
             return isSecret ? fileName : publicDomain + "/" + fileName;
 
         } catch (IOException e) {
-            throw new RuntimeException("이미지 업로드 실패: " + e.getMessage());
+            throw new BusinessException(ErrorCode.IMAGE_UPLOAD_FAILED);
         }
     }
 
