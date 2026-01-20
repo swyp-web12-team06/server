@@ -15,6 +15,10 @@ public class ApiResponse<T> {
         return new ApiResponse<>("SUCCESS", message, data);
     }
 
+    public static ApiResponse<Void> success(String message) {
+        return new ApiResponse<>("SUCCESS", message, null);
+    }
+
     // ErrorCode 메시지 그대로 사용
     public static <T> ApiResponse<T> error(ErrorCode errorCode) {
         return new ApiResponse<>(errorCode.getCode(), errorCode.getMessage(), null);

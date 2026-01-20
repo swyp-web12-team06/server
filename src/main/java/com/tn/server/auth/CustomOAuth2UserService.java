@@ -37,10 +37,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .findByProviderAndProviderId(
                         provider, oauthAttributes.getProviderId()
                 )
-                .orElseGet(() ->
-                        userRepository.save(oauthAttributes.toEntity(provider, Role.GUEST))
-                );
+                .map(entity -> entity.updateEmail(oauthAttributes.getEmail()))
+                .orElse(oauthAttributes.toEntity(provider, Role.GUEST));
+        User savedUser = userRepository.save(user);
 
-        return new CustomOAuth2User(user, attributes);
+        return new CustomOAuth2User(savedUser, attributes);
     }
 }
