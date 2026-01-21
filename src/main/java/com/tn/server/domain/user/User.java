@@ -63,10 +63,10 @@ public class User {
     @Column
     private Instant nicknameUpdatedAt;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String provider;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String providerId;
 
     @Column(nullable = false)
@@ -211,6 +211,8 @@ public class User {
         this.termsAgreedAt = null;
         this.marketingConsent = false;
         this.marketingConsentedAt = null;
+        this.provider = null;
+        this.providerId = null;
     }
 
     public void clearDeletedAt() {
