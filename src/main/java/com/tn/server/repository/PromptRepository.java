@@ -18,6 +18,10 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
     @Query("UPDATE Prompt p SET p.isDeleted = true WHERE p.seller.id = :userId")
     void softDeleteAllByUserId(@Param("userId") Long userId);
 
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Prompt p SET p.isDeleted = true WHERE p.id = :promptId")
+    void softDeleteById(@Param("promptId") Long promptId);
+
     @Query("SELECT DISTINCT p FROM Prompt p " +
            "JOIN FETCH p.seller " +
            "JOIN FETCH p.category " +

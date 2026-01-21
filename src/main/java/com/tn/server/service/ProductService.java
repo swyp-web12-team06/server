@@ -14,6 +14,7 @@ import com.tn.server.exception.ErrorCode;
 import com.tn.server.repository.AiModelRepository;
 import com.tn.server.repository.CategoryRepository;
 import com.tn.server.repository.PromptRepository;
+import com.tn.server.repository.PurchaseRepository;
 import com.tn.server.repository.TagRepository;
 import com.tn.server.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class ProductService {
     private final AiModelRepository aiModelRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
+    private final PurchaseRepository purchaseRepository;
 
     @Transactional // 쓰기 작업이므로 readOnly 미사용
     public Long registerProduct(Long userId, ProductCreateRequest request) {
@@ -117,6 +119,26 @@ public class ProductService {
         }
 
         return prompt.getId();
+    }
+
+    @Transactional
+    public void deleteProduct(Long userId, Long promptId) {
+        Prompt prompt = promptRepository.findById(promptId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
+
+        // 1. 판매자 본인 확인
+        if (!prompt.getSeller().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        // 2. 판매 이력 확인 (한 번이라도 팔렸으면 삭제 불가)
+        boolean hasPurchased = purchaseRepository.existsByPromptId(promptId);
+        if (hasPurchased) {
+            throw new BusinessException(ErrorCode.CANNOT_DELETE_PURCHASED_ITEM);
+        }
+
+        // 3. Soft Delete 수행
+        promptRepository.softDeleteById(promptId);
     }
 
     // 상품 목록 조회

@@ -47,6 +47,17 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("성공적으로 수정되었습니다.", productId));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(
+            @AuthenticationPrincipal UserDetails user,
+            @PathVariable Long id
+    ) {
+        Long userId = Long.parseLong(user.getUsername());
+        productService.deleteProduct(userId, id);
+
+        return ResponseEntity.ok(ApiResponse.success("성공적으로 삭제되었습니다.", null));
+    }
+
     // 상품 목록 조회 (검색 포함)
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ProductListResponse>>> getProducts(
