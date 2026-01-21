@@ -107,7 +107,7 @@ public class User {
             throw new BusinessException(ErrorCode.NICKNAME_MISSING);
         }
 
-        if (this.nickname.equals(newNickname)) {
+        if (this.nickname != null && this.nickname.equals(newNickname)) {
             return; // 기존 닉네임과 같으면 아무 일도 하지 않음
         }
 
