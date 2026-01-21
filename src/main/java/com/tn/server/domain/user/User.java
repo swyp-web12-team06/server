@@ -56,6 +56,9 @@ public class User {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @Column(name = "delete_reason", length = 300)
+    private String deleteReason;
+
     @Column(name = "credit_balance", nullable = false)
     @ColumnDefault("0")
     private Integer creditBalance = 0;
@@ -198,8 +201,10 @@ public class User {
     }
 
     //회원 탈퇴
-    public void withdraw() {
+    public void withdraw(String deleteReason) {
+        this.deleteReason = deleteReason;
         this.deletedAt = Instant.now();
+
         this.role = Role.GUEST;
         this.email = null;
         this.nickname = null;

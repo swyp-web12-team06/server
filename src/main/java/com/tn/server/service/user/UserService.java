@@ -47,7 +47,7 @@ public class UserService {
     }
 
     @Transactional
-    public void withdraw(Long userId) {
+    public void withdraw(Long userId, String deleteReason) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
@@ -62,7 +62,7 @@ public class UserService {
         // userId로 refresh token 찾아서 삭제 (모든 기기)
         refreshTokenRepository.deleteByUserId(userId);
 
-        user.withdraw();
+        user.withdraw(deleteReason);
     }
 
     @Transactional(readOnly = true)
