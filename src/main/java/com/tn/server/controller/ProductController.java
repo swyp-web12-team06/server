@@ -35,7 +35,7 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("성공적으로 등록되었습니다.", productId));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Long>> updateProduct(
             @AuthenticationPrincipal UserDetails user,
             @PathVariable Long id,
