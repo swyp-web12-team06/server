@@ -27,8 +27,7 @@ public class UserService {
 
     @Transactional
     public String signup(Long userId, SignupRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = findActiveUser(userId);
 
         // 이미 가입한 유저인지 검사
         if (user.getRole() == Role.USER) {
@@ -43,7 +42,7 @@ public class UserService {
         user.agreeToTerms(request.marketingConsent());
         user.upgradeToUser(); // GUEST -> USER로 등업
         user.resetCreatedAt();
-        user.clearDeletedAt();
+
         return jwtTokenProvider.createAccessToken(user.getId(), user.getRole());
     }
 
@@ -68,16 +67,14 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserProfileResponse getMyProfile(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = findActiveUser(userId);
 
         return UserProfileResponse.from(user);
     }
 
     @Transactional
     public void updateProfile(Long userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = findActiveUser(userId);
 
         // 닉네임 변경 시 중복 체크
         // 요청 닉네임 존재 && 기존 닉네임과 다를 때만 체크
@@ -96,9 +93,19 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public PublicUserProfileResponse getPublicProfile(Long userId) {
+        User user = findActiveUser(userId);
+
+        return PublicUserProfileResponse.from(user);
+    }
+
+    private User findActiveUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        return PublicUserProfileResponse.from(user);
+        // 탈퇴한 유저
+        if (user.getDeletedAt() != null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+        return user;
     }
 }
