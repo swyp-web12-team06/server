@@ -45,7 +45,7 @@ public class SecurityConfig {
                 // 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health", "/h2-console/**", "/favicon.ico","/error",
-                                "/login/**", "/oauth2/**").permitAll()
+                                "/login/**", "/oauth2/**","/dev/**").permitAll()
                         .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
