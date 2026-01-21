@@ -7,11 +7,12 @@ import com.tn.server.domain.user.User;
 import com.tn.server.dto.product.ProductCreateRequest;
 import com.tn.server.dto.product.ProductDetailResponse;
 import com.tn.server.dto.product.ProductListResponse;
+import com.tn.server.exception.BusinessException;
+import com.tn.server.exception.ErrorCode;
 import com.tn.server.repository.AiModelRepository;
 import com.tn.server.repository.CategoryRepository;
 import com.tn.server.repository.PromptRepository;
 import com.tn.server.repository.user.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,15 +34,15 @@ public class ProductService {
 
         // 유저 존재 여부 확인
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // 카테고리 존재 여부 확인
         Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new EntityNotFoundException("해당 카테고리가 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
 
         // AI 모델 존재 여부 확인
         AiModel aiModel = aiModelRepository.findById(request.getModelId())
-                .orElseThrow(() -> new EntityNotFoundException("해당 AI 모델이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.AI_MODEL_NOT_FOUND));
 
         // 엔티티 생성
         Prompt prompt = Prompt.builder()
@@ -71,7 +72,7 @@ public class ProductService {
     @Transactional(readOnly = true) // 읽기 전용
     public ProductDetailResponse getProductDetail(Long promptId) {
         Prompt prompt = promptRepository.findById(promptId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
         return ProductDetailResponse.from(prompt);
     }
