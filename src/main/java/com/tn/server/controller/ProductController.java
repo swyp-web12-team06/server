@@ -55,8 +55,14 @@ public class ProductController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "LATEST") String sort // 정렬 조건
     ) {
-        // 정렬 기준: 생성일 역순 (id -> createdAt 변경, Native Query 호환성 고려)
-        Sort sortDir = Sort.by("createdAt").descending();
+        // 정렬 기준 설정
+        Sort sortDir = switch (sort) {
+            case "OLDEST" -> Sort.by("createdAt").ascending();
+            case "PRICE_HIGH" -> Sort.by("price").descending();
+            case "PRICE_LOW" -> Sort.by("price").ascending();
+            default -> Sort.by("createdAt").descending(); // LATEST
+        };
+
         Pageable pageable = PageRequest.of(page, size, sortDir);
 
         // 키워드가 있으면 검색, 없으면 전체 목록
