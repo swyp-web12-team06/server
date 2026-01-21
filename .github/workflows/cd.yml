@@ -83,4 +83,8 @@ jobs:
               -e NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
               -e NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
               -e PORTONE_API_SECRET=${{secrets.PORTONE_API_SECRET}} \
+              -e R2_ACCESS_KEY=${{secrets.R2_ACCESS_KEY}} \
+              -e R2_SECRET_KEY=${{secrets.R2_SECRET_KEY}} \
+              -e R2_ACCOUNT_ID=${{secrets.R2_ACCOUNT_ID}} \
+              -e R2_PUBLIC_DOMAIN=${{secrets.R2_PUBLIC_DOMAIN}} \
               ${{ secrets.DOCKER_USERNAME }}/promptlook-server:latest
