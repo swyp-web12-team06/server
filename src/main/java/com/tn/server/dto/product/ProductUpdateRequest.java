@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class ProductCreateRequest {
+public class ProductUpdateRequest {
 
     @NotBlank(message = "제목을 입력해주세요.")
     private String title;
@@ -31,7 +31,7 @@ public class ProductCreateRequest {
     @NotBlank(message = "프롬프트 내용을 입력해주세요.")
     private String masterPrompt;
 
-    private String previewImageUrl; // URL 문자열로 이미지 수신
+    private String previewImageUrl; // null이면 변경 안 함
 
     private List<String> tags;
 }

@@ -48,3 +48,8 @@ jobs:
           R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
+          DB_TEST_HOST: ${{ secrets.DB_TEST_HOST }}
+          DB_TEST_PORT: ${{ secrets.DB_TEST_PORT }}
+          DB_TEST_NAME: ${{ secrets.DB_TEST_NAME }}
+          DB_TEST_USER: ${{ secrets.DB_TEST_USER }}
+          DB_TEST_PASSWORD: ${{ secrets.DB_TEST_PASSWORD }}
