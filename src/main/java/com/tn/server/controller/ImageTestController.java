@@ -66,7 +66,7 @@ public class ImageTestController {
         return ResponseEntity.ok(response);
     }
 
-    // 4. [NEW] 다운로드용 Presigned URL 발급 (GET) - 비공개 버킷 전용
+    // 4. 다운로드용 Presigned URL 발급 (GET) - 비공개 버킷 전용
     // GET /api/test/images/presigned-download?key=tests/....png
     @GetMapping("/presigned-download")
     public ResponseEntity<String> getPresignedGetUrl(
@@ -75,5 +75,18 @@ public class ImageTestController {
         // 비공개 버킷에 있는 파일을 5분간 볼 수 있는 링크 생성
         String downloadUrl = imageManager.getPresignedGetUrl(key);
         return ResponseEntity.ok(downloadUrl);
+    }
+
+    // 5. URL에서 이미지 다운로드 후 업로드 (kie.ai 등 외부 AI 이미지)
+    // POST /api/test/images/upload-from-url?imageUrl=...&isSecret=false
+    @PostMapping("/upload-from-url")
+    public ResponseEntity<String> uploadFromUrl(
+            @RequestParam("imageUrl") String imageUrl,
+            @RequestParam(value = "isSecret", defaultValue = "false") boolean isSecret
+    ) {
+        String result = imageManager.uploadFromUrl(imageUrl, "ai-images", isSecret);
+        return ResponseEntity.ok(
+                (isSecret ? "[비공개-키 반환] " : "[공개-URL 반환] ") + result
+        );
     }
 }

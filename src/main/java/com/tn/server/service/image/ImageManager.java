@@ -28,4 +28,13 @@ public interface ImageManager {
      * 4. 파일 삭제
      */
     void delete(String keyOrUrl, boolean isSecret);
+
+    /**
+     * 5. URL에서 이미지 다운로드 후 R2에 업로드
+     * @param imageUrl 다운로드할 이미지 URL (예: kie.ai 이미지 URL)
+     * @param directoryPath 저장할 디렉토리 경로
+     * @param isSecret true=비밀버킷, false=공개버킷
+     * @return 공개면 Full URL, 비밀이면 Key 반환
+     */
+    String uploadFromUrl(String imageUrl, String directoryPath, boolean isSecret);
 }
