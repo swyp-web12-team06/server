@@ -67,6 +67,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ProductListResponse>>> getProducts(
             @RequestParam(required = false) String keyword, // 검색 키워드 (제목, 판매자명)
+            @RequestParam(required = false) Long categoryId, // 카테고리 필터링
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "LATEST") String sort // 정렬 조건
@@ -84,9 +85,9 @@ public class ProductController {
         // 키워드가 있으면 검색, 없으면 전체 목록
         Page<ProductListResponse> result;
         if (keyword != null && !keyword.trim().isEmpty()) {
-            result = productService.searchProducts(keyword, pageable);
+            result = productService.searchProducts(keyword, categoryId, pageable);
         } else {
-            result = productService.getProducts(pageable);
+            result = productService.getProducts(categoryId, pageable);
         }
 
         return ResponseEntity.ok(ApiResponse.success(result));

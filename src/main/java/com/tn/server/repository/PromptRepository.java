@@ -36,6 +36,12 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            "WHERE p.isDeleted = false")
     Page<Prompt> findAllWithSeller(Pageable pageable);
 
+    @Query("SELECT DISTINCT p FROM Prompt p " +
+           "JOIN FETCH p.seller " +
+           "LEFT JOIN FETCH p.tags " +
+           "WHERE p.isDeleted = false AND p.category.id = :categoryId")
+    Page<Prompt> findAllByCategory(@Param("categoryId") Long categoryId, Pageable pageable);
+
     // Full-Text Search 사용 (MySQL 전용)
     @Query(value = "SELECT DISTINCT p.* FROM prompts p " +
            "INNER JOIN users u ON p.user_id = u.user_id " +
@@ -55,5 +61,26 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
                        "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
            nativeQuery = true)
     Page<Prompt> searchByKeywordWithSeller(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query(value = "SELECT DISTINCT p.* FROM prompts p " +
+           "INNER JOIN users u ON p.user_id = u.user_id " +
+           "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
+           "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
+           "WHERE p.is_deleted = false " +
+           "AND p.category_id = :categoryId " +
+           "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
+           "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
+           "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+           countQuery = "SELECT COUNT(DISTINCT p.prompt_id) FROM prompts p " +
+                       "INNER JOIN users u ON p.user_id = u.user_id " +
+                       "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
+                       "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
+                       "WHERE p.is_deleted = false " +
+                       "AND p.category_id = :categoryId " +
+                       "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
+                       "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
+                       "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+           nativeQuery = true)
+    Page<Prompt> searchByKeywordAndCategory(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
 
 }

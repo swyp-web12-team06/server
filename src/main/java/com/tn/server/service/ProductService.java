@@ -271,19 +271,22 @@ public class ProductService {
 
     // 상품 목록 조회
     @Transactional(readOnly = true) // 읽기 전용
-    public Page<ProductListResponse> getProducts(Pageable pageable) {
-        // DB에서 페이지 단위로 가져온 뒤 DTO로 변환(map)
-        // Fetch Join으로 N+1 문제 해결
-        return promptRepository.findAllWithSeller(pageable)
-                .map(ProductListResponse::from); // DTO static 변환 사용
+    public Page<ProductListResponse> getProducts(Long categoryId, Pageable pageable) {
+        Page<Prompt> prompts;
+        if (categoryId != null) {
+            prompts = promptRepository.findAllByCategory(categoryId, pageable);
+        } else {
+            prompts = promptRepository.findAllWithSeller(pageable);
+        }
+        return prompts.map(ProductListResponse::from);
     }
 
     // 상품 검색 (제목, 판매자명)
     @Transactional(readOnly = true)
-    public Page<ProductListResponse> searchProducts(String keyword, Pageable pageable) {
+    public Page<ProductListResponse> searchProducts(String keyword, Long categoryId, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
             // 키워드가 없으면 전체 목록 반환
-            return getProducts(pageable);
+            return getProducts(categoryId, pageable);
         }
 
         // Native Query 정렬 필드 매핑 (Entity Field -> DB Column)
@@ -307,8 +310,14 @@ public class ProductService {
                 Sort.by(orders)
         );
 
-        return promptRepository.searchByKeywordWithSeller(keyword.trim(), nativePageable)
-                .map(ProductListResponse::from);
+        Page<Prompt> prompts;
+        if (categoryId != null) {
+            prompts = promptRepository.searchByKeywordAndCategory(keyword.trim(), categoryId, nativePageable);
+        } else {
+            prompts = promptRepository.searchByKeywordWithSeller(keyword.trim(), nativePageable);
+        }
+
+        return prompts.map(ProductListResponse::from);
     }
 
     // 상품 상세 조회
