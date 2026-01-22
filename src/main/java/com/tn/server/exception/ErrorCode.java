@@ -22,10 +22,19 @@ public enum ErrorCode {
     NICKNAME_UPDATE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "닉네임은 30일에 한 번만 변경할 수 있습니다."),
     INVALID_USER_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID 형식입니다."),
     INVALID_ROLE(HttpStatus.BAD_REQUEST, "유효하지 않은 ROLE입니다."),
+    INVALID_PRICE_UNIT(HttpStatus.BAD_REQUEST, "가격은 100원 단위로 설정해야 합니다."),
+    INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "가격은 500원에서 1,000원 사이여야 합니다."),
+
+    // 상품(프롬프트) 관련 검증 (400 Bad Request)
+    PREVIEW_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "썸네일(미리보기) 이미지는 필수입니다."),
+    LOOKBOOK_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "최소 1개 이상의 룩북 이미지가 필요합니다."),
+    REPRESENTATIVE_IMAGE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "대표 이미지는 최대 3개까지만 설정할 수 있습니다."),
+    UNDEFINED_PROMPT_VARIABLE(HttpStatus.BAD_REQUEST, "프롬프트에 정의되지 않은 변수가 사용되었습니다."),
+    IMAGE_NOT_BELONG_TO_PRODUCT(HttpStatus.BAD_REQUEST, "해당 상품에 속하지 않는 이미지입니다."),
 
     // 이미지 검증 관련 (400 Bad Request)
     IMAGE_FILE_EMPTY(HttpStatus.BAD_REQUEST, "이미지 파일이 비어있습니다."),
-    IMAGE_FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "이미지 파일 크기는 10MB를 초과할 수 없습니다."),
+    IMAGE_FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "이미지 파일 크기는 5MB를 초과할 수 없습니다."),
     IMAGE_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "지원하지 않는 이미지 형식입니다. (JPG, PNG, WebP만 가능)"),
     IMAGE_INVALID_EXTENSION(HttpStatus.BAD_REQUEST, "잘못된 파일 확장자입니다."),
 
@@ -45,12 +54,16 @@ public enum ErrorCode {
     USER_NOT_FOUND_LOGOUT(HttpStatus.NOT_FOUND, "이미 로그아웃 된 사용자입니다."),
     IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 이미지를 찾을 수 없습니다."),
     PROMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "프롬프트 정보를 찾을 수 없습니다."),
+    VARIABLE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 변수 정보를 찾을 수 없습니다."),
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리가 존재하지 않습니다."),
     AI_MODEL_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 AI 모델이 존재하지 않습니다."),
     ALREADY_DELETED(HttpStatus.NOT_FOUND, "이미 탈퇴한 사용자입니다."),
 
     // 409 Conflict
     NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "이미 사용중인 닉네임입니다."),
+
+    // 429 TOO_MANY_REQUESTS
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "요청 횟수가 너무 많습니다. 잠시 후 다시 시도해주세요."),
 
     // 500 Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 에러가 발생했습니다."),

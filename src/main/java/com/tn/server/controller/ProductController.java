@@ -1,5 +1,10 @@
 package com.tn.server.controller;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.tn.server.common.response.ApiResponse;
 import com.tn.server.dto.product.ProductCreateRequest;
 import com.tn.server.dto.product.ProductDetailResponse;
@@ -25,18 +30,18 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Long>> registerProduct(
+    public ResponseEntity<ApiResponse<Map<String, Long>>> registerProduct(
             @AuthenticationPrincipal UserDetails user,
             @RequestBody @Valid ProductCreateRequest request
     ) {
         Long userId = Long.parseLong(user.getUsername());
         Long productId = productService.registerProduct(userId, request);
 
-        return ResponseEntity.ok(ApiResponse.success("성공적으로 등록되었습니다.", productId));
+        return ResponseEntity.ok(ApiResponse.success("성공적으로 등록되었습니다.", Map.of("promptId", productId)));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Long>> updateProduct(
+    public ResponseEntity<ApiResponse<Map<String, Long>>> updateProduct(
             @AuthenticationPrincipal UserDetails user,
             @PathVariable Long id,
             @RequestBody @Valid ProductUpdateRequest request
@@ -44,7 +49,7 @@ public class ProductController {
         Long userId = Long.parseLong(user.getUsername());
         Long productId = productService.updateProduct(userId, id, request);
 
-        return ResponseEntity.ok(ApiResponse.success("성공적으로 수정되었습니다.", productId));
+        return ResponseEntity.ok(ApiResponse.success("성공적으로 수정되었습니다.", Map.of("promptId", productId)));
     }
 
     @DeleteMapping("/{id}")
@@ -62,6 +67,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ProductListResponse>>> getProducts(
             @RequestParam(required = false) String keyword, // 검색 키워드 (제목, 판매자명)
+            @RequestParam(required = false) Long categoryId, // 카테고리 필터링
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "LATEST") String sort // 정렬 조건
@@ -79,9 +85,9 @@ public class ProductController {
         // 키워드가 있으면 검색, 없으면 전체 목록
         Page<ProductListResponse> result;
         if (keyword != null && !keyword.trim().isEmpty()) {
-            result = productService.searchProducts(keyword, pageable);
+            result = productService.searchProducts(keyword, categoryId, pageable);
         } else {
-            result = productService.getProducts(pageable);
+            result = productService.getProducts(categoryId, pageable);
         }
 
         return ResponseEntity.ok(ApiResponse.success(result));
@@ -89,8 +95,12 @@ public class ProductController {
 
     // 개별 상품 조회
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(@PathVariable Long id) {
-        ProductDetailResponse response = productService.getProductDetail(id);
+    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(
+            @AuthenticationPrincipal UserDetails user,
+            @PathVariable Long id
+    ) {
+        Long userId = (user != null) ? Long.parseLong(user.getUsername()) : null;
+        ProductDetailResponse response = productService.getProductDetail(id, userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
