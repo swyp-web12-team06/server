@@ -314,3 +314,17 @@ VALUES
 (198, 48, 2, 2, '대나무 숲', 'Bamboo forest', 650, 'bamboo forest, zen, peaceful', 'APPROVED', 'https://via.placeholder.com/300', false, NOW(), NOW()),
 (199, 49, 3, 1, '펭귄 일러스트', 'Penguin illustration', 550, 'cute penguin, ice, antarctic', 'APPROVED', 'https://via.placeholder.com/300', false, NOW(), NOW()),
 (200, 50, 4, 2, '입자 추상', 'Particle abstract', 850, 'particle effect, digital, sci-fi', 'APPROVED', 'https://via.placeholder.com/300', false, NOW(), NOW());
+
+-- 5. Credit Charge Options
+INSERT IGNORE INTO credit_charge_option (id, amount) VALUES
+(1, 3000),
+(2, 5000),
+(3, 10000),
+(4, 30000),
+(5, 50000);
+
+-- 6. Bonus Credit Policies
+INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description) VALUES
+(1, 5000, 0.05, '5% Bonus'),
+(2, 30000, 0.10, '10% Bonus'),
+(3, 50000, 0.15, '15% Bonus');
