@@ -26,4 +26,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
     // 특정 프롬프트가 몇 번 팔렸는지 계산
     int countByPromptId(Long promptId);
+
+    // 특정 프롬프트에 대한 구매 이력이 존재하는지 확인
+    boolean existsByPromptId(Long promptId);
 }
