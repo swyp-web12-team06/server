@@ -2,7 +2,6 @@ package com.tn.server.dto.product;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
