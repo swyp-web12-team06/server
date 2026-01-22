@@ -2,13 +2,13 @@ package com.tn.server.dto.product;
 
 import com.tn.server.domain.LookbookImageVariableOption;
 import com.tn.server.domain.Prompt;
-import com.tn.server.domain.PromptVariable;
 import com.tn.server.domain.Tag;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import java.util.Map;
@@ -20,7 +20,7 @@ public class ProductDetailResponse {
     private String title;
     private String description;
     private Integer price;
-    private UserProductStatus userStatus; // 유저 상태 (GUEST, OWNER 등)
+    private UserProductStatus userStatus;
     private Long categoryId;
     private String categoryName;
     private Long modelId;
@@ -53,7 +53,7 @@ public class ProductDetailResponse {
         private Map<String, String> optionValues;
     }
 
-    public static ProductDetailResponse from(Prompt prompt, UserProductStatus userStatus) {
+    public static ProductDetailResponse from(Prompt prompt, UserProductStatus userStatus, Function<String, String> urlConverter) {
         return ProductDetailResponse.builder()
                 .promptId(prompt.getId())
                 .title(prompt.getTitle())
@@ -64,7 +64,7 @@ public class ProductDetailResponse {
                 .categoryName(prompt.getCategory().getName())
                 .modelId(prompt.getAiModel().getId())
                 .modelName(prompt.getAiModel().getName())
-                .previewImageUrl(prompt.getPreviewImageUrl())
+                .previewImageUrl(urlConverter.apply(prompt.getPreviewImageUrl()))
                 .tags(prompt.getTags().stream()
                         .map(Tag::getName)
                         .collect(Collectors.toList()))
@@ -80,7 +80,7 @@ public class ProductDetailResponse {
                 .images(prompt.getLookbookImages().stream()
                         .map(image -> LookbookImageDetail.builder()
                                 .id(image.getId())
-                                .imageUrl(image.getImageUrl())
+                                .imageUrl(urlConverter.apply(image.getImageUrl()))
                                 .isPreview(image.getImageUrl().equals(prompt.getPreviewImageUrl()))
                                 .isRepresentative(image.getIsRepresentative())
                                 .optionValues(image.getVariableOptions().stream()

@@ -8,6 +8,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Getter
@@ -31,18 +32,17 @@ public class ProductListResponse {
         private String nickname;
     }
 
-    // Entity -> DTO 변환 static from 메소드
-    public static ProductListResponse from(Prompt prompt) {
+    public static ProductListResponse from(Prompt prompt, Function<String, String> urlConverter) {
         return ProductListResponse.builder()
                 .promptId(prompt.getId())
                 .title(prompt.getTitle())
                 .price(prompt.getPrice())
                 .categoryName(prompt.getCategory().getName())
                 .modelName(prompt.getAiModel().getName())
-                .previewImageUrl(prompt.getPreviewImageUrl())
+                .previewImageUrl(urlConverter.apply(prompt.getPreviewImageUrl()))
                 .representativeImages(prompt.getLookbookImages().stream()
                         .filter(LookbookImage::getIsRepresentative)
-                        .map(LookbookImage::getImageUrl)
+                        .map(img -> urlConverter.apply(img.getImageUrl()))
                         .limit(3)
                         .collect(Collectors.toList()))
                 .seller(SellerInfo.builder()
