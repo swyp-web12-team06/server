@@ -42,8 +42,8 @@ public class LibraryService {
             if (!images.isEmpty()) {
                 variableInfos = imageVariableRepository.findByGeneratedImageId(images.get(0).getId())
                         .stream().map(v -> LibraryResponse.VariableInfo.builder()
-                                .variable_id(v.getPromptVariableValue().getPromptVariable().getId())
-                                .value(v.getPromptVariableValue().getValue())
+                                .variable_id(v.getPromptVariable().getId())
+                                .value(v.getValue())
                                 .build())
                         .collect(Collectors.toList());
             }

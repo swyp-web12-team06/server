@@ -1,5 +1,10 @@
 package com.tn.server.controller;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.tn.server.common.response.ApiResponse;
 import com.tn.server.dto.product.ProductCreateRequest;
 import com.tn.server.dto.product.ProductDetailResponse;
@@ -25,18 +30,18 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Long>> registerProduct(
+    public ResponseEntity<ApiResponse<Map<String, Long>>> registerProduct(
             @AuthenticationPrincipal UserDetails user,
             @RequestBody @Valid ProductCreateRequest request
     ) {
         Long userId = Long.parseLong(user.getUsername());
         Long productId = productService.registerProduct(userId, request);
 
-        return ResponseEntity.ok(ApiResponse.success("성공적으로 등록되었습니다.", productId));
+        return ResponseEntity.ok(ApiResponse.success("성공적으로 등록되었습니다.", Map.of("promptId", productId)));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Long>> updateProduct(
+    public ResponseEntity<ApiResponse<Map<String, Long>>> updateProduct(
             @AuthenticationPrincipal UserDetails user,
             @PathVariable Long id,
             @RequestBody @Valid ProductUpdateRequest request
@@ -44,7 +49,7 @@ public class ProductController {
         Long userId = Long.parseLong(user.getUsername());
         Long productId = productService.updateProduct(userId, id, request);
 
-        return ResponseEntity.ok(ApiResponse.success("성공적으로 수정되었습니다.", productId));
+        return ResponseEntity.ok(ApiResponse.success("성공적으로 수정되었습니다.", Map.of("promptId", productId)));
     }
 
     @DeleteMapping("/{id}")

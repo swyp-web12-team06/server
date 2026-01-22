@@ -20,7 +20,7 @@ public class GenerationService {
 
     private final PurchaseRepository purchaseRepository;
     private final GeneratedImageRepository generatedImageRepository;
-    private final PromptVariableValueRepository valueRepository;
+    private final PromptVariableRepository promptVariableRepository;
     private final GeneratedImageVariableValueRepository imageValueRepository;
     private final UserRepository userRepository;
 
@@ -51,13 +51,14 @@ public class GenerationService {
 
         // 5. 사용된 옵션 기록 (이 부분의 엔티티 생성을 Builder로 변경 권장)
         request.getVariable_values().forEach(v -> {
-            PromptVariableValue val = valueRepository.findByPromptVariableIdAndValue(v.getVariable_id(), v.getValue())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.VARIABLE_OPTION_MISMATCH));
+            PromptVariable promptVariable = promptVariableRepository.findById(v.getVariable_id())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.VARIABLE_NOT_FOUND));
 
             // 기존 new 대신 Builder 패턴 사용 (일관성)
             imageValueRepository.save(GeneratedImageVariableValue.builder()
                     .generatedImage(savedImage)
-                    .promptVariableValue(val)
+                    .promptVariable(promptVariable)
+                    .value(v.getValue())
                     .build());
         });
 

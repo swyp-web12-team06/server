@@ -21,8 +21,8 @@ public class ImageFileUtils {
             "image/webp"
     );
 
-    // 최대 파일 크기: 10MB
-    public static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+    // 최대 파일 크기: 5MB
+    public static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
     /**
      * Content-Type 검증

@@ -5,6 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Table(name = "lookbook_images")
@@ -21,4 +24,24 @@ public class LookbookImage {
 
     @Column(name = "image_url", nullable = false, length = 1000)
     private String imageUrl;
+
+    @Column(name = "is_representative", nullable = false)
+    private Boolean isRepresentative = false;
+
+    @OneToMany(mappedBy = "lookbookImage", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LookbookImageVariableOption> variableOptions = new ArrayList<>();
+
+    public LookbookImage(Prompt prompt, String imageUrl, Boolean isRepresentative) {
+        this.prompt = prompt;
+        this.imageUrl = imageUrl;
+        this.isRepresentative = isRepresentative != null ? isRepresentative : false;
+    }
+
+    public void addVariableOption(PromptVariable variable, String value) {
+        this.variableOptions.add(new LookbookImageVariableOption(this, variable, value));
+    }
+
+    public void setRepresentative(boolean representative) {
+        this.isRepresentative = representative;
+    }
 }

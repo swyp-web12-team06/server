@@ -17,12 +17,16 @@ public class GeneratedImageVariableValue {
     private GeneratedImage generatedImage;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variable_value_id", nullable = false)
-    private PromptVariableValue promptVariableValue;
+    @JoinColumn(name = "prompt_variable_id", nullable = false)
+    private PromptVariable promptVariable;
+
+    @Column(name = "variable_value", nullable = false)
+    private String value;
 
     @Builder
-    public GeneratedImageVariableValue(GeneratedImage generatedImage, PromptVariableValue promptVariableValue) {
+    public GeneratedImageVariableValue(GeneratedImage generatedImage, PromptVariable promptVariable, String value) {
         this.generatedImage = generatedImage;
-        this.promptVariableValue = promptVariableValue;
+        this.promptVariable = promptVariable;
+        this.value = value;
     }
 }

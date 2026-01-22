@@ -2,7 +2,7 @@
 -- MASSIVE DUMMY DATA FOR FULL-TEXT SEARCH (Modified)
 -- ==========================================
 
--- 1. Categories (5개) - 변경 없음
+-- 1. Categories (5개)
 INSERT IGNORE INTO categories (category_id, name, order_index, is_active, created_at, updated_at)
 VALUES
     (1, '인물', 1, true, NOW(), NOW()),
@@ -11,14 +11,14 @@ VALUES
     (4, '추상', 4, true, NOW(), NOW()),
     (5, '건축', 5, true, NOW(), NOW());
 
--- 2. AI Models (2개로 축소 및 변경)
+-- 2. AI Models
 -- 1: Grok 3, 2: Nanobanana
 INSERT IGNORE INTO ai_models (model_id, name, order_index, is_active, created_at, updated_at)
 VALUES
     (1, 'Grok 3', 1, true, NOW(), NOW()),
     (2, 'Nanobanana', 2, true, NOW(), NOW());
 
--- 3. Users (50명) - 변경 없음
+-- 3. Users (50명)
 INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, created_at, updated_at, warning_count)
 VALUES
     (1, 'artist1@test.com', 'AI아티스트', 'SELLER', 10000, false, null, 'local', 'artist-001', true, false, NOW(), NOW(), 0),
@@ -73,7 +73,6 @@ VALUES
     (50, 'gallery50@test.com', 'GalleryArt', 'SELLER', 12200, false, null, 'local', 'gallery-050', true, true, NOW(), NOW(), 0);
 
 -- 4. Prompts (200개)
--- 모든 model_id를 1(Grok 3) 또는 2(Nanobanana)로 변경했습니다.
 INSERT IGNORE INTO prompts (prompt_id, user_id, category_id, model_id, title, description, price, master_prompt, status, preview_image_url, is_deleted, created_at, updated_at)
 VALUES
 -- 사이버펑크 & 네온 테마
