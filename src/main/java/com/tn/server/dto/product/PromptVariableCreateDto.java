@@ -1,0 +1,13 @@
+package com.tn.server.dto.product;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+public class PromptVariableCreateDto {
+    private String keyName;
+    private String variableName;
+    private String description;
+    private Integer orderIndex;
+}

@@ -10,8 +10,10 @@ import lombok.NoArgsConstructor;
 @Table(name = "lookbook_image_variable_options")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LookbookImageVariableOption {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "combination_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -19,9 +21,15 @@ public class LookbookImageVariableOption {
     private LookbookImage lookbookImage;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variable_value_id", nullable = false)
-    private PromptVariableValue promptVariableValue;
+    @JoinColumn(name = "prompt_variable_id", nullable = false)
+    private PromptVariable promptVariable;
 
-    @Column(name = "combination_id")
-    private String combinationId; // 같은 조합을 묶어주는 그룹 ID (ERD 기반)
+    @Column(nullable = false)
+    private String value;
+
+    public LookbookImageVariableOption(LookbookImage lookbookImage, PromptVariable promptVariable, String value) {
+        this.lookbookImage = lookbookImage;
+        this.promptVariable = promptVariable;
+        this.value = value;
+    }
 }

@@ -10,7 +10,9 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -55,6 +57,12 @@ public class Prompt {
 
     @Column(name = "preview_image_url", columnDefinition = "TEXT")
     private String previewImageUrl;
+
+    @OneToMany(mappedBy = "prompt", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LookbookImage> lookbookImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "prompt", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PromptVariable> promptVariables = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -101,14 +109,20 @@ public class Prompt {
         this.tags.addAll(newTags);
     }
 
-    public void update(Category category, AiModel aiModel, String title, String description,
-                       Integer price, String masterPrompt, String previewImageUrl) {
-        this.category = category;
-        this.aiModel = aiModel;
-        this.title = title;
-        this.description = description;
-        this.price = price;
-        this.masterPrompt = masterPrompt;
-        this.previewImageUrl = previewImageUrl;
+    public void updateInfo(Category category, String title, String description,
+                       Integer price, String previewImageUrl) {
+        if (category != null) this.category = category;
+        if (title != null) this.title = title;
+        if (description != null) this.description = description;
+        if (price != null) this.price = price;
+        if (previewImageUrl != null) this.previewImageUrl = previewImageUrl;
+    }
+
+    public void addLookbookImage(LookbookImage image) {
+        this.lookbookImages.add(image);
+    }
+
+    public void addPromptVariable(PromptVariable variable) {
+        this.promptVariables.add(variable);
     }
 }

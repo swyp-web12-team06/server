@@ -1,5 +1,6 @@
 package com.tn.server.dto.product;
 
+import com.tn.server.domain.LookbookImage;
 import com.tn.server.domain.Prompt;
 import com.tn.server.domain.Tag;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Getter
@@ -15,7 +17,10 @@ public class ProductListResponse {
     private Long promptId;
     private String title;
     private Integer price;
+    private String categoryName;
+    private String modelName;
     private String previewImageUrl;
+    private List<String> representativeImages;
     private SellerInfo seller;
     private List<String> tags;
     private LocalDateTime createdAt;
@@ -27,13 +32,19 @@ public class ProductListResponse {
         private String nickname;
     }
 
-    // Entity -> DTO 변환 static from 메소드
-    public static ProductListResponse from(Prompt prompt) {
+    public static ProductListResponse from(Prompt prompt, Function<String, String> urlConverter) {
         return ProductListResponse.builder()
                 .promptId(prompt.getId())
                 .title(prompt.getTitle())
                 .price(prompt.getPrice())
-                .previewImageUrl(prompt.getPreviewImageUrl())
+                .categoryName(prompt.getCategory().getName())
+                .modelName(prompt.getAiModel().getName())
+                .previewImageUrl(urlConverter.apply(prompt.getPreviewImageUrl()))
+                .representativeImages(prompt.getLookbookImages().stream()
+                        .filter(LookbookImage::getIsRepresentative)
+                        .map(img -> urlConverter.apply(img.getImageUrl()))
+                        .limit(3)
+                        .collect(Collectors.toList()))
                 .seller(SellerInfo.builder()
                         .id(prompt.getSeller().getId())
                         .nickname(prompt.getSeller().getNickname())

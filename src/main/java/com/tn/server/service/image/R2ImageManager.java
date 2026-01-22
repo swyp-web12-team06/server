@@ -59,8 +59,8 @@ public class R2ImageManager implements ImageManager {
 
             s3Client.putObject(putOb, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-            // 비밀이면 키만 반환, 공개면 전체 URL 반환
-            return isSecret ? fileName : publicDomain + "/" + fileName;
+            // 항상 Key(fileName)만 반환하도록 수정
+            return fileName;
 
         } catch (IOException e) {
             log.error("이미지 업로드 실패: {}", e.getMessage());
@@ -180,8 +180,8 @@ public class R2ImageManager implements ImageManager {
 
             log.info("URL 이미지 업로드 완료 (버킷: {}, 키: {}, 크기: {} bytes)", targetBucket, fileName, imageBytes.length);
 
-            // 비밀이면 키만 반환, 공개면 전체 URL 반환
-            return isSecret ? fileName : publicDomain + "/" + fileName;
+            // 항상 Key(fileName)만 반환하도록 수정
+            return fileName;
 
         } catch (BusinessException e) {
             throw e; // 이미 처리된 예외는 그대로 전파
@@ -192,6 +192,21 @@ public class R2ImageManager implements ImageManager {
             log.error("URL 이미지 업로드 실패: {}", e.getMessage());
             throw new BusinessException(ErrorCode.IMAGE_UPLOAD_FAILED);
         }
+    }
+
+    @Override
+    public String getPublicUrl(String key) {
+        if (key == null || key.isBlank()) {
+            return null;
+        }
+        // 이미 URL 형태라면 그대로 반환
+        if (key.startsWith("http")) {
+            return key;
+        }
+        // 도메인과 결합 (도메인 뒤에 /가 없을 경우 대비)
+        String domain = publicDomain.endsWith("/") ? publicDomain.substring(0, publicDomain.length() - 1) : publicDomain;
+        String path = key.startsWith("/") ? key : "/" + key;
+        return domain + path;
     }
 
     // 내부 헬퍼: 이미지 바이트에서 확장자 감지 (매직 넘버 기반)
@@ -241,8 +256,10 @@ public class R2ImageManager implements ImageManager {
         };
     }
 
-    // 내부 헬퍼: URL에서 Key 추출
-    private String extractKey(String urlOrKey) {
+    // URL에서 Key 추출
+    @Override
+    public String extractKey(String urlOrKey) {
+        if (urlOrKey == null) return null;
         // 이미 키 형태라면 그대로 반환
         if (!urlOrKey.startsWith("http")) {
             return urlOrKey;

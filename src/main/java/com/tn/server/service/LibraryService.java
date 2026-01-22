@@ -6,6 +6,7 @@ import com.tn.server.dto.library.LibraryResponse;
 import com.tn.server.dto.library.LibrarySalesResponse;
 import com.tn.server.exception.ErrorCode;
 import com.tn.server.repository.*;
+import com.tn.server.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class LibraryService {
     private final PromptRepository promptRepository;
     private final GeneratedImageRepository generatedImageRepository;
     private final GeneratedImageVariableValueRepository imageVariableRepository;
+    private final ImageManager imageManager;
 
     /**
      * [구매 목록 조회]
@@ -40,10 +42,10 @@ public class LibraryService {
             // 변수 정보 추출 (첫 번째 이미지 기준)
             List<LibraryResponse.VariableInfo> variableInfos = List.of();
             if (!images.isEmpty()) {
-                variableInfos = imageVariableRepository.findByGeneratedImageId(images.get(0).getId())
+                variableInfos = imageVariableRepository.findByGeneratedImageId(images.getFirst().getId())
                         .stream().map(v -> LibraryResponse.VariableInfo.builder()
-                                .variable_id(v.getPromptVariableValue().getPromptVariable().getId())
-                                .value(v.getPromptVariableValue().getValue())
+                                .variable_id(v.getPromptVariable().getId())
+                                .value(v.getValue())
                                 .build())
                         .collect(Collectors.toList());
             }
@@ -57,7 +59,7 @@ public class LibraryService {
                     .generated_images(images.stream()
                             .map(img -> LibraryResponse.ImageInfo.builder()
                                     .id(img.getId())
-                                    .image_url(img.getImageUrl())
+                                    .image_url(imageManager.getPublicUrl(img.getImageUrl()))
                                     .build())
                             .collect(Collectors.toList()))
                     .purchased_at(purchase.getPurchasedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")))
