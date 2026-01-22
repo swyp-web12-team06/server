@@ -29,6 +29,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tn.server.dto.product.UserProductStatus;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -322,10 +324,22 @@ public class ProductService {
 
     // 상품 상세 조회
     @Transactional(readOnly = true) // 읽기 전용
-    public ProductDetailResponse getProductDetail(Long promptId) {
+    public ProductDetailResponse getProductDetail(Long promptId, Long userId) {
         Prompt prompt = promptRepository.findByIdWithDetails(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
-        return ProductDetailResponse.from(prompt);
+        UserProductStatus userStatus = UserProductStatus.GUEST;
+
+        if (userId != null) {
+            if (prompt.getSeller().getId().equals(userId)) {
+                userStatus = UserProductStatus.OWNER;
+            } else if (purchaseRepository.existsByUserIdAndPromptId(userId, promptId)) {
+                userStatus = UserProductStatus.PURCHASED;
+            } else {
+                userStatus = UserProductStatus.NOT_PURCHASED;
+            }
+        }
+
+        return ProductDetailResponse.from(prompt, userStatus);
     }
 }

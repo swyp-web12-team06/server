@@ -95,8 +95,12 @@ public class ProductController {
 
     // 개별 상품 조회
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(@PathVariable Long id) {
-        ProductDetailResponse response = productService.getProductDetail(id);
+    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(
+            @AuthenticationPrincipal UserDetails user,
+            @PathVariable Long id
+    ) {
+        Long userId = (user != null) ? Long.parseLong(user.getUsername()) : null;
+        ProductDetailResponse response = productService.getProductDetail(id, userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

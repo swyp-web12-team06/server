@@ -20,6 +20,7 @@ public class ProductDetailResponse {
     private String title;
     private String description;
     private Integer price;
+    private UserProductStatus userStatus; // 유저 상태 (GUEST, OWNER 등)
     private Long categoryId;
     private String categoryName;
     private Long modelId;
@@ -52,12 +53,13 @@ public class ProductDetailResponse {
         private Map<String, String> optionValues;
     }
 
-    public static ProductDetailResponse from(Prompt prompt) {
+    public static ProductDetailResponse from(Prompt prompt, UserProductStatus userStatus) {
         return ProductDetailResponse.builder()
                 .promptId(prompt.getId())
                 .title(prompt.getTitle())
                 .description(prompt.getDescription())
                 .price(prompt.getPrice())
+                .userStatus(userStatus)
                 .categoryId(prompt.getCategory().getId())
                 .categoryName(prompt.getCategory().getName())
                 .modelId(prompt.getAiModel().getId())
