@@ -1,10 +1,7 @@
 package com.tn.server.controller.user;
 
 import com.tn.server.dto.common.ApiResponse;
-import com.tn.server.dto.user.PublicUserProfileResponse;
-import com.tn.server.dto.user.SignupRequest;
-import com.tn.server.dto.user.UserProfileResponse;
-import com.tn.server.dto.user.UserUpdateRequest;
+import com.tn.server.dto.user.*;
 import com.tn.server.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,11 +37,13 @@ public class UserController  {
 
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<Void>> withdraw(
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody(required = false) @Valid WithdrawRequest request
     ) {
         Long userId = Long.parseLong(userDetails.getUsername());
+        String reason = (request != null) ? request.deleteReason() : null;
 
-        userService.withdraw(userId);
+        userService.withdraw(userId, reason);
 
         return ResponseEntity.ok()
                 .body(ApiResponse.success("회원 탈퇴가 완료되었습니다."));
