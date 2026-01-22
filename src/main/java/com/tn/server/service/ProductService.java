@@ -65,9 +65,12 @@ public class ProductService {
         AiModel aiModel = aiModelRepository.findById(request.getModelId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.AI_MODEL_NOT_FOUND));
 
-        // 가격 단위 검증 (100원 단위)
+        // 가격 단위 검증 (100원 단위 및 범위)
         if (request.getPrice() % 100 != 0) {
-            throw new BusinessException(ErrorCode.INVALID_PRICE_UNIT); // 가격은 100원 단위여야 함
+            throw new BusinessException(ErrorCode.INVALID_PRICE_UNIT);
+        }
+        if (request.getPrice() < 500 || request.getPrice() > 1000) {
+            throw new BusinessException(ErrorCode.INVALID_PRICE_RANGE);
         }
 
         // 프리뷰 이미지 URL 추출 (이미지 리스트 중 isPreview가 true인 항목)
@@ -197,9 +200,14 @@ public class ProductService {
                     .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_BELONG_TO_PRODUCT)); // 해당 상품의 이미지가 아님
         }
 
-        // 가격 단위 검증 (100원 단위)
-        if (request.getPrice() != null && request.getPrice() % 100 != 0) {
-             throw new BusinessException(ErrorCode.INVALID_PRICE_UNIT);
+        // 가격 단위 검증 (100원 단위 및 범위)
+        if (request.getPrice() != null) {
+            if (request.getPrice() % 100 != 0) {
+                throw new BusinessException(ErrorCode.INVALID_PRICE_UNIT);
+            }
+            if (request.getPrice() < 500 || request.getPrice() > 1000) {
+                throw new BusinessException(ErrorCode.INVALID_PRICE_RANGE);
+            }
         }
 
         // 기본 정보 수정 (프롬프트, AI 모델, 이미지는 수정 불가)

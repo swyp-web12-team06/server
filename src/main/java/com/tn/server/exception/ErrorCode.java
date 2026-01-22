@@ -23,6 +23,7 @@ public enum ErrorCode {
     INVALID_USER_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID 형식입니다."),
     INVALID_ROLE(HttpStatus.BAD_REQUEST, "유효하지 않은 ROLE입니다."),
     INVALID_PRICE_UNIT(HttpStatus.BAD_REQUEST, "가격은 100원 단위로 설정해야 합니다."),
+    INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "가격은 500원에서 1,000원 사이여야 합니다."),
 
     // 상품(프롬프트) 관련 검증 (400 Bad Request)
     PREVIEW_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "썸네일(미리보기) 이미지는 필수입니다."),

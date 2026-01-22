@@ -1,5 +1,6 @@
 package com.tn.server.dto.product;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,7 +23,8 @@ public class ProductCreateRequest {
     private String description;
 
     @NotNull(message = "가격을 입력해주세요.")
-    @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
+    @Min(value = 500, message = "가격은 최소 500원 이상이어야 합니다.")
+    @Max(value = 1000, message = "가격은 최대 1,000원 이하여야 합니다.")
     private Integer price;
 
     @NotNull(message = "카테고리를 선택해주세요.")
