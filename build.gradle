@@ -49,6 +49,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'io.portone:server-sdk:0.22.0'
 	implementation 'software.amazon.awssdk:s3:2.41.10'
+	implementation 'com.bucket4j:bucket4j_jdk17-core:8.16.0'
 }
 
 dependencyManagement {
