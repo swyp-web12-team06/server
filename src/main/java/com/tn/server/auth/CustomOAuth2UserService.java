@@ -37,7 +37,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .findByProviderAndProviderId(
                         provider, oauthAttributes.getProviderId()
                 )
-                .map(entity -> entity.updateEmail(oauthAttributes.getEmail())) //원래는 재가입할때 쓰려고 만든 거였음. 네이버에 등록한 이메일을 사용자가 바꿨을 경우 새 이메일 가져옴.
+                .map(entity -> entity.updateEmail(oauthAttributes.getEmail())) //네이버에 등록한 이메일을 사용자가 바꿨을 경우 새 이메일 가져옴.
                 .orElse(oauthAttributes.toEntity(provider, Role.GUEST));
         User savedUser = userRepository.save(user);
 

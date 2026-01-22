@@ -18,7 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/dev")
 @RequiredArgsConstructor
-@Profile("local")
+//@Profile("local")
 public class DevLoginController {
 
     private final JwtTokenProvider jwtTokenProvider;
