@@ -6,7 +6,7 @@ public interface ImageManager {
 
     /**
      * 1. 서버 경유 업로드 (비상용)
-     * @return 공개면 Full URL, 비밀이면 Key 반환
+     * @return 저장된 파일의 Key(경로) 반환
      */
     String upload(MultipartFile file, String directoryPath, boolean isSecret);
 
@@ -34,7 +34,17 @@ public interface ImageManager {
      * @param imageUrl 다운로드할 이미지 URL (예: kie.ai 이미지 URL)
      * @param directoryPath 저장할 디렉토리 경로
      * @param isSecret true=비밀버킷, false=공개버킷
-     * @return 공개면 Full URL, 비밀이면 Key 반환
+     * @return 저장된 파일의 Key(경로) 반환
      */
     String uploadFromUrl(String imageUrl, String directoryPath, boolean isSecret);
+
+    /**
+     * 6. Key를 Full URL로 변환 (공개 버킷 전용)
+     */
+    String getPublicUrl(String key);
+
+    /**
+     * 7. URL 또는 Key에서 순수 Key만 추출
+     */
+    String extractKey(String urlOrKey);
 }
