@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/image/{imageId}/download").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/product/**").hasRole("USER")
                         .requestMatchers(HttpMethod.PATCH, "/product/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/product/**").hasRole("USER")
                         .requestMatchers("/user/signup", "/auth/logout").authenticated()
                         .anyRequest().authenticated()
                 )

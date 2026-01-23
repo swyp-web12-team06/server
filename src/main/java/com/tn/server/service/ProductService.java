@@ -117,7 +117,7 @@ public class ProductService {
                 .aiModel(aiModel)
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .price(request.getPrice())
+                .price(request.getPrice() / 100) // 원 단위 -> 크레딧 단위 변환 저장
                 .masterPrompt(request.getMasterPrompt())
                 .previewImageUrl(previewImageUrl)
                 .build();
@@ -225,7 +225,7 @@ public class ProductService {
                 category,
                 request.getTitle(),
                 request.getDescription(),
-                request.getPrice(),
+                (request.getPrice() != null) ? request.getPrice() / 100 : null, // 원 단위 -> 크레딧 변환
                 newPreviewImageUrl
         );
 
