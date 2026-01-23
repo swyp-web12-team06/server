@@ -1,5 +1,6 @@
 package com.tn.server.service.image;
 
+import com.amazonaws.services.s3.AbstractAmazonS3;
 import com.tn.server.util.ImageFileUtils;
 import lombok.RequiredArgsConstructor;
 import com.tn.server.exception.BusinessException;
@@ -277,6 +278,24 @@ public class R2ImageManager implements ImageManager {
             return URLDecoder.decode(key, StandardCharsets.UTF_8);
         } catch (Exception e) {
             return urlOrKey;
+        }
+    }
+
+    public String uploadBytes(byte[] bytes, String fileName, String contentType) {
+        try {
+            PutObjectRequest putRequest = PutObjectRequest.builder()
+                    .bucket(publicBucket)
+                    .key(fileName)
+                    .contentType(contentType)
+                    .contentLength((long) bytes.length)
+                    .build();
+
+            s3Client.putObject(putRequest, RequestBody.fromBytes(bytes));
+
+            return fileName;
+        } catch (Exception e) {
+            log.error("byte 업로드 실패: {}", e.getMessage());
+            throw new BusinessException(ErrorCode.IMAGE_UPLOAD_FAILED);
         }
     }
 }

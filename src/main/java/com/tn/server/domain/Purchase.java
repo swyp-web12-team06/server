@@ -1,5 +1,6 @@
 package com.tn.server.domain;
 
+import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -31,5 +32,9 @@ public class Purchase {
         this.userId = userId;
         this.promptId = promptId;
         this.purchasedAt = LocalDateTime.now();
+    }
+
+    public AmazonCloudFormation getPrompt() {
+        return null;
     }
 }

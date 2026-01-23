@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/prompts")
+@RequestMapping("/product")
 public class PurchaseController {
 
     private final PurchaseService purchaseService;

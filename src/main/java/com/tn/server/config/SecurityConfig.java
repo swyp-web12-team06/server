@@ -14,6 +14,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -30,7 +33,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) //CSRF 보안 비활성화 (JWT 쓸 땐 필요 없음)
+                .csrf(AbstractHttpConfigurer::disable)//CSRF 보안 비활성화 (JWT 쓸 땐 필요 없음)
                 .httpBasic(AbstractHttpConfigurer::disable) //ID/PW 직접 인증 안 씀
                 .formLogin(AbstractHttpConfigurer::disable) //로그인 폼 안 씀
 
@@ -46,15 +49,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health", "/h2-console/**", "/favicon.ico","/error",
                                 "/login/**", "/oauth2/**","/dev/**").permitAll()
-                        .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/product/**").hasRole("USER")
                         .requestMatchers("/user/me/**").hasRole("USER")
                         .requestMatchers("/credit/**").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/image/{imageId}/download").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/product/**").hasRole("USER")
                         .requestMatchers(HttpMethod.PATCH, "/product/**").hasRole("USER")
                         .requestMatchers("/user/signup", "/auth/logout").authenticated()
+                        .requestMatchers("/api/images/**").permitAll()
+                        .requestMatchers("/user/me/library/purchase").hasRole("USER")
                         .anyRequest().authenticated()
                 )
 

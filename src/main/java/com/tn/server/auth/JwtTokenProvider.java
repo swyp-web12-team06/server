@@ -40,8 +40,8 @@ public class JwtTokenProvider {
 
     @PostConstruct
     public void init() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+        byte[] keyBytes = secretKey.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        this.key = io.jsonwebtoken.security.Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String createAccessToken(Long userId, Role role) {
