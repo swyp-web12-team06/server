@@ -1,8 +1,11 @@
 package com.tn.server.controller;
 
 import com.tn.server.common.response.ApiResponse;
+import com.tn.server.dto.payment.CreditChargeOptionResponse;
 import com.tn.server.dto.payment.CreditHistoryDto;
 import com.tn.server.dto.payment.CreditResponse;
+import com.tn.server.dto.payment.PaymentCompleteRequest;
+import com.tn.server.dto.payment.PaymentCompleteResponse;
 import com.tn.server.service.CreditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,5 +38,26 @@ public class CreditController {
 
         List<CreditHistoryDto> history = creditService.getCreditHistory(userId);
         return ResponseEntity.ok(ApiResponse.success(history));
+    }
+
+    // 결제 옵션 목록 조회
+    @GetMapping("/options")
+    public ResponseEntity<ApiResponse<List<CreditChargeOptionResponse>>> getPaymentOptions() {
+        List<CreditChargeOptionResponse> options = creditService.getChargeOptions();
+        return ResponseEntity.ok(ApiResponse.success(options));
+    }
+
+    // 결제 검증 및 충전 (충전 완료)
+    @PostMapping("/charge")
+    public ResponseEntity<ApiResponse<PaymentCompleteResponse>> chargeCredit(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestBody PaymentCompleteRequest request) {
+        
+        Long userId = Long.parseLong(user.getUsername());
+
+        // 서비스 로직 수행
+        String status = creditService.completePayment(userId, request.getPaymentId());
+
+        return ResponseEntity.ok(ApiResponse.success(new PaymentCompleteResponse(status, request.getPaymentId())));
     }
 }
