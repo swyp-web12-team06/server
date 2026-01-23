@@ -56,8 +56,8 @@ public class CreditController {
         Long userId = Long.parseLong(user.getUsername());
 
         // 서비스 로직 수행
-        String status = creditService.completePayment(userId, request.getPaymentId());
+        PaymentCompleteResponse response = creditService.completePayment(userId, request.getPaymentId());
 
-        return ResponseEntity.ok(ApiResponse.success(new PaymentCompleteResponse(status, request.getPaymentId())));
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

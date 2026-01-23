@@ -1,5 +1,6 @@
 package com.tn.server.service;
 
+import com.tn.server.dto.payment.PaymentCompleteResponse;
 import com.tn.server.domain.*;
 import com.tn.server.domain.user.User;
 import com.tn.server.dto.payment.CreditChargeOptionResponse;
@@ -65,7 +66,7 @@ public class CreditService {
 
     // 결제 검증 및 충전
     @Transactional
-    public String completePayment(Long userId, String paymentId) {
+    public PaymentCompleteResponse completePayment(Long userId, String paymentId) {
         try {
             // 중복 처리 여부 확인
             if (paymentHistoryRepository.existsByPaymentUid(paymentId)) {
@@ -120,7 +121,8 @@ public class CreditService {
 
             log.info("충전 성공: 유저ID={}, 결제금액={}원, 지급크레딧={} (보너스 {}), paymentId={}",
                     user.getId(), paidAmount, totalCredit, bonusCredit, paymentId);
-            return "PAID";
+            
+            return new PaymentCompleteResponse("PAID", paymentId, totalCredit, user.getCreditBalance());
 
         } catch (BusinessException be) {
             log.error("결제 정책 위반으로 인한 자동 환불 진행: {}", be.getMessage());
