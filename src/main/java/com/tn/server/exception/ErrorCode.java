@@ -19,11 +19,13 @@ public enum ErrorCode {
     ALREADY_PURCHASED(HttpStatus.BAD_REQUEST, "이미 구매한 상품입니다."),
     INSUFFICIENT_CREDIT(HttpStatus.BAD_REQUEST, "잔액이 부족합니다."),
     PAYMENT_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "결제가 완료되지 않았거나 이미 취소되었습니다."),
+    ALREADY_PROCESSED_PAYMENT(HttpStatus.BAD_REQUEST, "이미 처리된 결제입니다."),
     NICKNAME_UPDATE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "닉네임은 30일에 한 번만 변경할 수 있습니다."),
     INVALID_USER_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID 형식입니다."),
     INVALID_ROLE(HttpStatus.BAD_REQUEST, "유효하지 않은 ROLE입니다."),
     INVALID_PRICE_UNIT(HttpStatus.BAD_REQUEST, "가격은 100원 단위로 설정해야 합니다."),
     INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "가격은 500원에서 1,000원 사이여야 합니다."),
+    INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "결제 금액이 유효하지 않습니다. (최소 3,000원 ~ 최대 50,000원)"),
 
     // 상품(프롬프트) 관련 검증 (400 Bad Request)
     PREVIEW_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "썸네일(미리보기) 이미지는 필수입니다."),

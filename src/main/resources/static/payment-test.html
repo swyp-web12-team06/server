@@ -5,34 +5,139 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="stylesheet" type="text/css" href="/payment-test.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>포트원 결제연동 샘플</title>
+    <title>크레딧 충전 (포트원 V2)</title>
     <script src="https://cdn.portone.io/v2/browser-sdk.js" async defer></script>
+    <style>
+      /* 로그인 섹션 스타일 */
+      #login-section {
+        background-color: #f0f0f0;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+      }
+      #login-section input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 150px;
+      }
+      #login-section button {
+        padding: 8px 15px;
+        background-color: #333;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #login-status {
+        margin-left: 10px;
+        font-weight: bold;
+        color: #666;
+      }
+      #login-status.active {
+        color: #28a745;
+      }
+
+      /* 기존 스타일 유지 + 옵션 스타일 */
+      #options-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .option-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: white; /* 배경색 명시 */
+      }
+      .option-card:hover {
+        background-color: #f9f9f9;
+        border-color: #bbb;
+      }
+      .option-card.selected {
+        border-color: #007bff;
+        background-color: #e7f1ff;
+        font-weight: bold;
+        box-shadow: 0 0 5px rgba(0,123,255,0.3);
+      }
+      .option-info {
+        display: flex;
+        flex-direction: column;
+      }
+      .option-amount {
+        font-size: 1.1em;
+        color: #333;
+      }
+      .option-bonus {
+        font-size: 0.9em;
+        color: #e53935; /* Red for bonus */
+      }
+      .option-total {
+        font-size: 1.2em;
+        color: #007bff;
+      }
+
+      /* 레이아웃 오버라이드 (버튼 잘림 해결) */
+      body {
+        overflow: auto !important; /* 스크롤 허용 */
+      }
+      main {
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+      }
+      form {
+        height: auto !important;
+        justify-content: flex-start !important;
+        gap: 20px;
+      }
+    </style>
   </head>
   <body>
     <div id="root">
+      
+      <!-- 개발용 로그인 섹션 -->
+      <section id="login-section">
+        <label>User ID:</label>
+        <input type="number" id="userIdInput" value="1" placeholder="User ID">
+        <button onclick="getDevToken()">토큰 발급(로그인)</button>
+        <span id="login-status">미로그인</span>
+      </section>
+
       <dialog id="loadingDialog" open>
-        <article aria-busy="true">결제 정보를 불러오는 중입니다.</article>
+        <article aria-busy="true">충전 옵션을 불러오는 중입니다...</article>
       </dialog>
+
       <main id="checkoutDialog" style="display: none">
+        <header style="margin-bottom: 20px; text-align: center;">
+          <h2>크레딧 충전</h2>
+          <p>충전할 금액을 선택해주세요.</p>
+        </header>
+        
         <form id="checkoutForm">
-          <article>
-            <div class="item">
-              <div class="item-image">
-                <img id="itemImage" />
-              </div>
-              <div class="item-text">
-                <h5 id="itemName"></h5>
-                <p class="price-value"></p>
-              </div>
-            </div>
-            <div class="price">
-              <label>총 구입 가격</label>
-              <span class="price-value" />
-            </div>
-          </article>
-          <button id="checkoutButton" type="submit">결제</button>
+          <div id="options-container">
+            <!-- 옵션들이 여기에 동적으로 생성됩니다 -->
+          </div>
+
+          <div class="price" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+            <label>결제 예상 금액</label>
+            <span id="displayAmount">0원</span>
+          </div>
+
+          <button id="checkoutButton" type="submit" disabled>결제하기</button>
         </form>
       </main>
+
       <dialog id="failDialog">
         <header>
           <h1>결제 실패</h1>
@@ -40,128 +145,263 @@
         <p id="failMessage"></p>
         <button type="button" class="closeDialog">닫기</button>
       </dialog>
+
       <dialog id="successDialog">
         <header>
-          <h1>결제 성공</h1>
+          <h1>충전 성공!</h1>
         </header>
-        <p>결제에 성공했습니다.</p>
-        <button type="button" class="closeDialog">닫기</button>
-      </dialog>
-      <dialog id="virtualAccountDialog">
-        <header>
-          <h1>가상계좌 발급 완료</h1>
-        </header>
-        <p>가상계좌가 발급되었습니다.</p>
-        <button type="button" class="closeDialog">닫기</button>
+        <p>크레딧이 정상적으로 충전되었습니다.</p>
+        <button type="button" class="closeDialog">확인</button>
       </dialog>
     </div>
+
     <script>
-      const checkout = new Checkout(
-        "store-38dddffa-1b53-4ade-ae69-6af853b3934c", // 상점 ID
-        "channel-key-eadc0e01-f43a-416e-9120-bc0d2d207ad8", // 채널 키
-      )
-      checkout.load()
+      // 전역 변수로 토큰 관리
+      let jwtToken = null;
+
+      // 1. 개발용 토큰 발급 함수
+      async function getDevToken() {
+        const userId = document.getElementById("userIdInput").value;
+        if (!userId) {
+          alert("User ID를 입력하세요");
+          return;
+        }
+
+        try {
+          const res = await fetch(`/dev/token?userId=${userId}&role=USER`);
+          const json = await res.json();
+          
+          if (json.code === 'SUCCESS') {
+            jwtToken = json.data.accessToken;
+            const statusSpan = document.getElementById("login-status");
+            statusSpan.innerText = `로그인 완료 (ID: ${userId})`;
+            statusSpan.classList.add("active");
+            
+            // 토큰 받았으면 옵션 로드 재시도 (만약 처음에 실패했다면)
+            if (document.getElementById("options-container").children.length === 0) {
+               window.checkout.loadOptions();
+            }
+          } else {
+            alert("토큰 발급 실패: " + json.message);
+          }
+        } catch (e) {
+          console.error(e);
+          alert("토큰 요청 중 에러 발생");
+        }
+      }
+
+      const STORE_ID = "store-38dddffa-1b53-4ade-ae69-6af853b3934c";
+      const CHANNEL_KEY = "channel-key-eadc0e01-f43a-416e-9120-bc0d2d207ad8";
+
+      const checkout = new Checkout(STORE_ID, CHANNEL_KEY);
+      // 페이지 로드 시 시작
+      checkout.init(); 
+      window.checkout = checkout;
 
       function Checkout(storeId, channelKey) {
-        let item = null
-        this.load = async () => {
+        let options = [];
+        let selectedOption = null;
+
+        this.init = async () => {
+          // 포트원 SDK 대기
           const waitPortOne = new Promise((resolve) => {
             const polling = setInterval(() => {
               if (window.PortOne != null) {
-                clearInterval(polling)
-                resolve()
+                clearInterval(polling);
+                resolve();
               }
-            }, 50)
-          })
-          const waitItem = await fetch("/api/item").then(
-            async (response) => (item = await response.json()),
-          )
-          await Promise.all([waitPortOne, waitItem])
-          window.loadingDialog.open = false
-          window.checkoutDialog.open = true
-          await this.showCheckout()
-        }
-        this.showCheckout = async () => {
-          window.itemName.replaceChildren(item.name)
-          window.itemImage.src = `/${item.id}.png`
-          for (const priceElement of document.querySelectorAll(
-            ".price-value",
-          )) {
-            priceElement.replaceChildren(`${item.price.toLocaleString()}원`)
+            }, 50);
+          });
+          
+          await waitPortOne;
+          
+          // 옵션 로드 시도
+          this.loadOptions();
+        };
+
+        this.loadOptions = async () => {
+          try {
+            const headers = {};
+            if (jwtToken) {
+              headers["Authorization"] = `Bearer ${jwtToken}`;
+            }
+
+            const res = await fetch("/credit/options", { headers });
+            
+            // 에러 처리 강화
+            if (!res.ok) {
+                console.warn("옵션 로드 실패", res.status);
+                const container = document.getElementById("options-container");
+                container.innerHTML = `<p style="color:red; text-align:center;">옵션 로드 실패 (상태코드: ${res.status})<br>로그인이 필요하거나 서버 오류일 수 있습니다.</p>`;
+                document.getElementById("loadingDialog").open = false;
+                document.getElementById("checkoutDialog").style.display = "block";
+                return;
+            }
+
+            const json = await res.json();
+            if (json.code === 'SUCCESS') {
+              options = json.data;
+              this.renderOptions();
+              document.getElementById("loadingDialog").open = false;
+              document.getElementById("checkoutDialog").style.display = "block";
+            }
+          } catch (err) {
+            console.error("옵션 로드 중 에러", err);
+            document.getElementById("options-container").innerHTML = "<p>서버 연결 에러</p>";
+            document.getElementById("loadingDialog").open = false;
+            document.getElementById("checkoutDialog").style.display = "block";
           }
-          window.checkoutDialog.onsubmit = async (e) => {
-            e.preventDefault()
-            this.setWaitingPayment(true)
-            const paymentId = randomId()
+        };
+
+        this.renderOptions = () => {
+          const container = document.getElementById("options-container");
+          container.innerHTML = "";
+
+          if (options.length === 0) {
+              container.innerHTML = "<p>옵션 목록이 없습니다.</p>";
+              return;
+          }
+
+          options.forEach((opt) => {
+            const card = document.createElement("div");
+            card.className = "option-card";
+            
+            // onclick -> addEventListener 변경 및 로그 추가
+            card.addEventListener('click', () => {
+                console.log("옵션 클릭됨:", opt.amount);
+                this.selectOption(opt, card);
+            });
+
+            let bonusText = "";
+            if (opt.bonusCredit > 0) {
+              bonusText = `<span class="option-bonus">+ ${opt.bonusCredit} 크레딧 (${opt.bonusRateText} 보너스)</span>`;
+            }
+
+            card.innerHTML = `
+              <div class="option-info">
+                <span class="option-amount">${opt.amount.toLocaleString()}원 결제</span>
+                ${bonusText}
+              </div>
+              <div class="option-total">
+                ${opt.totalCredit.toLocaleString()} C
+              </div>
+            `;
+            container.appendChild(card);
+          });
+
+          document.getElementById("checkoutForm").onsubmit = async (e) => {
+            e.preventDefault();
+            if (!selectedOption) {
+              alert("충전할 금액을 선택해주세요.");
+              return;
+            }
+            if (!jwtToken) {
+              alert("상단의 '토큰 발급' 버튼을 눌러 먼저 로그인해주세요.");
+              return;
+            }
+            await this.requestPayment();
+          };
+
+          for (const btn of document.getElementsByClassName("closeDialog")) {
+            btn.onclick = () => {
+              btn.closest("dialog").open = false;
+            };
+          }
+        };
+
+        this.selectOption = (opt, cardElement) => {
+          console.log("selectOption 호출됨");
+          selectedOption = opt;
+          
+          const cards = document.querySelectorAll(".option-card");
+          cards.forEach(el => el.classList.remove("selected"));
+          
+          cardElement.classList.add("selected");
+          
+          document.getElementById("displayAmount").innerText = `${opt.amount.toLocaleString()}원`;
+          
+          const btn = document.getElementById("checkoutButton");
+          btn.disabled = false;
+          btn.innerText = `${opt.amount.toLocaleString()}원 결제하기`;
+          btn.setAttribute("aria-busy", "false"); // 혹시 로딩 상태일 수 있으니 해제
+        };
+
+        this.requestPayment = async () => {
+          this.setWaiting(true);
+          const paymentId = randomId();
+          
+          try {
+            console.log("결제 요청 시작:", selectedOption.amount);
             const payment = await PortOne.requestPayment({
               storeId,
               channelKey,
               paymentId,
-              orderName: item.name,
-              totalAmount: item.price,
-              currency: item.currency,
+              orderName: `${selectedOption.totalCredit} 크레딧 충전`,
+              totalAmount: selectedOption.amount,
+              currency: "KRW",
               payMethod: "CARD",
-              customData: {
-                item: item.id,
-              },
-            })
+              productType: "DIGITAL",
+              customer: {
+                  id: document.getElementById("userIdInput").value
+                }
+              });
+
             if (payment.code != null) {
-              this.setWaitingPayment(false)
-              console.log(payment)
-              this.openFailDialog(payment.message)
-              return
+              console.log("결제 실패/취소:", payment);
+              this.setWaiting(false);
+              return;
             }
-            const completeResponse = await fetch("/api/payment/complete", {
+
+            console.log("결제 성공, 서버 검증 요청...");
+            // 서버 검증 (헤더에 토큰 포함)
+            const res = await fetch("/credit/charge", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
+              headers: { 
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${jwtToken}`
               },
-              body: JSON.stringify({
-                paymentId: payment.paymentId,
-              }),
-            })
-            this.setWaitingPayment(false)
-            if (completeResponse.ok) {
-              const paymentComplete = await completeResponse.json()
-              switch (await paymentComplete.status) {
-                case "PAID":
-                  this.openSuccessDialog()
-                  break
-                case "VIRTUAL_ACCOUNT_ISSUED":
-                  this.openVirtualAccountDialog()
-                  break
-              }
+              body: JSON.stringify({ paymentId: payment.paymentId }),
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "서버 검증 실패");
+            }
+
+            const json = await res.json();
+            if (json.code === 'SUCCESS' && json.data.status === 'PAID') {
+              this.openSuccessDialog();
             } else {
-              this.openFailDialog(await completeResponse.text())
+              throw new Error(json.message || "결제 검증 실패");
             }
+
+          } catch (e) {
+            console.error(e);
+            this.openFailDialog(e.message);
+          } finally {
+            this.setWaiting(false);
           }
-          for (const dialogButton of document.getElementsByClassName(
-            "closeDialog",
-          )) {
-            dialogButton.onclick = () => {
-              dialogButton.closest('dialog').open = false
-            }
-          }
-          window.checkoutDialog.style = ""
-        }
-        this.setWaitingPayment = (isWaiting) => {
-          window.checkoutButton.setAttribute("aria-busy", isWaiting.toString())
-          window.checkoutButton.disabled = isWaiting
-        }
+        };
+
+        this.setWaiting = (isWaiting) => {
+          const btn = document.getElementById("checkoutButton");
+          btn.setAttribute("aria-busy", isWaiting.toString());
+          btn.disabled = isWaiting;
+        };
+
         this.openFailDialog = (message) => {
-          window.failMessage.replaceChildren(message)
-          window.failDialog.open = true
-        }
+          document.getElementById("failMessage").innerText = message;
+          document.getElementById("failDialog").open = true;
+        };
+
         this.openSuccessDialog = () => {
-          window.successDialog.open = true
-        }
-        this.openVirtualAccountDialog = () => {
-          window.virtualAccountDialog.open = true
-        }
+          document.getElementById("successDialog").open = true;
+        };
+
         function randomId() {
           return [...crypto.getRandomValues(new Uint32Array(2))]
             .map((word) => word.toString(16).padStart(8, "0"))
-            .join("")
+            .join("");
         }
       }
     </script>

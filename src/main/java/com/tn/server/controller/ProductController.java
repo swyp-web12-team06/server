@@ -6,6 +6,8 @@ import com.tn.server.dto.product.ProductCreateRequest;
 import com.tn.server.dto.product.ProductDetailResponse;
 import com.tn.server.dto.product.ProductListResponse;
 import com.tn.server.dto.product.ProductUpdateRequest;
+import com.tn.server.dto.product.metadata.AiModelDto;
+import com.tn.server.dto.product.metadata.CategoryDto;
 import com.tn.server.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +20,26 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/product")
 @RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
+
+    // 카테고리 목록 조회
+    @GetMapping("/categories")
+    public ResponseEntity<ApiResponse<List<CategoryDto>>> getCategories() {
+        return ResponseEntity.ok(ApiResponse.success(productService.getCategories()));
+    }
+
+    // AI 모델 목록 조회
+    @GetMapping("/ai-models")
+    public ResponseEntity<ApiResponse<List<AiModelDto>>> getAiModels() {
+        return ResponseEntity.ok(ApiResponse.success(productService.getAiModels()));
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<Map<String, Long>>> registerProduct(
