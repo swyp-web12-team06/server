@@ -41,6 +41,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.tn.server.dto.product.metadata.AiModelDto;
+import com.tn.server.dto.product.metadata.CategoryDto;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -53,6 +56,20 @@ public class ProductService {
     private final TagRepository tagRepository;
     private final PurchaseRepository purchaseRepository;
     private final ImageManager imageManager;
+
+    // 카테고리 목록 조회
+    public List<CategoryDto> getCategories() {
+        return categoryRepository.findAllByIsActiveTrueOrderByOrderIndexAsc().stream()
+                .map(c -> new CategoryDto(c.getId(), c.getName()))
+                .collect(Collectors.toList());
+    }
+
+    // AI 모델 목록 조회
+    public List<AiModelDto> getAiModels() {
+        return aiModelRepository.findAllByIsActiveTrueOrderByOrderIndexAsc().stream()
+                .map(m -> new AiModelDto(m.getId(), m.getName()))
+                .collect(Collectors.toList());
+    }
 
     @Transactional
     public Long registerProduct(Long userId, ProductCreateRequest request) {
