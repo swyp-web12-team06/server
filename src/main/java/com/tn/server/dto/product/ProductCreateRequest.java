@@ -36,7 +36,7 @@ public class ProductCreateRequest {
     @NotBlank(message = "프롬프트 내용을 입력해주세요.")
     private String masterPrompt;
 
-    @Size(min = 3, max = 10, message = "태그는 최소 3개, 최대 10개까지 등록 가능합니다.")
+    @Size(max = 10, message = "태그는 최대 10개까지만 등록 가능합니다.")
     private List<String> tags;
 
     @Size(min = 1, max = 5, message = "프롬프트 변수는 최소 1개, 최대 5개까지 등록 가능합니다.")

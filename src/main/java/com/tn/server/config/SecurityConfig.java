@@ -2,8 +2,6 @@ package com.tn.server.config;
 
 import com.tn.server.auth.*;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,6 +47,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health", "/h2-console/**", "/favicon.ico","/error",
                                 "/login/**", "/oauth2/**","/dev/**").permitAll()
+                        .requestMatchers("/health", "/h2-console/**", "/error", "/favicon.ico",
+                                "/login/**", "/oauth2/**", "/dev/**",
+                                "/payment-test.html", "/payment-test.css").permitAll()
+
+                        // Swagger 엔드포인트 허용
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
+
+                        .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
+                        .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/product/**").hasRole("USER")
                         .requestMatchers("/user/me/**").hasRole("USER")
@@ -56,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/image/{imageId}/download").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/product/**").hasRole("USER")
                         .requestMatchers(HttpMethod.PATCH, "/product/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/product/**").hasRole("USER")
                         .requestMatchers("/user/signup", "/auth/logout").authenticated()
                         .requestMatchers("/api/images/**").permitAll()
                         .requestMatchers("/user/me/library/purchase").hasRole("USER")

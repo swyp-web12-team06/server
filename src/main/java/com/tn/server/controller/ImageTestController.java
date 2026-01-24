@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/test/images")
 @RequiredArgsConstructor
-// @Profile("!prod") // 운영 환경에서는 비활성화 (보안을 위해)
+@Profile({"local", "dev"}) // 운영 환경에서는 비활성화
 public class ImageTestController {
 
     private final ImageManager imageManager;

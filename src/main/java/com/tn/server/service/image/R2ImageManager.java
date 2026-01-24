@@ -101,7 +101,6 @@ public class R2ImageManager implements ImageManager {
     @Override
     public String getPresignedGetUrl(String key) {
         // 다운로드 프리사인드는 무조건 Secret Bucket 대상이라고 가정
-        // (Public은 그냥 도메인 주소 쓰면 되니까요)
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(secretBucket)
