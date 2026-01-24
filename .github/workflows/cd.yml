@@ -94,6 +94,7 @@ jobs:
               -e R2_SECRET_KEY=${{ secrets.R2_SECRET_KEY }} \
               -e R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
               -e R2_PUBLIC_DOMAIN=${{ secrets.R2_PUBLIC_DOMAIN }} \
+              -e KIE_API_KEY=${{ secrets.KIE_API_KEY }} \
               ${{ secrets.DOCKER_USERNAME }}/promptlook-server:dev
 
   # 3. 운영 서버 배포 (main 브랜치일 때만 실행)
@@ -141,4 +142,5 @@ jobs:
               -e R2_SECRET_KEY=${{ secrets.R2_SECRET_KEY }} \
               -e R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
               -e R2_PUBLIC_DOMAIN=${{ secrets.R2_PUBLIC_DOMAIN }} \
+              -e KIE_API_KEY=${{ secrets.KIE_API_KEY }} \
               ${{ secrets.DOCKER_USERNAME }}/promptlook-server:latest

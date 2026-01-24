@@ -38,4 +38,8 @@ public class PromptVariable {
         this.description = description;
         this.orderIndex = orderIndex;
     }
+
+    public String getName() {
+        return null;
+    }
 }
