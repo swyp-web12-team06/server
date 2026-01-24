@@ -1,6 +1,6 @@
 package com.tn.server.controller;
 
-import com.tn.server.common.response.ApiResponse;
+import com.tn.server.dto.common.ApiResponse;
 import com.tn.server.dto.library.LibraryResponse;
 import com.tn.server.dto.library.LibrarySalesResponse;
 import com.tn.server.service.LibraryService;
@@ -33,21 +33,13 @@ public class LibraryController {
     ) {
         List<LibraryResponse> data = libraryService.getMyPurchases(userId);
 
-        return ResponseEntity.ok(ApiResponse.<List<LibraryResponse>>builder()
-                .code("SUCCESS")
-                .message("조회 성공")
-                .data(data)
-                .build());
+        return ResponseEntity.ok(ApiResponse.success("조회 성공", data));
     }
 
     @GetMapping("/sales")
     public ResponseEntity<ApiResponse<List<LibrarySalesResponse>>> getSales(@RequestParam Long userId) {
         List<LibrarySalesResponse> data = libraryService.getMySalesList(userId);
 
-        return ResponseEntity.ok(ApiResponse.<List<LibrarySalesResponse>>builder()
-                .code("SUCCESS")
-                .message("판매 내역 조회 성공")
-                .data(data)
-                .build());
+        return ResponseEntity.ok(ApiResponse.success("판매 내역 조회 성공", data));
     }
 }

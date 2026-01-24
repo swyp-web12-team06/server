@@ -1,6 +1,6 @@
 package com.tn.server.controller;
 
-import com.tn.server.common.response.ApiResponse;
+import com.tn.server.dto.common.ApiResponse;
 import com.tn.server.exception.BusinessException;
 import com.tn.server.exception.ErrorCode;
 import com.tn.server.service.RateLimiterService;
@@ -55,6 +55,6 @@ public class ImageController {
         response.put("savedFileName", savedFileName); // 나중에 DB에 저장할 키 (백업용)
         response.put("publicUrl", publicDomain + "/" + savedFileName); // 실제 접근 주소 (상품 등록용)
 
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success("URL 발급에 성공했습니다.", response));
     }
 }
