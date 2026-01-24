@@ -2,8 +2,6 @@ package com.tn.server.config;
 
 import com.tn.server.auth.*;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,7 +47,7 @@ public class SecurityConfig {
                                 "/payment-test.html", "/payment-test.css").permitAll()
 
                         // Swagger 엔드포인트 허용
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
 
                         .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
                         .requestMatchers("/auth/reissue").permitAll()
