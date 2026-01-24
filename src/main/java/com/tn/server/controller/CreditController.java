@@ -1,6 +1,6 @@
 package com.tn.server.controller;
 
-import com.tn.server.common.response.ApiResponse;
+import com.tn.server.dto.common.ApiResponse;
 import com.tn.server.dto.payment.CreditChargeOptionResponse;
 import com.tn.server.dto.payment.CreditHistoryDto;
 import com.tn.server.dto.payment.CreditResponse;
@@ -28,7 +28,7 @@ public class CreditController {
         Long userId = Long.parseLong(user.getUsername());
 
         Integer currentCredit = creditService.getCreditBalance(userId);
-        return ResponseEntity.ok(ApiResponse.success(new CreditResponse(currentCredit)));
+        return ResponseEntity.ok(ApiResponse.success("성공적으로 조회되었습니다.", new CreditResponse(currentCredit)));
     }
 
     // 히스토리 조회 API
@@ -37,14 +37,14 @@ public class CreditController {
         Long userId = Long.parseLong(user.getUsername());
 
         List<CreditHistoryDto> history = creditService.getCreditHistory(userId);
-        return ResponseEntity.ok(ApiResponse.success(history));
+        return ResponseEntity.ok(ApiResponse.success("성공적으로 조회되었습니다.", history));
     }
 
     // 결제 옵션 목록 조회
     @GetMapping("/options")
     public ResponseEntity<ApiResponse<List<CreditChargeOptionResponse>>> getPaymentOptions() {
         List<CreditChargeOptionResponse> options = creditService.getChargeOptions();
-        return ResponseEntity.ok(ApiResponse.success(options));
+        return ResponseEntity.ok(ApiResponse.success("성공적으로 조회되었습니다.", options));
     }
 
     // 결제 검증 및 충전 (충전 완료)
@@ -58,6 +58,6 @@ public class CreditController {
         // 서비스 로직 수행
         PaymentCompleteResponse response = creditService.completePayment(userId, request.getPaymentId());
 
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success("충전에 성공했습니다.", response));
     }
 }

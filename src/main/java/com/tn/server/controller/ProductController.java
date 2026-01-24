@@ -1,7 +1,7 @@
 package com.tn.server.controller;
 
 import java.util.Map;
-import com.tn.server.common.response.ApiResponse;
+import com.tn.server.dto.common.ApiResponse;
 import com.tn.server.dto.product.ProductCreateRequest;
 import com.tn.server.dto.product.ProductDetailResponse;
 import com.tn.server.dto.product.ProductListResponse;
@@ -88,7 +88,7 @@ public class ProductController {
             result = productService.getProducts(categoryId, pageable);
         }
 
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(ApiResponse.success("상품 목록 조회에 성공했습니다", result));
     }
 
     // 개별 상품 조회
@@ -99,6 +99,6 @@ public class ProductController {
     ) {
         Long userId = (user != null) ? Long.parseLong(user.getUsername()) : null;
         ProductDetailResponse response = productService.getProductDetail(id, userId);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success("상품 조회에 성공했습니다.", response));
     }
 }
