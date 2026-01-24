@@ -53,3 +53,4 @@ jobs:
           DB_TEST_NAME: ${{ secrets.DB_TEST_NAME }}
           DB_TEST_USER: ${{ secrets.DB_TEST_USER }}
           DB_TEST_PASSWORD: ${{ secrets.DB_TEST_PASSWORD }}
+          KIE_API_KEY: ${{ secrets.KIE_API_KEY }}
