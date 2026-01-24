@@ -98,7 +98,8 @@ public class UserService {
         return PublicUserProfileResponse.from(user);
     }
 
-    private User findActiveUser(Long userId) {
+    // 다른 서비스에서도 사용하기 위해 public으로 변경
+    public User findActiveUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 

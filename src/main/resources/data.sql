@@ -12,11 +12,10 @@ VALUES
     (5, '건축', 5, true, NOW(), NOW());
 
 -- 2. AI Models
--- 1: Grok 3, 2: Nanobanana
 INSERT IGNORE INTO ai_models (model_id, name, order_index, is_active, created_at, updated_at)
 VALUES
-    (1, 'Grok 3', 1, true, NOW(), NOW()),
-    (2, 'Nanobanana', 2, true, NOW(), NOW());
+    (1, 'grok-imagine/text-to-image', 1, true, NOW(), NOW()),
+    (2, 'nano-banana-pro', 2, true, NOW(), NOW());
 
 -- 3. Users (50명)
 INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, created_at, updated_at, warning_count)
