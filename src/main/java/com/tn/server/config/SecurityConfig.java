@@ -44,9 +44,13 @@ public class SecurityConfig {
 
                 // 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/h2-console/**", "/favicon.ico", "/favicon.png", "/error",
+                        .requestMatchers("/health", "/h2-console/**", "/error", "/favicon.ico",
                                 "/login/**", "/oauth2/**", "/dev/**",
-                                "/payment-test.html", "/payment-test.css", "/shoes.png").permitAll()
+                                "/payment-test.html", "/payment-test.css").permitAll()
+
+                        // Swagger 엔드포인트 허용
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+
                         .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
                         .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
