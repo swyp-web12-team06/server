@@ -1,14 +1,14 @@
 package com.tn.server.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @Table(name = "prompt_variables")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class PromptVariable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

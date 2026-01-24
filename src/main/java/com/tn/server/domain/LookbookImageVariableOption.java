@@ -24,12 +24,12 @@ public class LookbookImageVariableOption {
     @JoinColumn(name = "prompt_variable_id", nullable = false)
     private PromptVariable promptVariable;
 
-    @Column(nullable = false)
-    private String value;
+    @Column(name = "variable_value", nullable = false)
+    private String variableValue;
 
-    public LookbookImageVariableOption(LookbookImage lookbookImage, PromptVariable promptVariable, String value) {
+    public LookbookImageVariableOption(LookbookImage lookbookImage, PromptVariable promptVariable, String variableValue) {
         this.lookbookImage = lookbookImage;
         this.promptVariable = promptVariable;
-        this.value = value;
+        this.variableValue = variableValue;
     }
 }

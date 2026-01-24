@@ -7,6 +7,7 @@ import com.tn.server.dto.product.ProductDetailResponse;
 import com.tn.server.dto.product.ProductListResponse;
 import com.tn.server.dto.product.ProductUpdateRequest;
 import com.tn.server.service.ProductService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/product")
 @RequiredArgsConstructor
+@Tag(name = "프롬프트(상품) API", description = "카테고리 목록 조회, AI 모델 조회, 프롬프트 등록, 수정, 상품 조회")
 public class ProductController {
 
     private final ProductService productService;

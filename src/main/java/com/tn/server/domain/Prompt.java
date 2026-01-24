@@ -86,7 +86,8 @@ public class Prompt {
 
     @Builder
     public Prompt(User seller, Category category, AiModel aiModel, String title,
-                  String description, Integer price, String masterPrompt, String previewImageUrl) {
+                  String description, Integer price, String masterPrompt, String previewImageUrl,
+                  PromptStatus status, Boolean isDeleted) {
         this.seller = seller;
         this.category = category;
         this.aiModel = aiModel;
@@ -96,9 +97,9 @@ public class Prompt {
         this.masterPrompt = masterPrompt;
         this.previewImageUrl = previewImageUrl;
 
-        // 기본값 설정
-        this.status = PromptStatus.APPROVED;
-        this.isDeleted = false;
+        // 파라미터로 받은 값 사용 (null이면 기본값)
+        this.status = (status != null) ? status : PromptStatus.APPROVED; // 기본 APPROVED
+        this.isDeleted = (isDeleted != null) ? isDeleted : false;
     }
 
     public void addTags(Set<Tag> newTags) {
