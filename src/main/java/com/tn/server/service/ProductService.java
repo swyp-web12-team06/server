@@ -1,11 +1,6 @@
 package com.tn.server.service;
 
-import com.tn.server.domain.AiModel;
-import com.tn.server.domain.Category;
-import com.tn.server.domain.LookbookImage;
-import com.tn.server.domain.Prompt;
-import com.tn.server.domain.PromptVariable;
-import com.tn.server.domain.Tag;
+import com.tn.server.domain.*;
 import com.tn.server.domain.user.User;
 import com.tn.server.dto.product.LookbookImageCreateDto;
 import com.tn.server.dto.product.ProductCreateRequest;
@@ -15,14 +10,12 @@ import com.tn.server.dto.product.ProductUpdateRequest;
 import com.tn.server.dto.product.PromptVariableCreateDto;
 import com.tn.server.exception.BusinessException;
 import com.tn.server.exception.ErrorCode;
-import com.tn.server.repository.AiModelRepository;
-import com.tn.server.repository.CategoryRepository;
 import com.tn.server.repository.PromptRepository;
 import com.tn.server.repository.PurchaseRepository;
-import com.tn.server.repository.TagRepository;
-import com.tn.server.repository.user.UserRepository;
 import com.tn.server.service.image.ImageManager;
+import com.tn.server.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,121 +29,112 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.tn.server.dto.product.metadata.AiModelDto;
-import com.tn.server.dto.product.metadata.CategoryDto;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductService {
 
+    private final UserService userService;
     private final PromptRepository promptRepository;
-    private final CategoryRepository categoryRepository;
-    private final AiModelRepository aiModelRepository;
-    private final UserRepository userRepository;
-    private final TagRepository tagRepository;
     private final PurchaseRepository purchaseRepository;
     private final ImageManager imageManager;
+    private final CategoryService categoryService;
+    private final AiModelService aiModelService;
+    private final TagService tagService;
+    private static final int CASH_TO_CREDIT_RATE = 100;
 
     @Value("${spring.profiles.active:local}")
     private String activeProfile;
 
-    // 카테고리 목록 조회
-    public List<CategoryDto> getCategories() {
-        return categoryRepository.findAllByIsActiveTrueOrderByOrderIndexAsc().stream()
-                .map(c -> new CategoryDto(c.getId(), c.getName()))
-                .collect(Collectors.toList());
-    }
-
-    // AI 모델 목록 조회
-    public List<AiModelDto> getAiModels() {
-        return aiModelRepository.findAllByIsActiveTrueOrderByOrderIndexAsc().stream()
-                .map(m -> new AiModelDto(m.getId(), m.getName()))
-                .collect(Collectors.toList());
-    }
-
     @Transactional
     public Long registerProduct(Long userId, ProductCreateRequest request) {
+        // 단순 조회 및 검증 로직 위임
+        User user = userService.findActiveUser(userId);
+        Category category = categoryService.getCategoryOrThrow(request.getCategoryId());
+        AiModel aiModel = aiModelService.getModelOrThrow(request.getModelId());
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        // 가격 정책 검증 (도메인 로직)
+        validatePricePolicy(request.getPrice());
 
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+        // 이미지 검증 및 프리뷰 추출
+        String previewImageUrl = validateAndGetPreviewKey(request.getImages());
 
-        AiModel aiModel = aiModelRepository.findById(request.getModelId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.AI_MODEL_NOT_FOUND));
-
-        if (request.getPrice() % 100 != 0) {
-            throw new BusinessException(ErrorCode.INVALID_PRICE_UNIT);
-        }
-        if (request.getPrice() < 500 || request.getPrice() > 1000) {
-            throw new BusinessException(ErrorCode.INVALID_PRICE_RANGE);
-        }
-
-        String previewImageUrl;
-        if (request.getImages() != null) {
-            long representativeCount = request.getImages().stream()
-                    .filter(img -> Boolean.TRUE.equals(img.getIsRepresentative()))
-                    .count();
-
-            if (representativeCount > 3) {
-                throw new BusinessException(ErrorCode.REPRESENTATIVE_IMAGE_LIMIT_EXCEEDED);
-            }
-
-            String rawPreviewUrl = request.getImages().stream()
-                    .filter(img -> Boolean.TRUE.equals(img.getIsPreview()))
-                    .map(LookbookImageCreateDto::getImageUrl)
-                    .findFirst()
-                    .orElseThrow(() -> new BusinessException(ErrorCode.PREVIEW_IMAGE_REQUIRED));
-            
-            previewImageUrl = imageManager.extractKey(rawPreviewUrl);
-        } else {
-             throw new BusinessException(ErrorCode.LOOKBOOK_IMAGE_REQUIRED);
-        }
-
+        // 저장 전 프롬프트 엔티티 생성
         Prompt prompt = Prompt.builder()
                 .seller(user)
                 .category(category)
                 .aiModel(aiModel)
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .price(request.getPrice() / 100) // 원 단위 -> 크레딧 단위 변환 저장
+                .price(request.getPrice() / CASH_TO_CREDIT_RATE) // 단위 변환
                 .masterPrompt(request.getMasterPrompt())
                 .previewImageUrl(previewImageUrl)
+                .status(PromptStatus.APPROVED)
+                .isDeleted(false)
                 .build();
 
-        if (request.getTags() != null && !request.getTags().isEmpty()) {
-            Set<Tag> tags = request.getTags().stream()
-                    .map(tagName -> tagRepository.findByName(tagName)
-                            .orElseGet(() -> tagRepository.save(new Tag(tagName))))
-                    .collect(Collectors.toSet());
-            prompt.addTags(tags);
-        }
+        // 태그 처리
+        Set<String> uniqueTagNames = validateAndSanitizeTags(request.getTags());
 
-        Set<String> variableNames = extractVariables(request.getMasterPrompt());
-        List<PromptVariable> promptVariables = new ArrayList<>();
-        
-        Map<String, PromptVariableCreateDto> variableMap = request.getPromptVariables() != null
-                ? request.getPromptVariables().stream().collect(Collectors.toMap(PromptVariableCreateDto::getKeyName, dto -> dto))
+        // 태그 서비스: 이름 Set으로 태그 엔티티 Set 찾기
+        Set<Tag> tags = tagService.findOrCreateTags(uniqueTagNames);
+        prompt.addTags(tags);
+
+        // 변수 파싱 및 등록 (promptVariables 리스트 반환)
+        List<PromptVariable> variables = processPromptVariables(prompt, request.getMasterPrompt(), request.getPromptVariables());
+
+        // 룩북 이미지 및 변수 옵션 매핑
+        processLookbookImages(prompt, variables, request.getImages());
+
+        // 최종 저장 (Cascade 설정으로 prompt만 저장해도 자식들 일괄 저장)
+        return promptRepository.save(prompt).getId();
+    }
+
+    // 변수 파싱 및 엔티티 생성 로직
+    private List<PromptVariable> processPromptVariables(Prompt prompt, String masterPrompt, List<PromptVariableCreateDto> variableDtos) {
+        // 본문에서 [key] 추출
+        Set<String> extractedKeys = extractVariables(masterPrompt);
+
+        // DTO를 Map으로 변환 (빠른 조회를 위해)
+        Map<String, PromptVariableCreateDto> dtoMap = variableDtos != null
+                ? variableDtos.stream().collect(Collectors.toMap(PromptVariableCreateDto::getKeyName, Function.identity()))
                 : Map.of();
 
-        for (String key : variableNames) {
-            PromptVariableCreateDto detail = variableMap.get(key);
-            String variableName = detail != null ? detail.getVariableName() : key;
-            String description = detail != null ? detail.getDescription() : null;
-            Integer orderIndex = detail != null ? detail.getOrderIndex() : null;
+        List<PromptVariable> promptVariables = new ArrayList<>();
 
-            PromptVariable variable = new PromptVariable(prompt, key, variableName, description, orderIndex);
-            prompt.addPromptVariable(variable);
+        // 추출된 키를 기반으로 엔티티 생성
+        for (String key : extractedKeys) {
+            String cleanKey = key.trim(); // ★ 공백 제거 필수
+            PromptVariableCreateDto detail = dtoMap.get(cleanKey);
+
+            PromptVariable variable = PromptVariable.builder()
+                    .prompt(prompt)
+                    .keyName(cleanKey)
+                    .variableName(detail != null ? detail.getVariableName() : cleanKey)
+                    .description(detail != null ? detail.getDescription() : null)
+                    .orderIndex(detail != null ? detail.getOrderIndex() : null)
+                    .build();
+
+            prompt.addPromptVariable(variable); // 연관관계 편의 메서드
             promptVariables.add(variable);
         }
+        return promptVariables;
+    }
 
-        for (LookbookImageCreateDto imgDto : request.getImages()) {
+    // 룩북 이미지 및 옵션 매핑 로직
+    private void processLookbookImages(Prompt prompt, List<PromptVariable> variables, List<LookbookImageCreateDto> imageDtos) {
+        if (imageDtos == null) return;
+
+        // 성능 최적화: 리스트 루프 대신 Map으로 변환 (Key -> PromptVariable)
+        Map<String, PromptVariable> variableMap = variables.stream()
+                .collect(Collectors.toMap(PromptVariable::getKeyName, v -> v));
+
+        for (LookbookImageCreateDto imgDto : imageDtos) {
+            // 이미지 엔티티 생성
             LookbookImage lookbookImage = new LookbookImage(
                     prompt,
                     imageManager.extractKey(imgDto.getImageUrl()),
@@ -158,33 +142,107 @@ public class ProductService {
             );
             prompt.addLookbookImage(lookbookImage);
 
+            // 옵션 값 매핑
             if (imgDto.getOptionValues() != null) {
-                for (Map.Entry<String, String> entry : imgDto.getOptionValues().entrySet()) {
-                    String varKey = entry.getKey();
-                    String varValue = entry.getValue();
+                imgDto.getOptionValues().forEach((key, value) -> {
+                    String cleanKey = key.trim();
 
-                    PromptVariable targetVar = promptVariables.stream()
-                            .filter(v -> v.getKeyName().equals(varKey))
-                            .findFirst()
-                            .orElseThrow(() -> new BusinessException(ErrorCode.UNDEFINED_PROMPT_VARIABLE));
+                    // 안전한 조회: Map에서 찾기
+                    PromptVariable targetVar = variableMap.get(cleanKey);
 
-                    lookbookImage.addVariableOption(targetVar, varValue);
-                }
+                    if (targetVar != null) {
+                        lookbookImage.addVariableOption(targetVar, value);
+                    } else {
+                        throw new BusinessException(ErrorCode.UNDEFINED_PROMPT_VARIABLE);
+                    }
+                });
             }
         }
-
-        return promptRepository.save(prompt).getId();
     }
 
-    private Set<String> extractVariables(String promptText) {
-        Set<String> variables = new HashSet<>();
-        if (promptText == null) return variables;
+    // 가격 정책 검증
+    private void validatePricePolicy(Integer price) {
+        if (price % 100 != 0) {
+            throw new BusinessException(ErrorCode.INVALID_PRICE_UNIT);
+        }
+        if (price < 500 || price > 1000) { // 범위는 비즈니스 로직에 맞게 조정
+            throw new BusinessException(ErrorCode.INVALID_PRICE_RANGE);
+        }
+    }
 
-        Pattern pattern = Pattern.compile("\\[([a-zA-Z0-9_]+)]");
-        Matcher matcher = pattern.matcher(promptText);
+    // 태그 처리 로직
+    private Set<String> validateAndSanitizeTags(List<String> rawTags) {
+        if (rawTags == null || rawTags.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_TAG_COUNT);
+        }
+
+        // 중복 제거 & 공백 제거
+        Set<String> uniqueTags = rawTags.stream()
+                .filter(tag -> tag != null && !tag.trim().isBlank())
+                .map(String::trim)
+                .collect(Collectors.toSet());
+
+        // 개수 검증
+        if (uniqueTags.size() < 3 || uniqueTags.size() > 10) {
+            throw new BusinessException(ErrorCode.INVALID_TAG_COUNT);
+        }
+
+        return uniqueTags;
+    }
+
+    private String validateAndGetPreviewKey(List<LookbookImageCreateDto> images) {
+        if (images == null || images.isEmpty()) {
+            throw new BusinessException(ErrorCode.LOOKBOOK_IMAGE_REQUIRED);
+        }
+
+        // 1. 대표 이미지 개수 검증 (1~3개)
+        long representativeCount = images.stream()
+                .filter(img -> Boolean.TRUE.equals(img.getIsRepresentative()))
+                .count();
+
+        if (representativeCount < 1 || representativeCount > 3) {
+            throw new BusinessException(ErrorCode.REPRESENTATIVE_IMAGE_LIMIT_EXCEEDED); // "대표 이미지는 1장 이상 3장 이하이어야 합니다"
+        }
+
+        // 프리뷰 이미지 개수 검증 (정확히 1개여야 함)
+        List<LookbookImageCreateDto> previewImages = images.stream()
+                .filter(img -> Boolean.TRUE.equals(img.getIsPreview()))
+                .toList();
+
+        if (previewImages.size() != 1) {
+            // "프리뷰 이미지는 반드시 1장 지정해야 합니다." (0개거나 2개 이상이면 에러)
+            throw new BusinessException(ErrorCode.PREVIEW_IMAGE_REQUIRED);
+        }
+
+        LookbookImageCreateDto previewImage = previewImages.getFirst();
+
+        // 프리뷰로 지정된 이미지는 반드시 '대표 이미지'여야 함
+        if (!Boolean.TRUE.equals(previewImage.getIsRepresentative())) {
+            throw new BusinessException(ErrorCode.PREVIEW_MUST_BE_REPRESENTATIVE);
+        }
+
+        // 키 추출
+        return imageManager.extractKey(previewImage.getImageUrl());
+    }
+
+    // 프롬프트 본문에서 [변수] 추출 로직
+    private Set<String> extractVariables(String masterPrompt) {
+        // null 방어
+        if (masterPrompt == null || masterPrompt.isBlank()) {
+            return new HashSet<>(); // 수정 가능한 빈 Set 반환 (Set.of()보다 안전)
+        }
+
+        Set<String> variables = new HashSet<>();
+
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\[([a-zA-Z0-9_\\s\\-]+)\\]");
+        java.util.regex.Matcher matcher = pattern.matcher(masterPrompt);
 
         while (matcher.find()) {
-            variables.add(matcher.group(1));
+            // 앞뒤 공백 제거 후 저장
+            String extracted = matcher.group(1).trim();
+            if (!extracted.isEmpty()) {
+                variables.add(extracted);
+            }
         }
         return variables;
     }
@@ -195,52 +253,23 @@ public class ProductService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
         // 판매자 본인 확인
-        if (!prompt.getSeller().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN);
-        }
+        validateProductOwnership(prompt, userId);
 
         Category category = null;
         if (request.getCategoryId() != null) {
-            category = categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+            category = categoryService.getCategoryOrThrow(request.getCategoryId());
         }
 
         String newPreviewImageUrl = prompt.getPreviewImageUrl();
-        if (request.getPreviewImageId() != null) {
-            newPreviewImageUrl = prompt.getLookbookImages().stream()
-                    .filter(img -> img.getId().equals(request.getPreviewImageId()))
-                    .map(LookbookImage::getImageUrl)
-                    .findFirst()
-                    .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_BELONG_TO_PRODUCT));
-        }
-
-        if (request.getPrice() != null) {
-            if (request.getPrice() % 100 != 0) {
-                throw new BusinessException(ErrorCode.INVALID_PRICE_UNIT);
-            }
-            if (request.getPrice() < 500 || request.getPrice() > 1000) {
-                throw new BusinessException(ErrorCode.INVALID_PRICE_RANGE);
-            }
-        }
-
-        prompt.updateInfo(
-                category,
-                request.getTitle(),
-                request.getDescription(),
-                (request.getPrice() != null) ? request.getPrice() / 100 : null, // 원 단위 -> 크레딧 변환
-                newPreviewImageUrl
-        );
-
-        if (request.getTags() != null) {
-            Set<Tag> tags = request.getTags().stream()
-                    .map(tagName -> tagRepository.findByName(tagName)
-                            .orElseGet(() -> tagRepository.save(new Tag(tagName))))
-                    .collect(Collectors.toSet());
-            prompt.updateTags(tags);
-        }
 
         if (request.getRepresentativeImageIds() != null) {
             Set<Long> requestIds = new HashSet<>(request.getRepresentativeImageIds());
+
+            // ★ [추가] 수정 시에도 "최소 1개 ~ 최대 3개" 규칙은 지켜야 함!
+            if (requestIds.isEmpty() || requestIds.size() > 3) {
+                throw new BusinessException(ErrorCode.REPRESENTATIVE_IMAGE_LIMIT_EXCEEDED);
+            }
+
             Set<Long> existingIds = prompt.getLookbookImages().stream()
                     .map(LookbookImage::getId)
                     .collect(Collectors.toSet());
@@ -254,6 +283,42 @@ public class ProductService {
             }
         }
 
+        if (request.getPreviewImageId() != null) {
+            // 내 상품의 이미지인지 검사
+            LookbookImage targetImage = prompt.getLookbookImages().stream()
+                    .filter(img -> img.getId().equals(request.getPreviewImageId()))
+                    .findFirst()
+                    .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_BELONG_TO_PRODUCT));
+
+            // 대표 이미지 중 프리뷰가 있는지 검사
+            if (!Boolean.TRUE.equals(targetImage.getIsRepresentative())) {
+                throw new BusinessException(ErrorCode.PREVIEW_MUST_BE_REPRESENTATIVE);
+            }
+
+            // 3. URL 추출
+            newPreviewImageUrl = targetImage.getImageUrl();
+        }
+
+        if (request.getPrice() != null) {
+            validatePricePolicy(request.getPrice());
+        }
+
+        prompt.updateInfo(
+                category,
+                request.getTitle(),
+                request.getDescription(),
+                (request.getPrice() != null) ? request.getPrice() / CASH_TO_CREDIT_RATE : null, // 원 단위 -> 크레딧 변환
+                newPreviewImageUrl
+        );
+
+        if (request.getTags() != null) {
+            // 검증&서비스 로직 재사용
+            Set<String> uniqueTagNames = validateAndSanitizeTags(request.getTags());
+            Set<Tag> tags = tagService.findOrCreateTags(uniqueTagNames);
+
+            prompt.updateTags(tags);
+        }
+
         return prompt.getId();
     }
 
@@ -262,9 +327,7 @@ public class ProductService {
         Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
-        if (!prompt.getSeller().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN);
-        }
+        validateProductOwnership(prompt, userId);
 
         boolean hasPurchased = purchaseRepository.existsByPromptId(promptId);
         if (hasPurchased) {
@@ -272,6 +335,12 @@ public class ProductService {
         }
 
         promptRepository.softDeleteById(promptId);
+    }
+
+    private void validateProductOwnership(Prompt prompt, Long userId) {
+        if (!prompt.getSeller().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
     }
 
     public Page<ProductListResponse> getProducts(Long categoryId, Pageable pageable) {

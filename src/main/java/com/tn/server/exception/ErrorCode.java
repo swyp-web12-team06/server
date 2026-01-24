@@ -26,6 +26,7 @@ public enum ErrorCode {
     INVALID_PRICE_UNIT(HttpStatus.BAD_REQUEST, "가격은 100원 단위로 설정해야 합니다."),
     INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "가격은 500원에서 1,000원 사이여야 합니다."),
     INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "결제 금액이 유효하지 않습니다. (최소 3,000원 ~ 최대 50,000원)"),
+    INVALID_TAG_COUNT(HttpStatus.BAD_REQUEST, "태그는 최소 3개, 최대 10개까지 등록 가능합니다."),
 
     // 상품(프롬프트) 관련 검증 (400 Bad Request)
     PREVIEW_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "썸네일(미리보기) 이미지는 필수입니다."),
@@ -33,6 +34,7 @@ public enum ErrorCode {
     REPRESENTATIVE_IMAGE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "대표 이미지는 최대 3개까지만 설정할 수 있습니다."),
     UNDEFINED_PROMPT_VARIABLE(HttpStatus.BAD_REQUEST, "프롬프트에 정의되지 않은 변수가 사용되었습니다."),
     IMAGE_NOT_BELONG_TO_PRODUCT(HttpStatus.BAD_REQUEST, "해당 상품에 속하지 않는 이미지입니다."),
+    PREVIEW_MUST_BE_REPRESENTATIVE(HttpStatus.BAD_REQUEST, "프리뷰로 지정된 이미지는 반드시 대표 이미지여야 합니다."),
 
     // 이미지 검증 관련 (400 Bad Request)
     IMAGE_FILE_EMPTY(HttpStatus.BAD_REQUEST, "이미지 파일이 비어있습니다."),

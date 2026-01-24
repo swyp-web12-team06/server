@@ -5,7 +5,6 @@ import com.tn.server.dto.product.metadata.CategoryDto;
 import com.tn.server.exception.BusinessException;
 import com.tn.server.exception.ErrorCode;
 import com.tn.server.repository.CategoryRepository;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
