@@ -86,7 +86,7 @@ public class ProductDetailResponse {
                                 .optionValues(image.getVariableOptions().stream()
                                         .collect(Collectors.toMap(
                                                 opt -> opt.getPromptVariable().getKeyName(),
-                                                LookbookImageVariableOption::getValue
+                                                LookbookImageVariableOption::getVariableValue
                                         )))
                                 .build())
                         .collect(Collectors.toList()))
