@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
                         .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/product/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
                         .requestMatchers("/user/me/**").hasRole("USER")
                         .requestMatchers("/credit/**").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/image/{imageId}/download").hasRole("USER")
