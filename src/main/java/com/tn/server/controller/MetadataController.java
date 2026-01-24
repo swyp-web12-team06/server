@@ -31,7 +31,7 @@ public class MetadataController {
     }
 
     @GetMapping("/ai-models")
-    @Operation(summary = "AI 모델 목록 조회", description = "지원하는 AI 모델(Midjourney, Stable Diffusion 등) 목록을 반환합니다.")
+    @Operation(summary = "AI 모델 목록 조회", description = "지원하는 AI 모델(Grok, nano-banana-pro 등) 목록을 반환합니다.")
     public ResponseEntity<ApiResponse<List<AiModelDto>>> getAiModels() {
         return ResponseEntity.ok(ApiResponse.success("", aiModelService.getActiveAiModels()));
     }
