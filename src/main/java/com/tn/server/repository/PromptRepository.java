@@ -42,6 +42,14 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            "WHERE p.isDeleted = false AND p.category.id = :categoryId")
     Page<Prompt> findAllByCategory(@Param("categoryId") Long categoryId, Pageable pageable);
 
+    // 로컬(H2)용: JPQL LIKE 검색
+    @Query("SELECT DISTINCT p FROM Prompt p " +
+            "JOIN FETCH p.seller u " +
+            "LEFT JOIN FETCH p.tags t " +
+            "WHERE p.isDeleted = false " +
+            "AND (p.title LIKE %:keyword% OR u.nickname LIKE %:keyword% OR t.name LIKE %:keyword%)")
+    Page<Prompt> searchByKeywordBasic(@Param("keyword") String keyword, Pageable pageable);
+
     // Full-Text Search 사용 (MySQL 전용)
     @Query(value = "SELECT DISTINCT p.* FROM prompts p " +
            "INNER JOIN users u ON p.user_id = u.user_id " +
@@ -60,8 +68,18 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
                        "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
                        "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
            nativeQuery = true)
-    Page<Prompt> searchByKeywordWithSeller(@Param("keyword") String keyword, Pageable pageable);
+    Page<Prompt> searchByKeywordFullText(@Param("keyword") String keyword, Pageable pageable);
 
+    // 로컬(H2)용: JPQL LIKE 검색 + 카테고리 필터
+    @Query("SELECT DISTINCT p FROM Prompt p " +
+            "JOIN FETCH p.seller u " +
+            "LEFT JOIN FETCH p.tags t " +
+            "WHERE p.isDeleted = false " +
+            "AND p.category.id = :categoryId " +
+            "AND (p.title LIKE %:keyword% OR u.nickname LIKE %:keyword% OR t.name LIKE %:keyword%)")
+    Page<Prompt> searchByKeywordAndCategoryBasic(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
+
+    // Full-Text Search 사용 (MySQL 전용)
     @Query(value = "SELECT DISTINCT p.* FROM prompts p " +
            "INNER JOIN users u ON p.user_id = u.user_id " +
            "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
@@ -81,6 +99,5 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
                        "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
                        "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
            nativeQuery = true)
-    Page<Prompt> searchByKeywordAndCategory(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
-
+    Page<Prompt> searchByKeywordAndCategoryFullText(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
 }

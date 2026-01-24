@@ -2,8 +2,6 @@ package com.tn.server.config;
 
 import com.tn.server.auth.*;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,9 +42,13 @@ public class SecurityConfig {
 
                 // 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/h2-console/**", "/favicon.ico", "/favicon.png", "/error",
+                        .requestMatchers("/health", "/h2-console/**", "/error", "/favicon.ico",
                                 "/login/**", "/oauth2/**", "/dev/**",
-                                "/payment-test.html", "/payment-test.css", "/shoes.png").permitAll()
+                                "/payment-test.html", "/payment-test.css").permitAll()
+
+                        // Swagger 엔드포인트 허용
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
+
                         .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
                         .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()

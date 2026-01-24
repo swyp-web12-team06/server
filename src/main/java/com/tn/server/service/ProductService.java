@@ -23,10 +23,9 @@ import com.tn.server.repository.TagRepository;
 import com.tn.server.repository.user.UserRepository;
 import com.tn.server.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +55,9 @@ public class ProductService {
     private final TagRepository tagRepository;
     private final PurchaseRepository purchaseRepository;
     private final ImageManager imageManager;
+
+    @Value("${spring.profiles.active:local}")
+    private String activeProfile;
 
     // 카테고리 목록 조회
     public List<CategoryDto> getCategories() {
@@ -287,30 +289,24 @@ public class ProductService {
             return getProducts(categoryId, pageable);
         }
 
-        List<Sort.Order> orders = new ArrayList<>();
-        for (Sort.Order order : pageable.getSort()) {
-            String property = order.getProperty();
-            String column = switch (property) {
-                case "createdAt" -> "created_at";
-                case "updatedAt" -> "updated_at";
-                case "id" -> "prompt_id";
-                case "price" -> "price";
-                default -> "prompt_id";
-            };
-            orders.add(new Sort.Order(order.getDirection(), column));
-        }
-
-        Pageable nativePageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                Sort.by(orders)
-        );
-
         Page<Prompt> prompts;
+
+        boolean isLocal = activeProfile.equals("local");
+
         if (categoryId != null) {
-            prompts = promptRepository.searchByKeywordAndCategory(keyword.trim(), categoryId, nativePageable);
+            // 카테고리 필터 검색
+            if (isLocal) {
+                prompts = promptRepository.searchByKeywordAndCategoryBasic(keyword, categoryId, pageable);
+            } else {
+                prompts = promptRepository.searchByKeywordAndCategoryFullText(keyword, categoryId, pageable);
+            }
         } else {
-            prompts = promptRepository.searchByKeywordWithSeller(keyword.trim(), nativePageable);
+            // 전체 검색
+            if (isLocal) {
+                prompts = promptRepository.searchByKeywordBasic(keyword, pageable);
+            } else {
+                prompts = promptRepository.searchByKeywordFullText(keyword, pageable);
+            }
         }
 
         return prompts.map(p -> ProductListResponse.from(p, imageManager::getPublicUrl));
