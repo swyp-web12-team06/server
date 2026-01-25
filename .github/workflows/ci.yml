@@ -1,4 +1,4 @@
-name: PromptLook Server CI
+name: Redot Server CI
 
 # 실행 시점
 on:

@@ -1,4 +1,4 @@
-name: PromptLook Server CD (Unified)
+name: Redot Server CD (Unified)
 
 on:
   push:
