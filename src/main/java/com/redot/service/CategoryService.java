@@ -1,7 +1,7 @@
 package com.redot.service;
 
 import com.redot.domain.Category;
-import com.redot.dto.product.metadata.CategoryDto;
+import com.redot.dto.product.metadata.CategoryResponse;
 import com.redot.exception.BusinessException;
 import com.redot.exception.ErrorCode;
 import com.redot.repository.CategoryRepository;
@@ -20,9 +20,9 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     // 카테고리 목록 조회 (유저용)
-    public List<CategoryDto> getActiveCategories() {
+    public List<CategoryResponse> getActiveCategories() {
         return categoryRepository.findAllByIsActiveTrueOrderByOrderIndexAsc().stream()
-                .map(c -> new CategoryDto(c.getId(), c.getName()))
+                .map(c -> new CategoryResponse(c.getId(), c.getName()))
                 .collect(Collectors.toList());
     }
 
@@ -31,7 +31,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        // ★ [추가] 비활성화된 카테고리는 "없는 것"으로 간주!
+        // 비활성화된 카테고리 제외
         if (!category.getIsActive()) {
             throw new BusinessException(ErrorCode.CATEGORY_NOT_FOUND);
         }
