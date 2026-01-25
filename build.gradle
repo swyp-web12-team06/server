@@ -4,9 +4,9 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.tn'
+group = 'com.redot'
 version = '0.0.1-SNAPSHOT'
-description = 'Trend Navigator Backend API Server'
+description = 'Redot Backend API Server'
 
 java {
 	toolchain {
@@ -50,6 +50,8 @@ dependencies {
 	implementation 'io.portone:server-sdk:0.22.0'
 	implementation 'software.amazon.awssdk:s3:2.41.10'
 	implementation 'com.bucket4j:bucket4j_jdk17-core:8.16.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
 }
 
 dependencyManagement {
