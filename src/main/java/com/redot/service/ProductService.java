@@ -4,8 +4,7 @@ import com.redot.domain.*;
 import com.redot.domain.user.User;
 import com.redot.dto.product.LookbookImageCreateDto;
 import com.redot.dto.product.ProductCreateRequest;
-import com.redot.dto.product.ProductDetailResponse;
-import com.redot.dto.product.ProductListResponse;
+import com.redot.dto.product.ProductResponse;
 import com.redot.dto.product.ProductUpdateRequest;
 import com.redot.dto.product.PromptVariableCreateDto;
 import com.redot.exception.BusinessException;
@@ -343,19 +342,19 @@ public class ProductService {
         }
     }
 
-    public Page<ProductListResponse> getProducts(Long categoryId, Pageable pageable) {
+    public Page<ProductResponse> getProducts(Long categoryId, Long userId, Pageable pageable) {
         Page<Prompt> prompts;
         if (categoryId != null) {
-            prompts = promptRepository.findAllByCategory(categoryId, pageable);
+            prompts = promptRepository.findAllByCategoryWithDetails(categoryId, pageable);
         } else {
-            prompts = promptRepository.findAllWithSeller(pageable);
+            prompts = promptRepository.findAllWithDetails(pageable);
         }
-        return prompts.map(p -> ProductListResponse.from(p, imageManager::getPublicUrl));
+        return prompts.map(p -> toProductResponse(p, userId));
     }
 
-    public Page<ProductListResponse> searchProducts(String keyword, Long categoryId, Pageable pageable) {
+    public Page<ProductResponse> searchProducts(String keyword, Long categoryId, Long userId, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            return getProducts(categoryId, pageable);
+            return getProducts(categoryId, userId, pageable);
         }
 
         Page<Prompt> prompts;
@@ -363,14 +362,12 @@ public class ProductService {
         boolean isLocal = activeProfile.equals("local");
 
         if (categoryId != null) {
-            // 카테고리 필터 검색
             if (isLocal) {
                 prompts = promptRepository.searchByKeywordAndCategoryBasic(keyword, categoryId, pageable);
             } else {
                 prompts = promptRepository.searchByKeywordAndCategoryFullText(keyword, categoryId, pageable);
             }
         } else {
-            // 전체 검색
             if (isLocal) {
                 prompts = promptRepository.searchByKeywordBasic(keyword, pageable);
             } else {
@@ -378,24 +375,31 @@ public class ProductService {
             }
         }
 
-        return prompts.map(p -> ProductListResponse.from(p, imageManager::getPublicUrl));
+        return prompts.map(p -> toProductResponse(p, userId));
     }
 
-    public ProductDetailResponse getProductDetail(Long promptId, Long userId) {
+    public ProductResponse getProductDetail(Long promptId, Long userId) {
         Prompt prompt = promptRepository.findByIdWithDetails(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
-        UserProductStatus userStatus = UserProductStatus.GUEST;
-        if (userId != null) {
-            if (prompt.getSeller().getId().equals(userId)) {
-                userStatus = UserProductStatus.OWNER;
-            } else if (purchaseRepository.existsByUserIdAndPromptId(userId, promptId)) {
-                userStatus = UserProductStatus.PURCHASED;
-            } else {
-                userStatus = UserProductStatus.NOT_PURCHASED;
-            }
-        }
+        return toProductResponse(prompt, userId);
+    }
 
-        return ProductDetailResponse.from(prompt, userStatus, imageManager::getPublicUrl);
+    private ProductResponse toProductResponse(Prompt prompt, Long userId) {
+        UserProductStatus userStatus = determineUserStatus(prompt, userId);
+        return ProductResponse.from(prompt, userStatus, imageManager::getPublicUrl);
+    }
+
+    private UserProductStatus determineUserStatus(Prompt prompt, Long userId) {
+        if (userId == null) {
+            return UserProductStatus.GUEST;
+        }
+        if (prompt.getSeller().getId().equals(userId)) {
+            return UserProductStatus.OWNER;
+        }
+        if (purchaseRepository.existsByUserIdAndPromptId(userId, prompt.getId())) {
+            return UserProductStatus.PURCHASED;
+        }
+        return UserProductStatus.NOT_PURCHASED;
     }
 }
