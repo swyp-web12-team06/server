@@ -16,7 +16,7 @@ public class HealthCheckController {
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> healthCheck() {
         Map<String, String> response = new TreeMap<>();
-        response.put("server", "Trend Navigator Backend API Server");
+        response.put("server", "Redot Backend API Server");
         response.put("status", "RUNNING");
         response.put("profile", activeProfile); // 현재 실행 환경 표시 (local, prod 등)
 

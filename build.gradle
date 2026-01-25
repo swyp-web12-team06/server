@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.redot'
 version = '0.0.1-SNAPSHOT'
-description = 'Trend Navigator Backend API Server'
+description = 'Redot Backend API Server'
 
 java {
 	toolchain {
