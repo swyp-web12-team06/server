@@ -4,7 +4,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.tn'
+group = 'com.redot'
 version = '0.0.1-SNAPSHOT'
 description = 'Trend Navigator Backend API Server'
 
