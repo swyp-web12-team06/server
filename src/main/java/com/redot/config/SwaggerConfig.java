@@ -20,8 +20,8 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("PromptLook Server API Docs")
-                        .description("스위프 웹 12기 PromptLook 프로젝트 API 명세서")
+                        .title("Redot Server API Docs")
+                        .description("Redot 프로젝트 API 명세서")
                         .version("v1.0.0"))
                 // JWT 토큰 인증 설정 (헤더에 'Authorization' 버튼 생성)
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Auth"))
