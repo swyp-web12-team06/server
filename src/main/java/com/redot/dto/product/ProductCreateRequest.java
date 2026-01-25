@@ -42,6 +42,6 @@ public class ProductCreateRequest {
     @Size(min = 1, max = 5, message = "프롬프트 변수는 최소 1개, 최대 5개까지 등록 가능합니다.")
     private List<PromptVariableCreateDto> promptVariables;
 
-    @Size(min = 3, max = 10, message = "룩북 이미지는 최소 3개, 최대 10개까지 등록 가능합니다.")
+    @Size(min = 1, max = 10, message = "룩북 이미지는 최소 1개, 최대 10개까지 등록 가능합니다.")
     private List<LookbookImageCreateDto> images;
 }
