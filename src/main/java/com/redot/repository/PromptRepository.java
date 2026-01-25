@@ -32,19 +32,25 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
 
     @Query("SELECT DISTINCT p FROM Prompt p " +
            "JOIN FETCH p.seller " +
+           "JOIN FETCH p.category " +
+           "JOIN FETCH p.aiModel " +
            "LEFT JOIN FETCH p.tags " +
            "WHERE p.isDeleted = false")
-    Page<Prompt> findAllWithSeller(Pageable pageable);
+    Page<Prompt> findAllWithDetails(Pageable pageable);
 
     @Query("SELECT DISTINCT p FROM Prompt p " +
            "JOIN FETCH p.seller " +
+           "JOIN FETCH p.category " +
+           "JOIN FETCH p.aiModel " +
            "LEFT JOIN FETCH p.tags " +
            "WHERE p.isDeleted = false AND p.category.id = :categoryId")
-    Page<Prompt> findAllByCategory(@Param("categoryId") Long categoryId, Pageable pageable);
+    Page<Prompt> findAllByCategoryWithDetails(@Param("categoryId") Long categoryId, Pageable pageable);
 
     // 로컬(H2)용: JPQL LIKE 검색
     @Query("SELECT DISTINCT p FROM Prompt p " +
             "JOIN FETCH p.seller u " +
+            "JOIN FETCH p.category " +
+            "JOIN FETCH p.aiModel " +
             "LEFT JOIN FETCH p.tags t " +
             "WHERE p.isDeleted = false " +
             "AND (p.title LIKE %:keyword% OR u.nickname LIKE %:keyword% OR t.name LIKE %:keyword%)")
@@ -73,6 +79,8 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
     // 로컬(H2)용: JPQL LIKE 검색 + 카테고리 필터
     @Query("SELECT DISTINCT p FROM Prompt p " +
             "JOIN FETCH p.seller u " +
+            "JOIN FETCH p.category " +
+            "JOIN FETCH p.aiModel " +
             "LEFT JOIN FETCH p.tags t " +
             "WHERE p.isDeleted = false " +
             "AND p.category.id = :categoryId " +

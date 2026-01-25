@@ -3,8 +3,7 @@ package com.redot.controller;
 import java.util.Map;
 import com.redot.dto.common.ApiResponse;
 import com.redot.dto.product.ProductCreateRequest;
-import com.redot.dto.product.ProductDetailResponse;
-import com.redot.dto.product.ProductListResponse;
+import com.redot.dto.product.ProductResponse;
 import com.redot.dto.product.ProductUpdateRequest;
 import com.redot.service.ProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -61,31 +60,32 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("성공적으로 삭제되었습니다.", null));
     }
 
-    // 상품 목록 조회 (검색 포함)
+    // 상품 목록 조회 (검색 포함) - 상세 정보 포함
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ProductListResponse>>> getProducts(
-            @RequestParam(required = false) String keyword, // 검색 키워드 (제목, 판매자명)
-            @RequestParam(required = false) Long categoryId, // 카테고리 필터링
+    public ResponseEntity<ApiResponse<Page<ProductResponse>>> getProducts(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "LATEST") String sort // 정렬 조건
+            @RequestParam(defaultValue = "LATEST") String sort
     ) {
-        // 정렬 기준 설정
+        Long userId = (user != null) ? Long.parseLong(user.getUsername()) : null;
+
         Sort sortDir = switch (sort) {
             case "OLDEST" -> Sort.by("createdAt").ascending();
             case "PRICE_HIGH" -> Sort.by("price").descending();
             case "PRICE_LOW" -> Sort.by("price").ascending();
-            default -> Sort.by("createdAt").descending(); // LATEST
+            default -> Sort.by("createdAt").descending();
         };
 
         Pageable pageable = PageRequest.of(page, size, sortDir);
 
-        // 키워드가 있으면 검색, 없으면 전체 목록
-        Page<ProductListResponse> result;
+        Page<ProductResponse> result;
         if (keyword != null && !keyword.trim().isEmpty()) {
-            result = productService.searchProducts(keyword, categoryId, pageable);
+            result = productService.searchProducts(keyword, categoryId, userId, pageable);
         } else {
-            result = productService.getProducts(categoryId, pageable);
+            result = productService.getProducts(categoryId, userId, pageable);
         }
 
         return ResponseEntity.ok(ApiResponse.success("상품 목록 조회에 성공했습니다", result));
@@ -93,12 +93,12 @@ public class ProductController {
 
     // 개별 상품 조회
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(
+    public ResponseEntity<ApiResponse<ProductResponse>> getProductDetail(
             @AuthenticationPrincipal UserDetails user,
             @PathVariable Long id
     ) {
         Long userId = (user != null) ? Long.parseLong(user.getUsername()) : null;
-        ProductDetailResponse response = productService.getProductDetail(id, userId);
+        ProductResponse response = productService.getProductDetail(id, userId);
         return ResponseEntity.ok(ApiResponse.success("상품 조회에 성공했습니다.", response));
     }
 }

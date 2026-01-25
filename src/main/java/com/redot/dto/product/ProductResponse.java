@@ -8,14 +8,13 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import java.util.Map;
-
 @Getter
 @Builder
-public class ProductDetailResponse {
+public class ProductResponse {
     private Long promptId;
     private String title;
     private String description;
@@ -29,9 +28,16 @@ public class ProductDetailResponse {
     private List<String> tags;
     private List<PromptVariableDetail> promptVariables;
     private List<LookbookImageDetail> images;
-    private Long sellerId;
+    private SellerInfo seller;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Getter
+    @Builder
+    public static class SellerInfo {
+        private Long id;
+        private String nickname;
+    }
 
     @Getter
     @Builder
@@ -53,8 +59,8 @@ public class ProductDetailResponse {
         private Map<String, String> optionValues;
     }
 
-    public static ProductDetailResponse from(Prompt prompt, UserProductStatus userStatus, Function<String, String> urlConverter) {
-        return ProductDetailResponse.builder()
+    public static ProductResponse from(Prompt prompt, UserProductStatus userStatus, Function<String, String> urlConverter) {
+        return ProductResponse.builder()
                 .promptId(prompt.getId())
                 .title(prompt.getTitle())
                 .description(prompt.getDescription())
@@ -90,7 +96,10 @@ public class ProductDetailResponse {
                                         )))
                                 .build())
                         .collect(Collectors.toList()))
-                .sellerId(prompt.getSeller().getId())
+                .seller(SellerInfo.builder()
+                        .id(prompt.getSeller().getId())
+                        .nickname(prompt.getSeller().getNickname())
+                        .build())
                 .createdAt(prompt.getCreatedAt())
                 .updatedAt(prompt.getUpdatedAt())
                 .build();

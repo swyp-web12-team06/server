@@ -47,7 +47,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/promptlook-server:${{ env.TAG }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/redot-server:${{ env.TAG }}
 
   # 2. 테스트 서버 배포 (develop 브랜치일 때만 실행)
   deploy-dev:
@@ -64,16 +64,16 @@ jobs:
           port: 22
           script: |
             # Dev용 컨테이너 배포 (포트 8081)
-            docker stop promptlook-server-dev || true
-            docker rm promptlook-server-dev || true
-            docker rmi ${{ secrets.DOCKER_USERNAME }}/promptlook-server:dev || true
+            docker stop redot-dev-server || true
+            docker rm redot-dev-server || true
+            docker rmi ${{ secrets.DOCKER_USERNAME }}/redot-server:dev || true
             
-            docker pull ${{ secrets.DOCKER_USERNAME }}/promptlook-server:dev
+            docker pull ${{ secrets.DOCKER_USERNAME }}/redot-server:dev
             
             docker run -d \
-              --name promptlook-server-dev \
+              --name redot-dev-server \
               --restart unless-stopped \
-              --network promptlook-network \
+              --network redot-network \
               -p 8081:8080 \
               -e TZ=Asia/Seoul \
               -e PROFILE=dev \
@@ -95,7 +95,7 @@ jobs:
               -e R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
               -e R2_PUBLIC_DOMAIN=${{ secrets.R2_PUBLIC_DOMAIN }} \
               -e KIE_API_KEY=${{ secrets.KIE_API_KEY }} \
-              ${{ secrets.DOCKER_USERNAME }}/promptlook-server:dev
+              ${{ secrets.DOCKER_USERNAME }}/redot-server:dev
 
   # 3. 운영 서버 배포 (main 브랜치일 때만 실행)
   deploy-prod:
@@ -112,16 +112,16 @@ jobs:
           port: 22
           script: |
             # Prod용 컨테이너 배포 (포트 8080)
-            docker stop promptlook-server || true
-            docker rm promptlook-server || true
-            docker rmi ${{ secrets.DOCKER_USERNAME }}/promptlook-server:latest || true
+            docker stop redot-prod-server || true
+            docker rm redot-prod-server || true
+            docker rmi ${{ secrets.DOCKER_USERNAME }}/redot-server:latest || true
             
-            docker pull ${{ secrets.DOCKER_USERNAME }}/promptlook-server:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/redot-server:latest
             
             docker run -d \
-              --name promptlook-server \
+              --name redot-prod-server \
               --restart unless-stopped \
-              --network promptlook-network \
+              --network redot-network \
               -p 8080:8080 \
               -e TZ=Asia/Seoul \
               -e PROFILE=prod \
@@ -143,4 +143,4 @@ jobs:
               -e R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }} \
               -e R2_PUBLIC_DOMAIN=${{ secrets.R2_PUBLIC_DOMAIN }} \
               -e KIE_API_KEY=${{ secrets.KIE_API_KEY }} \
-              ${{ secrets.DOCKER_USERNAME }}/promptlook-server:latest
+              ${{ secrets.DOCKER_USERNAME }}/redot-server:latest
