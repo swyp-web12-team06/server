@@ -82,7 +82,6 @@ public class Prompt {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    private String promptTemplate;
 
     @Builder
     public Prompt(User seller, Category category, AiModel aiModel, String title,
