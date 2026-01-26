@@ -25,9 +25,8 @@ public class ProductResponse {
     private Long modelId;
     private String modelName;
 
-    private String representativeImageUrl; // 대표 이미지 (isRepresentative = true)
-    private List<String> previewImageUrls;   // 미리보기 이미지들 (isPreview = true, 최대 3개)
-
+    private List<String> representativeImageUrl;
+    private String previewImageUrls;
     private String previewImageUrl;
     private List<String> tags;
     private List<PromptVariableDetail> promptVariables;
@@ -66,14 +65,14 @@ public class ProductResponse {
     public static ProductResponse from(Prompt prompt, UserProductStatus userStatus, Function<String, String> urlConverter) {
 
         // 1. 대표 이미지(RepresentativeUrl): isPreview가 true인 딱 1장 (상세 상단 메인 이미지)
-        String representativeUrl = prompt.getLookbookImages().stream()
+        String previewUrls = prompt.getLookbookImages().stream()
                 .filter(img -> Boolean.TRUE.equals(img.getIsPreview()))
                 .map(img -> urlConverter.apply(img.getImageUrl()))
                 .findFirst()
                 .orElse(urlConverter.apply(prompt.getPreviewImageUrl()));
 
         // 2. 미리보기 리스트(PreviewUrls): isRepresentative가 true인 이미지들 (대표 이미지 포함 총 3장)
-        List<String> previewUrls = prompt.getLookbookImages().stream()
+        List<String> representativeUrl = prompt.getLookbookImages().stream()
                 .filter(img -> Boolean.TRUE.equals(img.getIsRepresentative()))
                 .map(img -> urlConverter.apply(img.getImageUrl()))
                 .limit(3)
