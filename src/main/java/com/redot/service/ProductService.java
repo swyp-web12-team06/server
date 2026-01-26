@@ -137,7 +137,8 @@ public class ProductService {
             LookbookImage lookbookImage = new LookbookImage(
                     prompt,
                     imageManager.extractKey(imgDto.getImageUrl()),
-                    imgDto.getIsRepresentative()
+                    imgDto.getIsRepresentative(),
+                    imgDto.getIsPreview()
             );
             prompt.addLookbookImage(lookbookImage);
 

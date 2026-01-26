@@ -334,6 +334,11 @@ VALUES (1, 1, CURRENT_TIMESTAMP);
 INSERT INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
 VALUES (1, 1, 'color', '색상', '이미지의 주된 색상을 정합니다', 1);
 
-INSERT INTO lookbook_images (prompt_id, image_url, is_representative) VALUES (1, 'https://test-image-1.jpg', true);
+INSERT INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
+VALUES (1, 'https://test-image-1.jpg', true, false);
 
-INSERT INTO lookbook_images (prompt_id, image_url, is_representative) VALUES (1, 'https://test-image-2.jpg', false);
+INSERT INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
+VALUES (1, 'https://test-image-2.jpg', true, true);
+
+INSERT INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
+VALUES (1, 'https://test-image-3.jpg', true, false);

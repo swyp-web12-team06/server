@@ -28,13 +28,23 @@ public class LookbookImage {
     @Column(name = "is_representative", nullable = false)
     private Boolean isRepresentative = false;
 
+    @Column(name = "is_preview", nullable = false)
+    private Boolean isPreview = false;
+
     @OneToMany(mappedBy = "lookbookImage", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LookbookImageVariableOption> variableOptions = new ArrayList<>();
 
-    public LookbookImage(Prompt prompt, String imageUrl, Boolean isRepresentative) {
+    public LookbookImage(Prompt prompt, String imageUrl, Boolean isRepresentative, Boolean isPreview) {
         this.prompt = prompt;
         this.imageUrl = imageUrl;
-        this.isRepresentative = isRepresentative != null ? isRepresentative : false;
+
+        this.isPreview = (isPreview != null) ? isPreview : false;
+
+        if (Boolean.TRUE.equals(this.isPreview)) {
+            this.isRepresentative = true;
+        } else {
+            this.isRepresentative = (isRepresentative != null) ? isRepresentative : false;
+        }
     }
 
     public void addVariableOption(PromptVariable variable, String value) {
@@ -46,6 +56,6 @@ public class LookbookImage {
     }
 
     public Boolean getIsPreview() {
-        return null;
+        return this.isPreview;
     }
 }
