@@ -34,11 +34,17 @@ public class LookbookImage {
     @OneToMany(mappedBy = "lookbookImage", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LookbookImageVariableOption> variableOptions = new ArrayList<>();
 
-    public LookbookImage(Prompt prompt, String imageUrl, Boolean isRepresentative) {
+    public LookbookImage(Prompt prompt, String imageUrl, Boolean isRepresentative, Boolean isPreview) {
         this.prompt = prompt;
         this.imageUrl = imageUrl;
-        this.isRepresentative = isRepresentative != null ? isRepresentative : false;
-        this.isPreview = isPreview != null ? isPreview : false;
+
+        this.isPreview = (isPreview != null) ? isPreview : false;
+
+        if (Boolean.TRUE.equals(this.isPreview)) {
+            this.isRepresentative = true;
+        } else {
+            this.isRepresentative = (isRepresentative != null) ? isRepresentative : false;
+        }
     }
 
     public void addVariableOption(PromptVariable variable, String value) {
