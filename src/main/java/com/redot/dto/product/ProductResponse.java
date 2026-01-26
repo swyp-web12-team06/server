@@ -25,8 +25,7 @@ public class ProductResponse {
     private Long modelId;
     private String modelName;
 
-    private List<String> representativeImageUrl;
-    private String previewImageUrls;
+    private List<String> representativeImageUrls;
     private String previewImageUrl;
     private List<String> tags;
     private List<PromptVariableDetail> promptVariables;
@@ -64,15 +63,15 @@ public class ProductResponse {
 
     public static ProductResponse from(Prompt prompt, UserProductStatus userStatus, Function<String, String> urlConverter) {
 
-        // 1. 대표 이미지(RepresentativeUrl): isPreview가 true인 딱 1장 (상세 상단 메인 이미지)
-        String previewUrls = prompt.getLookbookImages().stream()
+        // 1. 단수 추출: isPreview 기준
+        String previewImageUrl = prompt.getLookbookImages().stream()
                 .filter(img -> Boolean.TRUE.equals(img.getIsPreview()))
                 .map(img -> urlConverter.apply(img.getImageUrl()))
                 .findFirst()
                 .orElse(urlConverter.apply(prompt.getPreviewImageUrl()));
 
-        // 2. 미리보기 리스트(PreviewUrls): isRepresentative가 true인 이미지들 (대표 이미지 포함 총 3장)
-        List<String> representativeUrl = prompt.getLookbookImages().stream()
+        // 2. 복수 추출: isRepresentative 기준 (최대 3장)
+        List<String> representativeImageUrls = prompt.getLookbookImages().stream()
                 .filter(img -> Boolean.TRUE.equals(img.getIsRepresentative()))
                 .map(img -> urlConverter.apply(img.getImageUrl()))
                 .limit(3)
@@ -90,9 +89,8 @@ public class ProductResponse {
                 .modelName(prompt.getAiModel().getName())
 
                 // --- 새로 추가된 이미지 필드 매핑 ---
-                .representativeImageUrl(representativeUrl)
-                .previewImageUrls(previewUrls)
-                .previewImageUrl(urlConverter.apply(prompt.getPreviewImageUrl())) // 기존 호환용
+                .previewImageUrl(previewImageUrl)
+                .representativeImageUrls(representativeImageUrls)
 
                 .tags(prompt.getTags().stream()
                         .map(Tag::getName)
