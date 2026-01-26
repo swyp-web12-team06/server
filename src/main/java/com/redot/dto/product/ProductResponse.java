@@ -67,14 +67,14 @@ public class ProductResponse {
 
         // 1. 대표 이미지 주소 찾기 (없으면 Prompt의 기본 미리보기 사용)
         String representativeUrl = prompt.getLookbookImages().stream()
-                .filter(img -> Boolean.TRUE.equals(img.getIsRepresentative()))
+                .filter(img -> Boolean.TRUE.equals(img.getIsPreview()))
                 .map(img -> urlConverter.apply(img.getImageUrl()))
                 .findFirst()
                 .orElse(urlConverter.apply(prompt.getPreviewImageUrl()));
 
         // 2. 미리보기 이미지 리스트 (isPreview가 true인 것 최대 3개)
         List<String> previewUrls = prompt.getLookbookImages().stream()
-                .filter(img -> Boolean.TRUE.equals(img.getIsPreview()))
+                .filter(img -> Boolean.TRUE.equals(img.getIsRepresentative()))
                 .map(img -> urlConverter.apply(img.getImageUrl()))
                 .limit(3)
                 .collect(Collectors.toList());
