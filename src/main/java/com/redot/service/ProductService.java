@@ -387,6 +387,7 @@ public class ProductService {
 
     private ProductResponse toProductResponse(Prompt prompt, Long userId) {
         UserProductStatus userStatus = determineUserStatus(prompt, userId);
+
         return ProductResponse.from(prompt, userStatus, imageManager::getPublicUrl);
     }
 

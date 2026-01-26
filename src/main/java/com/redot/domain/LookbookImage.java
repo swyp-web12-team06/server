@@ -44,4 +44,8 @@ public class LookbookImage {
     public void setRepresentative(boolean representative) {
         this.isRepresentative = representative;
     }
+
+    public Boolean getIsPreview() {
+        return null;
+    }
 }

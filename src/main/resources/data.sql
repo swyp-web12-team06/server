@@ -327,3 +327,13 @@ INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description)
 (1, 5000, 0.05, '5% Bonus'),
 (2, 30000, 0.10, '10% Bonus'),
 (3, 50000, 0.15, '15% Bonus');
+
+INSERT INTO purchases (user_id, prompt_id, purchased_at)
+VALUES (1, 1, CURRENT_TIMESTAMP);
+
+INSERT INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
+VALUES (1, 1, 'color', '색상', '이미지의 주된 색상을 정합니다', 1);
+
+INSERT INTO lookbook_images (prompt_id, image_url, is_representative) VALUES (1, 'https://test-image-1.jpg', true);
+
+INSERT INTO lookbook_images (prompt_id, image_url, is_representative) VALUES (1, 'https://test-image-2.jpg', false);
