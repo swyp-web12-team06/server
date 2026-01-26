@@ -45,6 +45,9 @@ public class ProductService {
     private final AiModelService aiModelService;
     private final TagService tagService;
     private static final int CASH_TO_CREDIT_RATE = 100;
+    private static final int MIN_PRICE = 500;
+    private static final int MAX_PRICE = 1000;
+    private static final int PRICE_UNIT = CASH_TO_CREDIT_RATE;
 
     @Value("${spring.profiles.active:local}")
     private String activeProfile;
@@ -79,7 +82,7 @@ public class ProductService {
         // 태그 처리
         Set<String> uniqueTagNames = validateAndSanitizeTags(request.getTags());
 
-        // 태그 서비스: 이름 Set으로 태그 엔티티 Set 찾기
+        // 태그 서비스: 이름 Set으로 태그 엔티티 Set 찾기f
         Set<Tag> tags = tagService.findOrCreateTags(uniqueTagNames);
         prompt.addTags(tags);
 
@@ -160,12 +163,15 @@ public class ProductService {
         }
     }
 
-    // 가격 정책 검증
+    // 가격 정책 검증 메서드
     private void validatePricePolicy(Integer price) {
-        if (price % 100 != 0) {
+        // 1. 단위 검증 (DTO가 못 잡는 부분 - 필수!)
+        if (price % PRICE_UNIT != 0) {
             throw new BusinessException(ErrorCode.INVALID_PRICE_UNIT);
         }
-        if (price < 500 || price > 1000) { // 범위는 비즈니스 로직에 맞게 조정
+
+        // 2. 범위 검증 (DTO와 이중 체크 - 안전장치)
+        if (price < MIN_PRICE || price > MAX_PRICE) {
             throw new BusinessException(ErrorCode.INVALID_PRICE_RANGE);
         }
     }
@@ -201,7 +207,7 @@ public class ProductService {
                 .count();
 
         if (representativeCount < 1 || representativeCount > 3) {
-            throw new BusinessException(ErrorCode.REPRESENTATIVE_IMAGE_LIMIT_EXCEEDED); // "대표 이미지는 1장 이상 3장 이하이어야 합니다"
+            throw new BusinessException(ErrorCode.INVALID_REPRESENTATIVE_IMAGE_COUNT); // "대표 이미지는 1장 이상 3장 이하이어야 합니다"
         }
 
         // 프리뷰 이미지 개수 검증 (정확히 1개여야 함)
@@ -211,7 +217,7 @@ public class ProductService {
 
         if (previewImages.size() != 1) {
             // "프리뷰 이미지는 반드시 1장 지정해야 합니다." (0개거나 2개 이상이면 에러)
-            throw new BusinessException(ErrorCode.PREVIEW_IMAGE_REQUIRED);
+            throw new BusinessException(ErrorCode.INVALID_PREVIEW_IMAGE_COUNT);
         }
 
         LookbookImageCreateDto previewImage = previewImages.getFirst();
@@ -262,14 +268,16 @@ public class ProductService {
 
         String newPreviewImageUrl = prompt.getPreviewImageUrl();
 
+        // 1. 대표 이미지 변경 요청이 들어온 경우
         if (request.getRepresentativeImageIds() != null) {
             Set<Long> requestIds = new HashSet<>(request.getRepresentativeImageIds());
 
-            // ★ [추가] 수정 시에도 "최소 1개 ~ 최대 3개" 규칙은 지켜야 함!
+            // 개수 검증
             if (requestIds.isEmpty() || requestIds.size() > 3) {
-                throw new BusinessException(ErrorCode.REPRESENTATIVE_IMAGE_LIMIT_EXCEEDED);
+                throw new BusinessException(ErrorCode.INVALID_REPRESENTATIVE_IMAGE_COUNT);
             }
 
+            // 내 이미지인지 확인
             Set<Long> existingIds = prompt.getLookbookImages().stream()
                     .map(LookbookImage::getId)
                     .collect(Collectors.toSet());
@@ -278,24 +286,38 @@ public class ProductService {
                 throw new BusinessException(ErrorCode.IMAGE_NOT_BELONG_TO_PRODUCT);
             }
 
+            // 상태 업데이트
             for (LookbookImage image : prompt.getLookbookImages()) {
                 image.setRepresentative(requestIds.contains(image.getId()));
             }
+
+            if (request.getPreviewImageId() == null) {
+                // 현재 프리뷰 URL에 해당하는 이미지 ID 찾기
+                LookbookImage currentPreviewImage = prompt.getLookbookImages().stream()
+                        .filter(img -> img.getImageUrl().equals(prompt.getPreviewImageUrl()))
+                        .findFirst()
+                        .orElse(null); // 혹시 모를 데이터 불일치 대비
+
+                // 기존 프리뷰 이미지가 존재하는데, 이번 요청된 대표 이미지 목록(requestIds)에 없다면?
+                if (currentPreviewImage != null && !requestIds.contains(currentPreviewImage.getId())) {
+                    // "기존 프리뷰가 대표 이미지에서 해제되었습니다. 새로운 프리뷰 이미지를 지정해야 합니다."
+                    throw new BusinessException(ErrorCode.PREVIEW_MUST_BE_REPRESENTATIVE);
+                }
+            }
         }
 
+        // 2. 프리뷰 이미지 변경 요청이 들어온 경우
         if (request.getPreviewImageId() != null) {
-            // 내 상품의 이미지인지 검사
             LookbookImage targetImage = prompt.getLookbookImages().stream()
                     .filter(img -> img.getId().equals(request.getPreviewImageId()))
                     .findFirst()
                     .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_BELONG_TO_PRODUCT));
 
-            // 대표 이미지 중 프리뷰가 있는지 검사
+            // 위에서 상태 업데이트(setRepresentative)를 먼저 했기 때문에, 여기서 바뀐 상태(true/false)로 정확히 체크됨
             if (!Boolean.TRUE.equals(targetImage.getIsRepresentative())) {
                 throw new BusinessException(ErrorCode.PREVIEW_MUST_BE_REPRESENTATIVE);
             }
 
-            // 3. URL 추출
             newPreviewImageUrl = targetImage.getImageUrl();
         }
 

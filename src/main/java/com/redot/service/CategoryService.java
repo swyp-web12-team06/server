@@ -26,7 +26,7 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
-    // 카테고리 목록 조회 (관리자용)
+    // 카테고리 목록 조회 (관리자/내부 로직용)
     public Category getCategoryOrThrow(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
