@@ -24,6 +24,10 @@ public class ProductResponse {
     private String categoryName;
     private Long modelId;
     private String modelName;
+
+    private String representativeImageUrl; // 대표 이미지 (isRepresentative = true)
+    private List<String> previewImageUrls;   // 미리보기 이미지들 (isPreview = true, 최대 3개)
+
     private String previewImageUrl;
     private List<String> tags;
     private List<PromptVariableDetail> promptVariables;
@@ -60,6 +64,21 @@ public class ProductResponse {
     }
 
     public static ProductResponse from(Prompt prompt, UserProductStatus userStatus, Function<String, String> urlConverter) {
+
+        // 1. 대표 이미지 주소 찾기 (없으면 Prompt의 기본 미리보기 사용)
+        String representativeUrl = prompt.getLookbookImages().stream()
+                .filter(img -> Boolean.TRUE.equals(img.getIsRepresentative()))
+                .map(img -> urlConverter.apply(img.getImageUrl()))
+                .findFirst()
+                .orElse(urlConverter.apply(prompt.getPreviewImageUrl()));
+
+        // 2. 미리보기 이미지 리스트 (isPreview가 true인 것 최대 3개)
+        List<String> previewUrls = prompt.getLookbookImages().stream()
+                .filter(img -> Boolean.TRUE.equals(img.getIsPreview()))
+                .map(img -> urlConverter.apply(img.getImageUrl()))
+                .limit(3)
+                .collect(Collectors.toList());
+
         return ProductResponse.builder()
                 .promptId(prompt.getId())
                 .title(prompt.getTitle())
@@ -70,7 +89,12 @@ public class ProductResponse {
                 .categoryName(prompt.getCategory().getName())
                 .modelId(prompt.getAiModel().getId())
                 .modelName(prompt.getAiModel().getName())
-                .previewImageUrl(urlConverter.apply(prompt.getPreviewImageUrl()))
+
+                // --- 새로 추가된 이미지 필드 매핑 ---
+                .representativeImageUrl(representativeUrl)
+                .previewImageUrls(previewUrls)
+                .previewImageUrl(urlConverter.apply(prompt.getPreviewImageUrl())) // 기존 호환용
+
                 .tags(prompt.getTags().stream()
                         .map(Tag::getName)
                         .collect(Collectors.toList()))
@@ -87,12 +111,13 @@ public class ProductResponse {
                         .map(image -> LookbookImageDetail.builder()
                                 .id(image.getId())
                                 .imageUrl(urlConverter.apply(image.getImageUrl()))
-                                .isPreview(image.getImageUrl().equals(prompt.getPreviewImageUrl()))
+                                .isPreview(image.getIsPreview())
                                 .isRepresentative(image.getIsRepresentative())
                                 .optionValues(image.getVariableOptions().stream()
                                         .collect(Collectors.toMap(
                                                 opt -> opt.getPromptVariable().getKeyName(),
-                                                LookbookImageVariableOption::getVariableValue
+                                                LookbookImageVariableOption::getVariableValue,
+                                                (v1, v2) -> v1
                                         )))
                                 .build())
                         .collect(Collectors.toList()))
