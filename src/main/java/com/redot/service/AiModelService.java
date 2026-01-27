@@ -1,7 +1,7 @@
 package com.redot.service;
 
 import com.redot.domain.AiModel;
-import com.redot.dto.product.metadata.AiModelDto;
+import com.redot.dto.product.metadata.AiModelResponse;
 import com.redot.exception.BusinessException;
 import com.redot.exception.ErrorCode;
 import com.redot.repository.AiModelRepository;
@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 public class AiModelService {
     private final AiModelRepository aiModelRepository;
 
-    public List<AiModelDto> getActiveAiModels() {
+    public List<AiModelResponse> getActiveAiModels() {
         return aiModelRepository.findAllByIsActiveTrueOrderByOrderIndexAsc().stream()
-                .map(m -> new AiModelDto(m.getId(), m.getName()))
+                .map(m -> new AiModelResponse(m.getId(), m.getName()))
                 .collect(Collectors.toList());
     }
 

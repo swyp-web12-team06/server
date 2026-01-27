@@ -16,21 +16,21 @@ public class GlobalExceptionHandler {
 
     // BusinessException 처리
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
         log.error("BusinessException 발생: {}", e.getErrorCode().getMessage());
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
-                .body(new ErrorResponse(errorCode.name(), errorCode.getMessage()));
+                .body(ApiResponse.error(e.getErrorCode()));
     }
 
     // 그 외 알 수 없는 에러 처리 (500)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
         log.error("Unhandled Exception: ", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("INTERNAL_SERVER_ERROR", "서버 내부 에러가 발생했습니다."));
+                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR));
     }
 
     // DTO 유효성 검사 실패 시 @Valid, @Validated 에러 처리
@@ -110,7 +110,4 @@ public class GlobalExceptionHandler {
         // 그 외 알 수 없는 에러는 일반 파라미터 에러로 처리
         return ErrorCode.INVALID_PARAMETER;
     }
-
-    // JSON 응답용 DTO (내부 클래스)
-    public record ErrorResponse(String code, String message) {}
 }
