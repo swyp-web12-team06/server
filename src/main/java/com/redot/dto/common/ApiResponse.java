@@ -1,14 +1,21 @@
 package com.redot.dto.common;
 
 import com.redot.exception.ErrorCode;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
 public class ApiResponse<T> {
+
+    @Schema(description = "응답 코드", example = "SUCCESS")
     private String code;
+
+    @Schema(description = "응답 메시지", example = "요청이 성공하였습니다.")
     private String message;
+
+    @Schema(description = "응답 데이터")
     private T data;
 
     public static <T> ApiResponse<T> success(String message, T data) {
@@ -24,7 +31,7 @@ public class ApiResponse<T> {
         return new ApiResponse<>(errorCode.getCode(), errorCode.getMessage(), null);
     }
 
-    // 메세지 커스톰 해서 내보냄
+    // 메세지 커스텀 해서 내보냄
     public static <T> ApiResponse<T> error(ErrorCode errorCode, String customMessage) {
         return new ApiResponse<>(errorCode.getCode(), customMessage, null);
     }
