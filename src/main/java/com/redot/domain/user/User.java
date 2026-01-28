@@ -81,8 +81,6 @@ public class User {
     @Column
     private Instant termsAgreedAt;
 
-    private Long credit;
-
     @Builder.Default
     @Column(nullable = false)
     private Boolean marketingConsent = false;
@@ -176,10 +174,6 @@ public class User {
         } else {
             this.marketingConsentedAt = null;
         }
-    }
-
-    public Long getCredit() {
-        return this.credit;
     }
 
     public String getRoleKey() {

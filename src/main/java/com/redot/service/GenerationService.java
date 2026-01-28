@@ -92,7 +92,7 @@ public class GenerationService {
                 .image_id(savedImage.getId())
                 .image_url(imageManager.getPublicUrl(savedImage.getImageUrl()))
                 .total_price(totalPrice)
-                .current_credit(user.getCredit())
+                .current_credit(user.getCreditBalance().longValue())
                 .build();
     }
 
