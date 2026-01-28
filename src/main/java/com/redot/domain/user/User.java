@@ -178,6 +178,10 @@ public class User {
         }
     }
 
+    public Long getCredit() {
+        return this.credit;
+    }
+
     public String getRoleKey() {
         return this.role.getKey();
     }
