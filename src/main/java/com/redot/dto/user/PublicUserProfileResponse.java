@@ -7,10 +7,10 @@ public record PublicUserProfileResponse(
         String profileImageUrl,
         String bio
 ) {
-    public static PublicUserProfileResponse from(User user) {
+    public static PublicUserProfileResponse from(User user, String profileImageUrl) {
         return new PublicUserProfileResponse(
                 user.getNickname(),
-                user.getProfileImageUrl(),
+                profileImageUrl,
                 user.getBio()
         );
     }

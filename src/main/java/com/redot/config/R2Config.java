@@ -36,6 +36,7 @@ public class R2Config {
                 // Path Style 접근 강제 (R2 필수 설정 ★)
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
+                        .chunkedEncodingEnabled(false)  // 청크 인코딩 비활성화
                         .build())
                 .build();
     }
@@ -50,6 +51,7 @@ public class R2Config {
                 .endpointOverride(URI.create(endpoint))
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true) // R2 필수
+                        .chunkedEncodingEnabled(false)  // 청크 인코딩 비활성화
                         .build())
                 .build();
     }

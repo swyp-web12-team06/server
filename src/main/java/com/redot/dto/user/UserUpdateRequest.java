@@ -13,5 +13,5 @@ public record UserUpdateRequest(
         @Size(max = 200, message = "소개글은 최대 200자까지만 작성할 수 있습니다.")
         String bio,
 
-        String profileImageUrl
+        String profileImageKey
 ) {}
