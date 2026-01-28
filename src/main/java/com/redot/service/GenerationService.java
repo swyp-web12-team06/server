@@ -1,6 +1,7 @@
 package com.redot.service;
 
 import com.redot.domain.*;
+import com.redot.domain.user.User;
 import com.redot.dto.prompt.DownloadResponse;
 import com.redot.dto.prompt.GenerationRequest;
 import com.redot.dto.prompt.GenerationResponse;
@@ -10,6 +11,7 @@ import com.redot.repository.*;
 import com.redot.repository.user.UserRepository;
 import com.redot.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,8 @@ public class GenerationService {
     private final ImageManager imageManager;
     private final KieAiClient kieAiClient;
     private final PromptRepository promptRepository;
+    private final UserRepository userRepository;
+
 
     @Transactional
     public GenerationResponse generateHighQualityImage(Long userId, Long promptId, GenerationRequest request) {
@@ -50,6 +54,11 @@ public class GenerationService {
 
         // 3. 가격 계산
         int totalPrice = calculateTotalPrice(promptEntity, request);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        user.decreaseCredit(totalPrice);
 
         // 4. AI 호출 및 R2 저장 (KieAiClient에서 uploadFromUrl 호출됨)
         String finalR2Path = kieAiClient.generateAndSaveImage(

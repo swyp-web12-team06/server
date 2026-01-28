@@ -33,6 +33,7 @@ public class ProductResponse {
     private SellerInfo seller;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<OptionPricingDetail> pricingPolicies;
 
     @Getter
     @Builder
@@ -59,6 +60,14 @@ public class ProductResponse {
         private Boolean isPreview;
         private Boolean isRepresentative;
         private Map<String, String> optionValues;
+    }
+
+    @Getter
+    @Builder
+    public static class OptionPricingDetail {
+        private String optionType;
+        private String optionValue;
+        private Integer extraPrice;
     }
 
     public static ProductResponse from(Prompt prompt, UserProductStatus userStatus, Function<String, String> urlConverter) {
@@ -124,6 +133,10 @@ public class ProductResponse {
                         .build())
                 .createdAt(prompt.getCreatedAt())
                 .updatedAt(prompt.getUpdatedAt())
+                .pricingPolicies(List.of(
+                        OptionPricingDetail.builder().optionType("MODEL").optionValue("Nanobana Pro").extraPrice(200).build(),
+                        OptionPricingDetail.builder().optionType("RESOLUTION").optionValue("2048").extraPrice(300).build()
+                ))
                 .build();
     }
 }

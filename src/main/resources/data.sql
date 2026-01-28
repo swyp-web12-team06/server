@@ -342,3 +342,6 @@ VALUES (1, 'https://test-image-2.jpg', true, true);
 
 INSERT INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
 VALUES (1, 'https://test-image-3.jpg', true, false);
+
+INSERT INTO ai_models (name, is_active, order_index, created_at, updated_at)
+VALUES ('grok-imagine/text-to-image', 1, 1, NOW(), NOW());
