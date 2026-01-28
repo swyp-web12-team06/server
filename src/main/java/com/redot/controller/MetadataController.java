@@ -1,8 +1,8 @@
 package com.redot.controller;
 
 import com.redot.dto.common.ApiResponse;
-import com.redot.dto.product.metadata.AiModelDto;
-import com.redot.dto.product.metadata.CategoryDto;
+import com.redot.dto.product.metadata.AiModelResponse;
+import com.redot.dto.product.metadata.CategoryResponse;
 import com.redot.service.AiModelService;
 import com.redot.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,21 +18,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/metadata")
 @RequiredArgsConstructor
-@Tag(name = "메타데이터 API", description = "카테고리, AI 모델 목록 등 공통 기준 정보 조회")
+@Tag(name = "Metadata", description = "메타데이터 API (카테고리, AI 모델 등)")
 public class MetadataController {
 
     private final CategoryService categoryService;
     private final AiModelService aiModelService;
 
     @GetMapping("/categories")
-    @Operation(summary = "카테고리 목록 조회", description = "상품 등록/검색 시 사용되는 카테고리 전체 목록을 반환합니다.")
-    public ResponseEntity<ApiResponse<List<CategoryDto>>> getCategories() {
+    @Operation(summary = "카테고리 목록 조회", description = "상품 등록/검색 시 사용되는 활성 카테고리 목록을 반환합니다.")
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getCategories() {
         return ResponseEntity.ok(ApiResponse.success("카테고리 조회에 성공했습니다.", categoryService.getActiveCategories()));
     }
 
     @GetMapping("/ai-models")
-    @Operation(summary = "AI 모델 목록 조회", description = "지원하는 AI 모델(Grok, nano-banana-pro 등) 목록을 반환합니다.")
-    public ResponseEntity<ApiResponse<List<AiModelDto>>> getAiModels() {
+    @Operation(summary = "AI 모델 목록 조회", description = "지원하는 활성 AI 모델(Grok, nano-banana-pro 등) 목록을 반환합니다.")
+    public ResponseEntity<ApiResponse<List<AiModelResponse>>> getAiModels() {
         return ResponseEntity.ok(ApiResponse.success("", aiModelService.getActiveAiModels()));
     }
 }

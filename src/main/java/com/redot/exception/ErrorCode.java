@@ -29,9 +29,9 @@ public enum ErrorCode {
     INVALID_TAG_COUNT(HttpStatus.BAD_REQUEST, "태그는 최소 3개, 최대 10개까지 등록 가능합니다."),
 
     // 상품(프롬프트) 관련 검증 (400 Bad Request)
-    PREVIEW_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "썸네일(미리보기) 이미지는 필수입니다."),
+    INVALID_PREVIEW_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "썸네일(미리보기) 이미지는 필수입니다."),
     LOOKBOOK_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "최소 1개 이상의 룩북 이미지가 필요합니다."),
-    REPRESENTATIVE_IMAGE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "대표 이미지는 최대 3개까지만 설정할 수 있습니다."),
+    INVALID_REPRESENTATIVE_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "대표 이미지는 최소 1장, 최대 3개까지 설정할 수 있습니다."),
     UNDEFINED_PROMPT_VARIABLE(HttpStatus.BAD_REQUEST, "프롬프트에 정의되지 않은 변수가 사용되었습니다."),
     IMAGE_NOT_BELONG_TO_PRODUCT(HttpStatus.BAD_REQUEST, "해당 상품에 속하지 않는 이미지입니다."),
     PREVIEW_MUST_BE_REPRESENTATIVE(HttpStatus.BAD_REQUEST, "프리뷰로 지정된 이미지는 반드시 대표 이미지여야 합니다."),

@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/metadata/**").permitAll()
                         .requestMatchers("/user/me/**").hasRole("USER")
                         .requestMatchers("/credit/**").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/image/{imageId}/download").hasRole("USER")
