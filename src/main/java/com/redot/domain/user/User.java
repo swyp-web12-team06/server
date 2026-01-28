@@ -218,4 +218,7 @@ public class User {
         this.deletedAt=null;
     }
 
+    public Long getCredit() {
+        return null;
+    }
 }
