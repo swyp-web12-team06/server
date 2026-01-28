@@ -1,5 +1,6 @@
 package com.redot.dto.prompt;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,9 +22,12 @@ public class GenerationRequest {
     @JsonProperty("ratio_y")
     private Integer ratioY;
 
+    private String aspectRatio;
+
     @JsonProperty("variable_values")
     private List<VariableSelection> variableValues;
 
+    @JsonIgnore
     public String getAspectRatio() {
         if (ratioX == null || ratioY == null) return "1:1";
         return ratioX + ":" + ratioY;
