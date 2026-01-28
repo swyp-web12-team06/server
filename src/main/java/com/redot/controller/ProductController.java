@@ -5,6 +5,8 @@ import com.redot.dto.common.ApiResponse;
 import com.redot.dto.product.ProductCreateRequest;
 import com.redot.dto.product.ProductResponse;
 import com.redot.dto.product.ProductUpdateRequest;
+import com.redot.dto.prompt.GenerationRequest;
+import com.redot.service.GenerationService;
 import com.redot.service.ProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+
+    private final GenerationService generationService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<Map<String, Long>>> registerProduct(
@@ -100,5 +104,15 @@ public class ProductController {
         Long userId = (user != null) ? Long.parseLong(user.getUsername()) : null;
         ProductResponse response = productService.getProductDetail(id, userId);
         return ResponseEntity.ok(ApiResponse.success("상품 조회에 성공했습니다.", response));
+    }
+
+    @PostMapping("/{id}/estimate")
+    public ResponseEntity<ApiResponse<Integer>> estimatePrice(
+            @PathVariable("id") Long promptId,
+            @RequestBody GenerationRequest request
+    ) {
+        int estimatedPrice = generationService.getEstimatedPrice(promptId, request);
+
+        return ResponseEntity.ok(ApiResponse.success("공통 메시지(예: 조회 성공)", estimatedPrice));
     }
 }

@@ -92,6 +92,7 @@ public class GenerationService {
                 .image_id(savedImage.getId())
                 .image_url(imageManager.getPublicUrl(savedImage.getImageUrl()))
                 .total_price(totalPrice)
+                .current_credit(user.getCreditBalance().longValue())
                 .build();
     }
 
@@ -100,6 +101,13 @@ public class GenerationService {
         if ("Nanobana Pro".equals(request.getAiModel())) price += 200;
         if ("2048".equals(request.getResolution())) price += 300;
         return price;
+    }
+
+    public int getEstimatedPrice(Long promptId, GenerationRequest request) {
+        Prompt prompt = promptRepository.findById(promptId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
+
+        return calculateTotalPrice(prompt, request);
     }
 
     public DownloadResponse getDownloadUrl(Long imageId) {
