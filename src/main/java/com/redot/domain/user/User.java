@@ -81,6 +81,8 @@ public class User {
     @Column
     private Instant termsAgreedAt;
 
+    private Long credit;
+
     @Builder.Default
     @Column(nullable = false)
     private Boolean marketingConsent = false;
@@ -216,9 +218,5 @@ public class User {
 
     public void clearDeletedAt() {
         this.deletedAt=null;
-    }
-
-    public Long getCredit() {
-        return null;
     }
 }
