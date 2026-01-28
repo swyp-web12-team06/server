@@ -12,6 +12,7 @@ import com.redot.exception.BusinessException;
 import com.redot.exception.ErrorCode;
 import com.redot.repository.PromptRepository;
 import com.redot.repository.user.UserRepository;
+import com.redot.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PromptRepository promptRepository;
+    private final ImageManager imageManager;
 
     @Transactional
     public String signup(Long userId, SignupRequest request) {
@@ -68,13 +70,26 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserProfileResponse getMyProfile(Long userId) {
         User user = findActiveUser(userId);
+        String fullUrl = imageManager.getPublicUrl(user.getProfileImageKey());
 
-        return UserProfileResponse.from(user);
+        return UserProfileResponse.from(user, fullUrl);
     }
 
     @Transactional
     public void updateProfile(Long userId, UserUpdateRequest request) {
         User user = findActiveUser(userId);
+
+        // 이미지 변경 시 기존 파일 삭제
+        if (request.profileImageKey() != null) { // 변경 또는 삭제("")
+            String oldKey = user.getProfileImageKey();
+            String newKey = request.profileImageKey();
+
+            // 기존에 사진이 있었고 새로운 사진과 다를 경우
+            if (oldKey != null && !oldKey.equals(newKey)) {
+                // R2 스토리지에서 파일 삭제 (false = 공개 버킷)
+                imageManager.delete(oldKey, false);
+            }
+        }
 
         // 닉네임 변경 시 중복 체크
         // 요청 닉네임 존재 && 기존 닉네임과 다를 때만 체크
@@ -86,7 +101,7 @@ public class UserService {
 
         user.updateProfile(
                 request.nickname(),
-                request.profileImageUrl(),
+                request.profileImageKey(),
                 request.bio()
         );
     }
@@ -94,8 +109,9 @@ public class UserService {
     @Transactional(readOnly = true)
     public PublicUserProfileResponse getPublicProfile(Long userId) {
         User user = findActiveUser(userId);
+        String fullUrl = imageManager.getPublicUrl(user.getProfileImageKey());
 
-        return PublicUserProfileResponse.from(user);
+        return PublicUserProfileResponse.from(user, fullUrl);
     }
 
     // 다른 서비스에서도 사용하기 위해 public으로 변경

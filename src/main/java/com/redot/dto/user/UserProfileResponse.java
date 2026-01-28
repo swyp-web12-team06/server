@@ -9,12 +9,12 @@ public record UserProfileResponse(
         String bio,
         Integer creditBalance
 ) {
-    public static UserProfileResponse from(User user) {
+    public static UserProfileResponse from(User user, String publicUrl) {
         return new UserProfileResponse(
                 user.getId(),
                 user.getNickname(),
                 user.getEmail(),
-                user.getProfileImageUrl(),
+                publicUrl,
                 user.getBio(),
                 user.getCreditBalance()
         );

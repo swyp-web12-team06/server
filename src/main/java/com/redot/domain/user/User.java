@@ -48,8 +48,8 @@ public class User {
     @ColumnDefault("false")
     private Boolean isBanned = false;
 
-    @Column(columnDefinition = "TEXT")
-    private String profileImageUrl;
+    @Column(name = "profile_image_key")
+    private String profileImageKey;
 
     @Column(length = 200)
     private String bio;
@@ -99,6 +99,16 @@ public class User {
     private static final String NICKNAME_REGEX = "^[a-zA-Z0-9가-힣_-]{2,15}$";
     private static final Pattern NICKNAME_PATTERN = Pattern.compile(NICKNAME_REGEX);
 
+
+//     @Builder
+//     public User(String email, String profileImageKey, Role role, String provider, String providerId) {
+//         this.email = email;
+//         this.profileImageKey = profileImageKey;
+//         this.role = role;
+//         this.provider = provider;
+//         this.providerId = providerId;
+//     }
+
     public void updateNickname(String newNickname) {
         if (newNickname == null || newNickname.isBlank()) {
             throw new BusinessException(ErrorCode.NICKNAME_MISSING);
@@ -126,13 +136,13 @@ public class User {
         this.nicknameUpdatedAt = Instant.now();
     }
 
-    public void updateProfile(String nickname, String profileImageUrl, String bio) {
+    public void updateProfile(String nickname, String profileImageKey, String bio) {
         if (nickname != null) {
             this.updateNickname(nickname);
         }
 
-        if (profileImageUrl != null) { //빈 문자열 ""이 오면 삭제로 간주
-            this.profileImageUrl = profileImageUrl.isEmpty() ? null : profileImageUrl;
+        if (profileImageKey != null) { //빈 문자열 ""이 오면 삭제로 간주
+            this.profileImageKey = profileImageKey.isEmpty() ? null : profileImageKey;
         }
 
         if (bio != null) { //빈 문자열 ""이 오면 삭제로 간주
@@ -202,7 +212,7 @@ public class User {
         this.role = Role.GUEST;
         this.email = null;
         this.nickname = null;
-        this.profileImageUrl = null;
+        this.profileImageKey = null;
         this.bio = null;
         this.nicknameUpdatedAt = null;
         this.creditBalance = 0;
