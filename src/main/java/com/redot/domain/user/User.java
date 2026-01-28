@@ -227,5 +227,4 @@ public class User {
     public void clearDeletedAt() {
         this.deletedAt=null;
     }
-
 }
