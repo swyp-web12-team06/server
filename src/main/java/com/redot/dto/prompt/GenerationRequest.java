@@ -16,13 +16,13 @@ public class GenerationRequest {
     private String resolution;
     private String aiModel;
 
+    private String aspect_ratio;
+
     @JsonProperty("ratio_x")
     private Integer ratioX;
 
     @JsonProperty("ratio_y")
     private Integer ratioY;
-
-    private String aspectRatio;
 
     @JsonProperty("variable_values")
     private List<VariableSelection> variableValues;
