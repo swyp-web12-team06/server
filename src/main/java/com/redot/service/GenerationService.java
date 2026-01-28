@@ -103,6 +103,13 @@ public class GenerationService {
         return price;
     }
 
+    public int getEstimatedPrice(Long promptId, GenerationRequest request) {
+        Prompt prompt = promptRepository.findById(promptId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
+
+        return calculateTotalPrice(prompt, request);
+    }
+
     public DownloadResponse getDownloadUrl(Long imageId) {
         GeneratedImage image = generatedImageRepository.findById(imageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
