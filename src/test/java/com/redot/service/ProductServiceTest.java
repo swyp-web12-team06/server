@@ -262,7 +262,7 @@ class ProductServiceTest {
 
         @ParameterizedTest(name = "태그 검증 실패: {1}")
         @MethodSource("provideInvalidTagScenarios")
-        @DisplayName("태그 정책 위반 시 오류 발샏 (최소 3개, 최대 10개, 중복 제외)")
+        @DisplayName("태그 정책 위반 시 오류 발생 (최소 2개, 최대 5개, 2~12자, 한글/영문/숫자, 공백 허용)")
         void productRegister_TagValidation_Fail(List<String> invalidTags, ErrorCode expectedErrorCode) {
             // given
             User testUser = User.builder()
@@ -311,38 +311,48 @@ class ProductServiceTest {
                     Arguments.of(null, ErrorCode.INVALID_TAG_COUNT),
                     Arguments.of(List.of(), ErrorCode.INVALID_TAG_COUNT),
 
-                    // 태그 개수가 부족할 때
+                    // 태그 개수가 부족할 때 (최소 2개)
                     Arguments.of(List.of(
                             "태그1"
-                    ), ErrorCode.INVALID_TAG_COUNT),
-                    Arguments.of(List.of(
-                            "태그1",
-                            "태그2"
                     ), ErrorCode.INVALID_TAG_COUNT),
 
                     // 태그 중복으로 개수가 모자랄 때
                     Arguments.of(List.of(
                             "Java",
-                            "Java",
-                            "Python"
+                            "Java"
                     ), ErrorCode.INVALID_TAG_COUNT),
                     Arguments.of(List.of(
                             "Java",
-                            "Python",
                             "      "
                     ), ErrorCode.INVALID_TAG_COUNT),
 
-                    // 태그 개수가 초과되었을 때
+                    // 태그 개수가 초과되었을 때 (최대 5개)
                     Arguments.of(List.of(
-                            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"
-                    ), ErrorCode.INVALID_TAG_COUNT)
+                            "태그1", "태그2", "태그3", "태그4", "태그5", "태그6"
+                    ), ErrorCode.INVALID_TAG_COUNT),
+
+                    // 태그 길이가 너무 짧을 때 (최소 2자)
+                    Arguments.of(List.of(
+                            "태그12",
+                            "A"
+                    ), ErrorCode.INVALID_TAG_LENGTH),
+
+                    // 태그 길이가 너무 길 때 (최대 12자)
+                    Arguments.of(List.of(
+                            "태그1",
+                            "이것은정말너무긴태그입니다"
+                    ), ErrorCode.INVALID_TAG_LENGTH),
+
+                    // 태그에 특수문자가 포함된 경우
+                    Arguments.of(List.of(
+                            "태그1",
+                            "태그-2"
+                    ), ErrorCode.INVALID_TAG_FORMAT),
+                    Arguments.of(List.of(
+                            "태그1",
+                            "태그_2"
+                    ), ErrorCode.INVALID_TAG_FORMAT)
             );
-        }
-
-        @Test
-        @DisplayName("상품 등록 시 엔티티가 올바른 데이터(가격 변환 포함)로 생성되어 저장된다")
-        void productRegister_PromptEntity_Success() {
-
         }
     }
 }
