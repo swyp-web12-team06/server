@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 @Table(name = "categories")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,4 +37,14 @@ public class Category {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Builder
+    public Category(String name, Integer orderIndex, Boolean isActive) {
+        this.name = name;
+        this.orderIndex = orderIndex;
+
+        // 기본값 설정
+        this.isActive = (isActive != null) ? isActive : true;
+        this.orderIndex = (orderIndex != null) ? orderIndex : 0;
+    }
 }

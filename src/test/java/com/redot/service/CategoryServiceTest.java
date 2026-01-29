@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
@@ -29,24 +30,34 @@ class CategoryServiceTest {
     @InjectMocks
     private CategoryService categoryService;
 
+    // 테스트용 엔티티 생성 헬퍼 메서드
+    private <T> T createEntity(Class<T> clazz) {
+        try {
+            var constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("엔티티 생성 실패: " + clazz.getName(), e);
+        }
+    }
+
     @Test
     @DisplayName("모든 활성 카테고리 목록을 조회한다.")
     void findActiveCategory_Success() {
         // given
-        List<Category> testCategories = List.of(
-                Category.builder()
-                        .id(1L)
-                        .name("풍경")
-                        .orderIndex(1)
-                        .isActive(true)
-                        .build(),
-                Category.builder()
-                        .id(2L)
-                        .name("인물")
-                        .orderIndex(2)
-                        .isActive(true)
-                        .build()
-        );
+        Category category1 = createEntity(Category.class);
+        setField(category1, "id", 1L);
+        setField(category1, "name", "풍경");
+        setField(category1, "orderIndex", 1);
+        setField(category1, "isActive", true);
+
+        Category category2 = createEntity(Category.class);
+        setField(category2, "id", 2L);
+        setField(category2, "name", "인물");
+        setField(category2, "orderIndex", 2);
+        setField(category2, "isActive", true);
+
+        List<Category> testCategories = List.of(category1, category2);
 
         given(categoryRepository.findAllByIsActiveTrueOrderByOrderIndexAsc())
                 .willReturn(testCategories);
