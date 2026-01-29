@@ -351,10 +351,6 @@ class ProductServiceTest {
                     Arguments.of(List.of(
                             "태그1",
                             "태그_2"
-                    ), ErrorCode.INVALID_TAG_FORMAT),
-                    Arguments.of(List.of(
-                            "태그1",
-                            "태그 2"
                     ), ErrorCode.INVALID_TAG_FORMAT)
             );
         }

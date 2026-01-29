@@ -28,7 +28,7 @@ public enum ErrorCode {
     INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "결제 금액이 유효하지 않습니다. (최소 3,000원 ~ 최대 50,000원)"),
     INVALID_TAG_COUNT(HttpStatus.BAD_REQUEST, "태그는 최소 2개, 최대 5개까지 등록 가능합니다."),
     INVALID_TAG_LENGTH(HttpStatus.BAD_REQUEST, "태그는 2~12자 이내여야 합니다."),
-    INVALID_TAG_FORMAT(HttpStatus.BAD_REQUEST, "태그는 한글, 영문, 숫자만 사용 가능합니다."),
+    INVALID_TAG_FORMAT(HttpStatus.BAD_REQUEST, "태그는 한글, 영문, 숫자, 공백만 사용 가능합니다."),
 
     // 상품(프롬프트) 관련 검증 (400 Bad Request)
     INVALID_PREVIEW_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "썸네일(미리보기) 이미지는 필수입니다."),

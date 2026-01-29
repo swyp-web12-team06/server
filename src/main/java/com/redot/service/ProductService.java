@@ -200,8 +200,8 @@ public class ProductService {
                 throw new BusinessException(ErrorCode.INVALID_TAG_LENGTH);
             }
 
-            // 형식 검증 (한글, 영문, 숫자만 허용)
-            if (!tag.matches("^[가-힣a-zA-Z0-9]+$")) {
+            // 형식 검증 (한글, 영문, 숫자, 공백만 허용)
+            if (!tag.matches("^[가-힣a-zA-Z0-9\\s]+$")) {
                 throw new BusinessException(ErrorCode.INVALID_TAG_FORMAT);
             }
         }
