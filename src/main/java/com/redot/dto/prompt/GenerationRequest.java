@@ -14,6 +14,8 @@ public class GenerationRequest {
     private String promptText;
 
     private String resolution;
+
+    @JsonProperty("ai_model")
     private String aiModel;
 
     private String aspect_ratio;
