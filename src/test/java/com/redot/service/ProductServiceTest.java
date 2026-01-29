@@ -2,6 +2,8 @@ package com.redot.service;
 
 import com.redot.domain.AiModel;
 import com.redot.domain.Category;
+import com.redot.domain.Prompt;
+import com.redot.domain.Tag;
 import com.redot.domain.user.User;
 import com.redot.dto.product.LookbookImageCreateDto;
 import com.redot.dto.product.ProductCreateRequest;
@@ -24,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -362,7 +365,75 @@ class ProductServiceTest {
         @Test
         @DisplayName("상품 등록 성공 - 모든 데이터 정상")
         void registerProduct_AllValid_Success() {
-            // TODO: 구현 필요
+            // given
+            Long userId = 1L;
+            User testUser = createEntity(User.class);
+            setField(testUser, "id", userId);
+
+            Long categoryId = 1L;
+            Category testCategory = createEntity(Category.class);
+            setField(testCategory, "id", categoryId);
+
+            Long modelId = 1L;
+            AiModel testAiModel = createEntity(AiModel.class);
+            setField(testAiModel, "id", modelId);
+
+            // 태그 생성
+            Tag tag1 = createEntity(Tag.class);
+            setField(tag1, "id", 1L);
+            setField(tag1, "name", "Java");
+
+            Tag tag2 = createEntity(Tag.class);
+            setField(tag2, "id", 2L);
+            setField(tag2, "name", "Spring");
+
+            given(userService.findActiveUser(userId))
+                    .willReturn(testUser);
+            given(categoryService.getCategoryOrThrow(categoryId))
+                    .willReturn(testCategory);
+            given(aiModelService.getModelOrThrow(modelId))
+                    .willReturn(testAiModel);
+            given(tagService.findOrCreateTags(Set.of("Java", "Spring")))
+                    .willReturn(Set.of(tag1, tag2));
+
+            // 이미지 DTO 생성
+            List<LookbookImageCreateDto> images = List.of(
+                    LookbookImageCreateDto.builder()
+                            .imageUrl("https://example.com/image1.jpg")
+                            .isRepresentative(true)
+                            .isPreview(true)
+                            .build()
+            );
+
+            // 상품 등록 요청 DTO
+            ProductCreateRequest request = ProductCreateRequest.builder()
+                    .title("테스트 상품")
+                    .description("테스트 설명")
+                    .categoryId(categoryId)
+                    .modelId(modelId)
+                    .price(900) // 100원 단위, 500~1000원 범위
+                    .masterPrompt("이것은 테스트 프롬프트입니다.")
+                    .images(images)
+                    .tags(List.of("Java", "Spring"))
+                    .build();
+
+            // Prompt 저장 시 ID 반환하도록 mock 설정
+            Long expectedPromptId = 100L;
+            given(promptRepository.save(org.mockito.ArgumentMatchers.any(Prompt.class)))
+                    .willAnswer(invocation -> {
+                        Prompt savedPrompt = invocation.getArgument(0);
+                        setField(savedPrompt, "id", expectedPromptId);
+                        return savedPrompt;
+                    });
+
+            // when
+            Long resultId = productService.registerProduct(userId, request);
+
+            // then
+            assertThat(resultId).isEqualTo(expectedPromptId);
+
+            // save 메서드가 호출되었는지 검증
+            org.mockito.Mockito.verify(promptRepository).save(org.mockito.ArgumentMatchers.any(Prompt.class));
         }
 
         @Test
