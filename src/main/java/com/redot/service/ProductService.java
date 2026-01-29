@@ -188,9 +188,22 @@ public class ProductService {
                 .map(String::trim)
                 .collect(Collectors.toSet());
 
-        // 개수 검증
-        if (uniqueTags.size() < 3 || uniqueTags.size() > 10) {
+        // 개수 검증 (2~5개)
+        if (uniqueTags.size() < 2 || uniqueTags.size() > 5) {
             throw new BusinessException(ErrorCode.INVALID_TAG_COUNT);
+        }
+
+        // 각 태그별 길이 및 형식 검증
+        for (String tag : uniqueTags) {
+            // 길이 검증 (2~12자)
+            if (tag.length() < 2 || tag.length() > 12) {
+                throw new BusinessException(ErrorCode.INVALID_TAG_LENGTH);
+            }
+
+            // 형식 검증 (한글, 영문, 숫자만 허용)
+            if (!tag.matches("^[가-힣a-zA-Z0-9]+$")) {
+                throw new BusinessException(ErrorCode.INVALID_TAG_FORMAT);
+            }
         }
 
         return uniqueTags;
