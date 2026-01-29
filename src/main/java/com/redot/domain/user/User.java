@@ -19,8 +19,6 @@ import java.util.regex.Pattern;
 @DynamicInsert
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Builder
-@AllArgsConstructor
 @Table(name = "users")
 public class User {
     @Id
@@ -38,12 +36,10 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("0")
     private Integer warningCount = 0;
 
-    @Builder.Default
     @Column(nullable = false)
     @ColumnDefault("false")
     private Boolean isBanned = false;
@@ -60,7 +56,6 @@ public class User {
     @Column(name = "delete_reason", length = 300)
     private String deleteReason;
 
-    @Builder.Default
     @Column(name = "credit_balance", nullable = false)
     @ColumnDefault("0")
     private Integer creditBalance = 0;
@@ -74,14 +69,12 @@ public class User {
     @Column(nullable = true)
     private String providerId;
 
-    @Builder.Default
     @Column(nullable = false)
     private Boolean termsAgreed = false;
 
     @Column
     private Instant termsAgreedAt;
 
-    @Builder.Default
     @Column(nullable = false)
     private Boolean marketingConsent = false;
 
@@ -100,14 +93,14 @@ public class User {
     private static final Pattern NICKNAME_PATTERN = Pattern.compile(NICKNAME_REGEX);
 
 
-//     @Builder
-//     public User(String email, String profileImageKey, Role role, String provider, String providerId) {
-//         this.email = email;
-//         this.profileImageKey = profileImageKey;
-//         this.role = role;
-//         this.provider = provider;
-//         this.providerId = providerId;
-//     }
+     @Builder
+     public User(String email, String profileImageKey, Role role, String provider, String providerId) {
+         this.email = email;
+         this.profileImageKey = profileImageKey;
+         this.role = role;
+         this.provider = provider;
+         this.providerId = providerId;
+     }
 
     public void updateNickname(String newNickname) {
         if (newNickname == null || newNickname.isBlank()) {

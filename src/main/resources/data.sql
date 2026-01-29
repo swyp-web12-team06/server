@@ -352,3 +352,6 @@ VALUES (2, 2, '색상2', '색상2', '이미지의 주된 색상을 정합니다'
 
 INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
 VALUES (3, 3, '색상3', '색상3', '이미지의 주된 색상을 정합니다', 3);
+
+INSERT IGNORE INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
+VALUES (1, 'https://picsum.photos/seed/lb3/300/300', true, false);

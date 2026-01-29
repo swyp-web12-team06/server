@@ -7,8 +7,6 @@ import lombok.*;
 @Getter
 @Table(name = "prompt_variables")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 public class PromptVariable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +29,7 @@ public class PromptVariable {
     @Column(name = "order_index")
     private Integer orderIndex;
 
+    @Builder
     public PromptVariable(Prompt prompt, String keyName, String variableName, String description, Integer orderIndex) {
         this.prompt = prompt;
         this.keyName = keyName;
