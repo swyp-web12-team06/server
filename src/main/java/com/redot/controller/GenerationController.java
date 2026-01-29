@@ -2,6 +2,7 @@ package com.redot.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redot.dto.common.ApiResponse;
 import com.redot.dto.prompt.DownloadResponse;
 import com.redot.dto.prompt.GenerationRequest;
 import com.redot.dto.prompt.GenerationResponse;
@@ -36,9 +37,11 @@ public class GenerationController {
     }
 
     @GetMapping("/images/{imageId}/download")
-    public ResponseEntity<DownloadResponse> downloadImage(@PathVariable Long imageId) {
-        // 서비스 호출하여 결과 반환
+    public ResponseEntity<ApiResponse<DownloadResponse>> downloadImage(
+            @PathVariable Long imageId
+    ) {
         DownloadResponse response = generationService.getDownloadUrl(imageId);
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.ok(ApiResponse.success("다운로드 URL 발급 성공", response));
     }
 }

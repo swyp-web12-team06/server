@@ -89,17 +89,26 @@ public class GenerationService {
         }
 
         return GenerationResponse.builder()
-                .image_id(savedImage.getId())
-                .image_url(imageManager.getPublicUrl(savedImage.getImageUrl()))
-                .total_price(totalPrice)
-                .current_credit(user.getCreditBalance().longValue())
+                .imageId(savedImage.getId())
+                .imageUrl(imageManager.getPublicUrl(savedImage.getImageUrl()))
+                .totalPrice(totalPrice)
+                .currentCredit(user.getCreditBalance().longValue())
                 .build();
     }
 
     private int calculateTotalPrice(Prompt prompt, GenerationRequest request) {
         int price = prompt.getPrice();
-        if ("Nanobana Pro".equals(request.getAiModel())) price += 200;
-        if ("2048".equals(request.getResolution())) price += 300;
+
+        // 1. 모델/해상도 옵션가
+        if ("nano-banana-pro".equals(request.getAiModel())) price += 200;
+        if ("4K".equals(request.getResolution())) price += 300;
+
+        // 2. 변수 개수만큼 추가
+        if (request.getVariableValues() != null) {
+            int extraFromVariables = request.getVariableValues().size() * 100;
+            price += extraFromVariables;
+        }
+
         return price;
     }
 
@@ -111,10 +120,14 @@ public class GenerationService {
     }
 
     public DownloadResponse getDownloadUrl(Long imageId) {
+
         GeneratedImage image = generatedImageRepository.findById(imageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
+
+        String secureUrl = imageManager.getPresignedGetUrl(image.getImageUrl());
+
         return DownloadResponse.builder()
-                .download_url(imageManager.getPublicUrl(image.getImageUrl()))
+                .downloadUrl(secureUrl)
                 .build();
     }
 

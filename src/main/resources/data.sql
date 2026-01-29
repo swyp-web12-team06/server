@@ -343,3 +343,15 @@ VALUES (1, 'https://picsum.photos/seed/lb2/300/300', true, true);
 
 INSERT IGNORE INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
 VALUES (1, 'https://picsum.photos/seed/lb3/300/300', true, false);
+
+INSERT IGNORE INTO ai_models (name, is_active, order_index, created_at, updated_at)
+VALUES ('grok-imagine/text-to-image', 1, 1, NOW(), NOW());
+
+INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
+VALUES (2, 2, '색상2', '색상2', '이미지의 주된 색상을 정합니다', 2);
+
+INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
+VALUES (3, 3, '색상3', '색상3', '이미지의 주된 색상을 정합니다', 3);
+
+INSERT IGNORE INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
+VALUES (1, 'https://picsum.photos/seed/lb3/300/300', true, false);
