@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -50,6 +51,17 @@ class ProductServiceTest {
 
     @InjectMocks
     ProductService productService;
+
+    // 테스트용 엔티티 생성 헬퍼 메서드
+    private <T> T createEntity(Class<T> clazz) {
+        try {
+            var constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("엔티티 생성 실패: " + clazz.getName(), e);
+        }
+    }
 
     @Nested
     @DisplayName("상품 생성 기능 테스트")
@@ -75,12 +87,11 @@ class ProductServiceTest {
             // given
             Long categoryId = 200L;
 
-            User testUser = User.builder()
-                    .id(1L)
-                    .build();
+            User testUser = createEntity(User.class);
+            setField(testUser, "id", 1L);
 
             given(userService.findActiveUser(1L))
-                    .willReturn(testUser); // 혹은 User 객체 생성
+                    .willReturn(testUser);
 
             given(categoryService.getCategoryOrThrow(categoryId))
                     .willThrow(new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
@@ -101,13 +112,11 @@ class ProductServiceTest {
         @DisplayName("modelId 검색 실패 시 예외 발생 테스트")
         void productRegister_AiModelFind_Fail() {
             // given
-            User testUser = User.builder()
-                    .id(1L)
-                    .build();
+            User testUser = createEntity(User.class);
+            setField(testUser, "id", 1L);
 
-            Category testCategory = Category.builder()
-                    .id(1L)
-                    .build();
+            Category testCategory = createEntity(Category.class);
+            setField(testCategory, "id", 1L);
 
             given(userService.findActiveUser(1L))
                     .willReturn(testUser);
@@ -141,17 +150,14 @@ class ProductServiceTest {
         @DisplayName("가격 정책 검증 실패 시(100원 단위, 500~1000원 이내) 예외 발생 테스트")
         void productRegister_ProductPriceValid_Fail(int invalidPrice, ErrorCode expectedErrorCode) {
             // given
-            User testUser = User.builder()
-                    .id(1L)
-                    .build();
+            User testUser = createEntity(User.class);
+            setField(testUser, "id", 1L);
 
-            Category testCategory = Category.builder()
-                    .id(1L)
-                    .build();
+            Category testCategory = createEntity(Category.class);
+            setField(testCategory, "id", 1L);
 
-            AiModel testAiModel = AiModel.builder()
-                    .id(1L)
-                    .build();
+            AiModel testAiModel = createEntity(AiModel.class);
+            setField(testAiModel, "id", 1L);
 
             given(userService.findActiveUser(1L))
                     .willReturn(testUser);
@@ -180,15 +186,14 @@ class ProductServiceTest {
         @DisplayName("이미지 정책 위반 시 예외 발생 (대표 이미지 개수, 프리뷰 설정 등)")
         void productRegister_InvalidImageScenario_Fail(List<LookbookImageCreateDto> invalidImages, ErrorCode expectedErrorCode) {
             // given
-            User testUser = User.builder()
-                    .id(1L)
-                    .build();
-            Category testCategory = Category.builder()
-                    .id(1L)
-                    .build();
-            AiModel testAiModel = AiModel.builder()
-                    .id(1L)
-                    .build();
+            User testUser = createEntity(User.class);
+            setField(testUser, "id", 1L);
+
+            Category testCategory = createEntity(Category.class);
+            setField(testCategory, "id", 1L);
+
+            AiModel testAiModel = createEntity(AiModel.class);
+            setField(testAiModel, "id", 1L);
 
             given(userService.findActiveUser(1L))
                     .willReturn(testUser);
@@ -265,15 +270,14 @@ class ProductServiceTest {
         @DisplayName("태그 정책 위반 시 오류 발생 (최소 2개, 최대 5개, 2~12자, 한글/영문/숫자, 공백 허용)")
         void productRegister_TagValidation_Fail(List<String> invalidTags, ErrorCode expectedErrorCode) {
             // given
-            User testUser = User.builder()
-                    .id(1L)
-                    .build();
-            Category testCategory = Category.builder()
-                    .id(1L)
-                    .build();
-            AiModel testAiModel = AiModel.builder()
-                    .id(1L)
-                    .build();
+            User testUser = createEntity(User.class);
+            setField(testUser, "id", 1L);
+
+            Category testCategory = createEntity(Category.class);
+            setField(testCategory, "id", 1L);
+
+            AiModel testAiModel = createEntity(AiModel.class);
+            setField(testAiModel, "id", 1L);
 
             given(userService.findActiveUser(1L))
                     .willReturn(testUser);
