@@ -26,7 +26,7 @@ public class ProductUpdateRequest {
 
     private Long previewImageId; // 기존 룩북 이미지 중 하나를 선택 (ID)
 
-    @Size(min = 3, max = 10, message = "태그는 최소 3개, 최대 10개까지 등록 가능합니다.")
+    @Size(min = 2, max = 5, message = "태그는 최소 2개, 최대 5개까지 등록 가능합니다.")
     private List<String> tags;
 
     @Size(max = 3, message = "대표 이미지는 최대 3개까지 선택 가능합니다.")
