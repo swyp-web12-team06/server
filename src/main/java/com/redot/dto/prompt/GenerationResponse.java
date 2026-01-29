@@ -1,13 +1,21 @@
 package com.redot.dto.prompt;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
 public class GenerationResponse {
-    private Long image_id;
-    private String image_url;
-    private int total_price;
-    private Long current_credit;
+    @JsonProperty("image_id")
+    private Long imageId;
+
+    @JsonProperty("image_url")
+    private String imageUrl;
+
+    @JsonProperty("total_price")
+    private int totalPrice;
+
+    @JsonProperty("current_credit")
+    private Long currentCredit;
 }
