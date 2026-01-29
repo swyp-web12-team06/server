@@ -328,27 +328,27 @@ INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description)
                                                                                      (2, 30000, 0.10, '10% Bonus'),
                                                                                      (3, 50000, 0.15, '15% Bonus');
 
-INSERT INTO purchases (user_id, prompt_id, purchased_at)
+INSERT IGNORE INTO purchases (user_id, prompt_id, purchased_at)
 VALUES (1, 1, CURRENT_TIMESTAMP);
 
-INSERT INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
+INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
 VALUES (1, 1, 'color', '색상', '이미지의 주된 색상을 정합니다', 1);
 
 -- Lookbook Images (Picsum 적용)
-INSERT INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
+INSERT IGNORE INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
 VALUES (1, 'https://picsum.photos/seed/lb1/300/300', true, false);
 
-INSERT INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
+INSERT IGNORE INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
 VALUES (1, 'https://picsum.photos/seed/lb2/300/300', true, true);
 
-INSERT INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
+INSERT IGNORE INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
 VALUES (1, 'https://picsum.photos/seed/lb3/300/300', true, false);
 
-INSERT INTO ai_models (name, is_active, order_index, created_at, updated_at)
+INSERT IGNORE INTO ai_models (name, is_active, order_index, created_at, updated_at)
 VALUES ('grok-imagine/text-to-image', 1, 1, NOW(), NOW());
 
-INSERT INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
+INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
 VALUES (2, 2, '색상2', '색상2', '이미지의 주된 색상을 정합니다', 2);
 
-INSERT INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
+INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
 VALUES (3, 3, '색상3', '색상3', '이미지의 주된 색상을 정합니다', 3);
