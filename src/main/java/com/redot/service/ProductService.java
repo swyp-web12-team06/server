@@ -224,6 +224,11 @@ public class ProductService {
             throw new BusinessException(ErrorCode.LOOKBOOK_IMAGE_REQUIRED);
         }
 
+        // 💡 [추가할 로직] 최대 10장 제한 체크
+        if (images.size() > 10) {
+            throw new BusinessException(ErrorCode.TOO_MANY_IMAGES);
+        }
+
         int totalImageCount = images.size();
 
         // 1. 대표 이미지 개수 검증 (총 이미지 개수에 따라 정확히 맞아야 함)

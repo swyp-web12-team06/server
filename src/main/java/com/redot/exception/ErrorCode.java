@@ -38,6 +38,7 @@ public enum ErrorCode {
     INCOMPLETE_VARIABLE_OPTIONS(HttpStatus.BAD_REQUEST, "룩북 이미지의 모든 변수에 대한 값을 지정해야 합니다."),
     IMAGE_NOT_BELONG_TO_PRODUCT(HttpStatus.BAD_REQUEST, "해당 상품에 속하지 않는 이미지입니다."),
     PREVIEW_MUST_BE_REPRESENTATIVE(HttpStatus.BAD_REQUEST, "프리뷰로 지정된 이미지는 반드시 대표 이미지여야 합니다."),
+    TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "룩북 이미지는 최대 10장입니다."),
 
     // 이미지 검증 관련 (400 Bad Request)
     IMAGE_FILE_EMPTY(HttpStatus.BAD_REQUEST, "이미지 파일이 비어있습니다."),
