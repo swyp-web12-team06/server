@@ -2,6 +2,7 @@ package com.redot.service;
 
 import com.redot.domain.AiModel;
 import com.redot.domain.ModelOption;
+import com.redot.domain.ModelOptionType;
 import com.redot.dto.product.metadata.AiModelResponse;
 import com.redot.exception.BusinessException;
 import com.redot.exception.ErrorCode;
@@ -39,14 +40,14 @@ public class AiModelService {
     }
 
     public List<String> getModelAspectRatios(Long modelId) {
-        return modelOptionRepository.findByAiModelIdAndOptionTypeAndIsActiveTrueOrderByOrderIndexAsc(modelId, "aspect_ratio")
+        return modelOptionRepository.findByAiModel_IdAndModelOptionTypeAndIsActiveTrueOrderByOrderIndexAsc(modelId, ModelOptionType.ASPECT_RATIO)
                 .stream()
                 .map(ModelOption::getOptionValue)
                 .collect(Collectors.toList());
     }
 
     public List<String> getModelResolutions(Long modelId) {
-        return modelOptionRepository.findByAiModelIdAndOptionTypeAndIsActiveTrueOrderByOrderIndexAsc(modelId, "resolution")
+        return modelOptionRepository.findByAiModel_IdAndModelOptionTypeAndIsActiveTrueOrderByOrderIndexAsc(modelId, ModelOptionType.RESOLUTION)
                 .stream()
                 .map(ModelOption::getOptionValue)
                 .collect(Collectors.toList());

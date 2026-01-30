@@ -454,6 +454,7 @@ public class ProductService {
         return UserProductStatus.NOT_PURCHASED;
     }
 
+    // 구매페이지용 조회 서비스
     public ProductPurchaseResponse getProductForPurchase(Long promptId) {
         Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));

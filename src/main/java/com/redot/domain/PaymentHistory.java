@@ -16,7 +16,9 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class) // 생성일 자동 기록
 public class PaymentHistory {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "payment_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

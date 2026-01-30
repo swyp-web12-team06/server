@@ -16,9 +16,6 @@ public class CreditChargeOption {
     @Column(nullable = false)
     private Integer amount; // 결제 금액 (KRW)
 
-    // 화면 표시 순서 등을 위해 필요한 경우 추가 가능
-    // private Integer displayOrder;
-
     public CreditChargeOption(Integer amount) {
         this.amount = amount;
     }
