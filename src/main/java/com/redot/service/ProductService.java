@@ -4,6 +4,7 @@ import com.redot.domain.*;
 import com.redot.domain.user.User;
 import com.redot.dto.product.LookbookImageCreateDto;
 import com.redot.dto.product.ProductCreateRequest;
+import com.redot.dto.product.ProductPurchaseResponse;
 import com.redot.dto.product.ProductResponse;
 import com.redot.dto.product.ProductUpdateRequest;
 import com.redot.dto.product.PromptVariableCreateDto;
@@ -116,7 +117,6 @@ public class ProductService {
             PromptVariable variable = PromptVariable.builder()
                     .prompt(prompt)
                     .keyName(cleanKey)
-                    .variableName(detail != null ? detail.getVariableName() : cleanKey)
                     .description(detail != null ? detail.getDescription() : null)
                     .orderIndex(detail != null ? detail.getOrderIndex() : null)
                     .build();
@@ -135,6 +135,8 @@ public class ProductService {
         Map<String, PromptVariable> variableMap = variables.stream()
                 .collect(Collectors.toMap(PromptVariable::getKeyName, v -> v));
 
+        int totalVariableCount = variables.size();
+
         for (LookbookImageCreateDto imgDto : imageDtos) {
             // 이미지 엔티티 생성
             LookbookImage lookbookImage = new LookbookImage(
@@ -146,7 +148,12 @@ public class ProductService {
             prompt.addLookbookImage(lookbookImage);
 
             // 옵션 값 매핑
-            if (imgDto.getOptionValues() != null) {
+            if (imgDto.getOptionValues() != null && !imgDto.getOptionValues().isEmpty()) {
+                // 변수가 있는데 옵션 값이 없거나, 개수가 맞지 않으면 에러
+                if (imgDto.getOptionValues().size() != totalVariableCount) {
+                    throw new BusinessException(ErrorCode.INCOMPLETE_VARIABLE_OPTIONS);
+                }
+
                 imgDto.getOptionValues().forEach((key, value) -> {
                     String cleanKey = key.trim();
 
@@ -159,6 +166,9 @@ public class ProductService {
                         throw new BusinessException(ErrorCode.UNDEFINED_PROMPT_VARIABLE);
                     }
                 });
+            } else if (totalVariableCount > 0) {
+                // 변수는 있는데 옵션 값이 없으면 에러
+                throw new BusinessException(ErrorCode.INCOMPLETE_VARIABLE_OPTIONS);
             }
         }
     }
@@ -214,13 +224,22 @@ public class ProductService {
             throw new BusinessException(ErrorCode.LOOKBOOK_IMAGE_REQUIRED);
         }
 
-        // 1. 대표 이미지 개수 검증 (1~3개)
+        // 💡 [추가할 로직] 최대 10장 제한 체크
+        if (images.size() > 10) {
+            throw new BusinessException(ErrorCode.TOO_MANY_IMAGES);
+        }
+
+        int totalImageCount = images.size();
+
+        // 1. 대표 이미지 개수 검증 (총 이미지 개수에 따라 정확히 맞아야 함)
+        // 1장: 1개 representative, 2장: 2개 representative, 3장 이상: 3개 representative
         long representativeCount = images.stream()
                 .filter(img -> Boolean.TRUE.equals(img.getIsRepresentative()))
                 .count();
 
-        if (representativeCount < 1 || representativeCount > 3) {
-            throw new BusinessException(ErrorCode.INVALID_REPRESENTATIVE_IMAGE_COUNT); // "대표 이미지는 1장 이상 3장 이하이어야 합니다"
+        int expectedRepresentativeCount = Math.min(totalImageCount, 3);
+        if (representativeCount != expectedRepresentativeCount) {
+            throw new BusinessException(ErrorCode.INVALID_REPRESENTATIVE_IMAGE_COUNT);
         }
 
         // 프리뷰 이미지 개수 검증 (정확히 1개여야 함)
@@ -438,5 +457,22 @@ public class ProductService {
             return UserProductStatus.PURCHASED;
         }
         return UserProductStatus.NOT_PURCHASED;
+    }
+
+    // 구매페이지용 조회 서비스
+    public ProductPurchaseResponse getProductForPurchase(Long promptId) {
+        Prompt prompt = promptRepository.findById(promptId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
+
+        if (prompt.getIsDeleted()) {
+            throw new BusinessException(ErrorCode.PROMPT_NOT_FOUND);
+        }
+
+        // AiModelService를 통해 모델 옵션 조회
+        Long modelId = prompt.getAiModel().getId();
+        List<String> aspectRatios = aiModelService.getModelAspectRatios(modelId);
+        List<String> resolutions = aiModelService.getModelResolutions(modelId);
+
+        return ProductPurchaseResponse.from(prompt, aspectRatios, resolutions);
     }
 }

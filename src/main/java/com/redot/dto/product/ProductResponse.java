@@ -47,7 +47,6 @@ public class ProductResponse {
     public static class PromptVariableDetail {
         private Long id;
         private String keyName;
-        private String variableName;
         private String description;
         private Integer orderIndex;
     }
@@ -108,7 +107,6 @@ public class ProductResponse {
                         .map(variable -> PromptVariableDetail.builder()
                                 .id(variable.getId())
                                 .keyName(variable.getKeyName())
-                                .variableName(variable.getVariableName())
                                 .description(variable.getDescription())
                                 .orderIndex(variable.getOrderIndex())
                                 .build())

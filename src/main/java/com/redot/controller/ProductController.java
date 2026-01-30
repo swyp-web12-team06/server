@@ -3,6 +3,7 @@ package com.redot.controller;
 import java.util.Map;
 import com.redot.dto.common.ApiResponse;
 import com.redot.dto.product.ProductCreateRequest;
+import com.redot.dto.product.ProductPurchaseResponse;
 import com.redot.dto.product.ProductResponse;
 import com.redot.dto.product.ProductUpdateRequest;
 import com.redot.dto.prompt.GenerationRequest;
@@ -95,7 +96,7 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("상품 목록 조회에 성공했습니다", result));
     }
 
-    // 개별 상품 조회
+    // 개별 상품 조회 (상세 페이지용)
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductDetail(
             @AuthenticationPrincipal UserDetails user,
@@ -104,6 +105,15 @@ public class ProductController {
         Long userId = (user != null) ? Long.parseLong(user.getUsername()) : null;
         ProductResponse response = productService.getProductDetail(id, userId);
         return ResponseEntity.ok(ApiResponse.success("상품 조회에 성공했습니다.", response));
+    }
+
+    // 구매 페이지용 상품 조회 (경량화, 모델 옵션 포함)
+    @GetMapping("/{id}/purchase")
+    public ResponseEntity<ApiResponse<ProductPurchaseResponse>> getProductForPurchase(
+            @PathVariable Long id
+    ) {
+        ProductPurchaseResponse response = productService.getProductForPurchase(id);
+        return ResponseEntity.ok(ApiResponse.success("구매 페이지 상품 조회에 성공했습니다.", response));
     }
 
     @PostMapping("/{id}/estimate")

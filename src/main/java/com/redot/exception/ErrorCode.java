@@ -35,8 +35,10 @@ public enum ErrorCode {
     LOOKBOOK_IMAGE_REQUIRED(HttpStatus.BAD_REQUEST, "최소 1개 이상의 룩북 이미지가 필요합니다."),
     INVALID_REPRESENTATIVE_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "대표 이미지는 최소 1장, 최대 3개까지 설정할 수 있습니다."),
     UNDEFINED_PROMPT_VARIABLE(HttpStatus.BAD_REQUEST, "프롬프트에 정의되지 않은 변수가 사용되었습니다."),
+    INCOMPLETE_VARIABLE_OPTIONS(HttpStatus.BAD_REQUEST, "룩북 이미지의 모든 변수에 대한 값을 지정해야 합니다."),
     IMAGE_NOT_BELONG_TO_PRODUCT(HttpStatus.BAD_REQUEST, "해당 상품에 속하지 않는 이미지입니다."),
     PREVIEW_MUST_BE_REPRESENTATIVE(HttpStatus.BAD_REQUEST, "프리뷰로 지정된 이미지는 반드시 대표 이미지여야 합니다."),
+    TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "룩북 이미지는 최대 10장입니다."),
 
     // 이미지 검증 관련 (400 Bad Request)
     IMAGE_FILE_EMPTY(HttpStatus.BAD_REQUEST, "이미지 파일이 비어있습니다."),
