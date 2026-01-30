@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS users (
     role ENUM('ADMIN','GUEST','SELLER','USER') NOT NULL,
     provider VARCHAR(255),
     provider_id VARCHAR(255),
-    profile_image_url TEXT,
+    profile_image_key TEXT,
     bio VARCHAR(200),
     credit_balance INTEGER NOT NULL DEFAULT 0,
     warning_count INTEGER NOT NULL DEFAULT 0,
@@ -95,7 +95,6 @@ CREATE TABLE IF NOT EXISTS prompt_variables (
     prompt_variable_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     prompt_id BIGINT NOT NULL,
     key_name VARCHAR(255) NOT NULL,
-    variable_name VARCHAR(255),
     description TEXT,
     order_index INTEGER,
     CONSTRAINT fk_prompt_variables_prompt FOREIGN KEY (prompt_id) REFERENCES prompts(prompt_id)
@@ -146,6 +145,7 @@ CREATE TABLE IF NOT EXISTS lookbook_images (
     prompt_id BIGINT NOT NULL,
     image_url VARCHAR(1000) NOT NULL,
     is_representative BOOLEAN NOT NULL,
+    is_preview BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT fk_lookbook_images_prompt FOREIGN KEY (prompt_id) REFERENCES prompts(prompt_id)
 );
 
