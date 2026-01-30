@@ -252,8 +252,23 @@ class ProductServiceTest {
                             createImage(true, true)
                     ), ErrorCode.INVALID_PREVIEW_IMAGE_COUNT),
 
-                    // 프리뷰로 지정된 이미지는 반드시 대표 이미지여야 함
+                    // 룩북이 2장일 때: 모두 대표이미지여야 하는데 1개만 대표인 경우
                     Arguments.of(List.of(
+                            createImage(true, false),
+                            createImage(false, true)
+                    ), ErrorCode.INVALID_REPRESENTATIVE_IMAGE_COUNT),
+
+                    // 룩북이 3장일 때: 모두 대표이미지여야 하는데 2개만 대표인 경우
+                    Arguments.of(List.of(
+                            createImage(true, false),
+                            createImage(true, false),
+                            createImage(false, true)
+                    ), ErrorCode.INVALID_REPRESENTATIVE_IMAGE_COUNT),
+
+                    // 프리뷰 지정 이미지는 반드시 대표이미지여야 함
+                    Arguments.of(List.of(
+                            createImage(true, false),
+                            createImage(true, false),
                             createImage(true, false),
                             createImage(false, true)
                     ), ErrorCode.PREVIEW_MUST_BE_REPRESENTATIVE)
