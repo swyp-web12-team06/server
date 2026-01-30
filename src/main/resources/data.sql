@@ -2,7 +2,7 @@
 -- REALISTIC IMAGE DUMMY DATA (Picsum Applied)
 -- ==========================================
 
--- 1. Categories (기존 동일)
+-- Categories
 INSERT IGNORE INTO categories (category_id, name, order_index, is_active, created_at, updated_at)
 VALUES
     (1, '인물', 1, true, NOW(), NOW()),
@@ -11,13 +11,40 @@ VALUES
     (4, '추상', 4, true, NOW(), NOW()),
     (5, '건축', 5, true, NOW(), NOW());
 
--- 2. AI Models (기존 동일)
+-- AI Models
 INSERT IGNORE INTO ai_models (model_id, name, order_index, is_active, created_at, updated_at)
 VALUES
     (1, 'grok-imagine/text-to-image', 1, true, NOW(), NOW()),
     (2, 'nano-banana-pro', 2, true, NOW(), NOW());
 
--- 3. Users (기존 동일)
+-- grok-imagine/text-to-image (model_id=1) - aspect_ratio만 지원
+INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index) VALUES
+    (1, 'aspect_ratio', '2:3', 1),
+    (1, 'aspect_ratio', '3:2', 2),
+    (1, 'aspect_ratio', '1:1', 3),
+    (1, 'aspect_ratio', '9:16', 4),
+    (1, 'aspect_ratio', '16:9', 5);
+
+-- nano-banana-pro (model_id=2) - aspect_ratio + resolution 지원
+INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index) VALUES
+-- aspect_ratio
+    (2, 'aspect_ratio', '1:1', 1),
+    (2, 'aspect_ratio', '2:3', 2),
+    (2, 'aspect_ratio', '3:2', 3),
+    (2, 'aspect_ratio', '3:4', 4),
+    (2, 'aspect_ratio', '4:3', 5),
+    (2, 'aspect_ratio', '4:5', 6),
+    (2, 'aspect_ratio', '5:4', 7),
+    (2, 'aspect_ratio', '9:16', 8),
+    (2, 'aspect_ratio', '16:9', 9),
+    (2, 'aspect_ratio', '21:9', 10),
+    (2, 'aspect_ratio', 'auto', 11),
+-- resolution
+    (2, 'resolution', '1K', 1),
+    (2, 'resolution', '2K', 2),
+    (2, 'resolution', '4K', 3);
+
+-- Users
 INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, created_at, updated_at, warning_count)
 VALUES
     (1, 'artist1@test.com', 'AI아티스트', 'SELLER', 10000, false, null, 'local', 'artist-001', true, false, NOW(), NOW(), 0),
@@ -71,7 +98,7 @@ VALUES
     (49, 'studio49@test.com', 'StudioWork', 'SELLER', 8800, false, null, 'local', 'studio-049', true, false, NOW(), NOW(), 0),
     (50, 'gallery50@test.com', 'GalleryArt', 'SELLER', 12200, false, null, 'local', 'gallery-050', true, true, NOW(), NOW(), 0);
 
--- 4. Prompts (200개 - Picsum Seed URL 적용)
+-- Prompts
 INSERT IGNORE INTO prompts (prompt_id, user_id, category_id, model_id, title, description, price, master_prompt, status, preview_image_url, is_deleted, created_at, updated_at)
 VALUES
 -- 사이버펑크 & 네온 테마
@@ -314,19 +341,19 @@ VALUES
 (199, 49, 3, 1, '펭귄 일러스트', 'Penguin illustration', 550, 'penguin', 'APPROVED', 'https://picsum.photos/seed/199/300/300', false, NOW(), NOW()),
 (200, 50, 4, 2, '입자 추상', 'Particle abstract', 850, 'particles', 'APPROVED', 'https://picsum.photos/seed/200/300/300', false, NOW(), NOW());
 
--- 5. Credit Charge Options (기존 동일)
+-- Credit Charge Options
 INSERT IGNORE INTO credit_charge_option (id, amount) VALUES
-                                                         (1, 3000),
-                                                         (2, 5000),
-                                                         (3, 10000),
-                                                         (4, 30000),
-                                                         (5, 50000);
+    (1, 3000),
+    (2, 5000),
+    (3, 10000),
+    (4, 30000),
+    (5, 50000);
 
--- 6. Bonus Credit Policies (기존 동일)
+-- Bonus Credit Policies
 INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description) VALUES
-                                                                                     (1, 5000, 0.05, '5% Bonus'),
-                                                                                     (2, 30000, 0.10, '10% Bonus'),
-                                                                                     (3, 50000, 0.15, '15% Bonus');
+    (1, 5000, 0.05, '5% Bonus'),
+    (2, 30000, 0.10, '10% Bonus'),
+    (3, 50000, 0.15, '15% Bonus');
 
 INSERT IGNORE INTO purchases (user_id, prompt_id, purchased_at)
 VALUES (1, 1, CURRENT_TIMESTAMP);

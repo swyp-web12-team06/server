@@ -181,3 +181,18 @@ CREATE TABLE IF NOT EXISTS payment_history (
     created_at TIMESTAMP(6),
     CONSTRAINT fk_payment_history_user FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+-- 모델 옵션 테이블 추가 (aspect_ratio, resolution 등)
+CREATE TABLE IF NOT EXISTS model_options (
+                                             option_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                             model_id BIGINT NOT NULL,
+                                             option_type VARCHAR(50) NOT NULL COMMENT 'aspect_ratio 또는 resolution',
+    option_value VARCHAR(50) NOT NULL COMMENT '16:9, 1:1, 4K, HD 등',
+    order_index INTEGER DEFAULT 0 COMMENT '표시 순서',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE COMMENT '활성화 여부',
+    CONSTRAINT fk_model_options_model FOREIGN KEY (model_id) REFERENCES ai_models(model_id)
+    );
+
+-- 인덱스 추가 (조회 성능 향상)
+CREATE INDEX idx_model_options_model_id ON model_options(model_id);
+CREATE INDEX idx_model_options_type_active ON model_options(option_type, is_active);

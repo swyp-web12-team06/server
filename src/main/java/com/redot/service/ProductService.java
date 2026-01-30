@@ -4,6 +4,7 @@ import com.redot.domain.*;
 import com.redot.domain.user.User;
 import com.redot.dto.product.LookbookImageCreateDto;
 import com.redot.dto.product.ProductCreateRequest;
+import com.redot.dto.product.ProductPurchaseResponse;
 import com.redot.dto.product.ProductResponse;
 import com.redot.dto.product.ProductUpdateRequest;
 import com.redot.dto.product.PromptVariableCreateDto;
@@ -437,5 +438,21 @@ public class ProductService {
             return UserProductStatus.PURCHASED;
         }
         return UserProductStatus.NOT_PURCHASED;
+    }
+
+    public ProductPurchaseResponse getProductForPurchase(Long promptId) {
+        Prompt prompt = promptRepository.findById(promptId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
+
+        if (prompt.getIsDeleted()) {
+            throw new BusinessException(ErrorCode.PROMPT_NOT_FOUND);
+        }
+
+        // AiModelService를 통해 모델 옵션 조회
+        Long modelId = prompt.getAiModel().getId();
+        List<String> aspectRatios = aiModelService.getModelAspectRatios(modelId);
+        List<String> resolutions = aiModelService.getModelResolutions(modelId);
+
+        return ProductPurchaseResponse.from(prompt, aspectRatios, resolutions);
     }
 }
