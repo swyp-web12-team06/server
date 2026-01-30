@@ -18,8 +18,9 @@ public class ModelOption {
     @JoinColumn(name = "model_id", nullable = false)
     private AiModel aiModel;
 
+    @Enumerated(EnumType.STRING) // 💡 Enum을 문자열로 DB에 저장
     @Column(name = "option_type", nullable = false)
-    private String optionType; // "aspect_ratio" or "resolution"
+    private ModelOptionType modelOptionType; // "aspect_ratio" or "resolution"
 
     @Column(name = "option_value", nullable = false)
     private String optionValue; // "16:9", "1:1", "4K", "HD" 등
@@ -31,10 +32,10 @@ public class ModelOption {
     private Boolean isActive; // 활성화 여부
 
     @Builder
-    public ModelOption(AiModel aiModel, String optionType, String optionValue, Integer orderIndex, Boolean isActive) {
+    public ModelOption(AiModel aiModel, ModelOptionType modelOptionType, String optionValue, Integer orderIndex, Boolean isActive) {
         this.aiModel = aiModel;
-        this.optionType = optionType;
-        this.optionValue = optionValue;
+        this.modelOptionType = modelOptionType; // Enum 타입 매칭
+        this.optionValue = optionValue;         // String 값 매칭
         this.orderIndex = (orderIndex != null) ? orderIndex : 0;
         this.isActive = (isActive != null) ? isActive : true;
     }
