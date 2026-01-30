@@ -18,31 +18,31 @@ VALUES
     (2, 'nano-banana-pro', 2, true, NOW(), NOW());
 
 -- grok-imagine/text-to-image (model_id=1) - aspect_ratio만 지원
-INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index) VALUES
-    (1, 'aspect_ratio', '2:3', 1),
-    (1, 'aspect_ratio', '3:2', 2),
-    (1, 'aspect_ratio', '1:1', 3),
-    (1, 'aspect_ratio', '9:16', 4),
-    (1, 'aspect_ratio', '16:9', 5);
+INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index, is_active) VALUES
+    (1, 'aspect_ratio', '2:3', 1, true),
+    (1, 'aspect_ratio', '3:2', 2, true),
+    (1, 'aspect_ratio', '1:1', 3, true),
+    (1, 'aspect_ratio', '9:16', 4, true),
+    (1, 'aspect_ratio', '16:9', 5, true);
 
 -- nano-banana-pro (model_id=2) - aspect_ratio + resolution 지원
-INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index) VALUES
+INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index, is_active) VALUES
 -- aspect_ratio
-    (2, 'aspect_ratio', '1:1', 1),
-    (2, 'aspect_ratio', '2:3', 2),
-    (2, 'aspect_ratio', '3:2', 3),
-    (2, 'aspect_ratio', '3:4', 4),
-    (2, 'aspect_ratio', '4:3', 5),
-    (2, 'aspect_ratio', '4:5', 6),
-    (2, 'aspect_ratio', '5:4', 7),
-    (2, 'aspect_ratio', '9:16', 8),
-    (2, 'aspect_ratio', '16:9', 9),
-    (2, 'aspect_ratio', '21:9', 10),
-    (2, 'aspect_ratio', 'auto', 11),
+    (2, 'aspect_ratio', '1:1', 1, true),
+    (2, 'aspect_ratio', '2:3', 2, true),
+    (2, 'aspect_ratio', '3:2', 3, true),
+    (2, 'aspect_ratio', '3:4', 4, true),
+    (2, 'aspect_ratio', '4:3', 5, true),
+    (2, 'aspect_ratio', '4:5', 6, true),
+    (2, 'aspect_ratio', '5:4', 7, true),
+    (2, 'aspect_ratio', '9:16', 8, true),
+    (2, 'aspect_ratio', '16:9', 9, true),
+    (2, 'aspect_ratio', '21:9', 10, true),
+    (2, 'aspect_ratio', 'auto', 11, true),
 -- resolution
-    (2, 'resolution', '1K', 1),
-    (2, 'resolution', '2K', 2),
-    (2, 'resolution', '4K', 3);
+    (2, 'resolution', '1K', 1, true),
+    (2, 'resolution', '2K', 2, true),
+    (2, 'resolution', '4K', 3, true);
 
 -- Users
 INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, created_at, updated_at, warning_count)
@@ -358,8 +358,8 @@ INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description)
 INSERT IGNORE INTO purchases (user_id, prompt_id, purchased_at)
 VALUES (1, 1, CURRENT_TIMESTAMP);
 
-INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
-VALUES (1, 1, 'color', '색상', '이미지의 주된 색상을 정합니다', 1);
+INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, description, order_index)
+VALUES (1, 1, 'color', '이미지의 주된 색상을 정합니다', 1);
 
 -- Lookbook Images (Picsum 적용)
 INSERT IGNORE INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
@@ -374,11 +374,11 @@ VALUES (1, 'https://picsum.photos/seed/lb3/300/300', true, false);
 INSERT IGNORE INTO ai_models (name, is_active, order_index, created_at, updated_at)
 VALUES ('grok-imagine/text-to-image', 1, 1, NOW(), NOW());
 
-INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
-VALUES (2, 2, '색상2', '색상2', '이미지의 주된 색상을 정합니다', 2);
+INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, description, order_index)
+VALUES (2, 2, 'color2', '이미지의 주된 색상을 정합니다', 2);
 
-INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, variable_name, description, order_index)
-VALUES (3, 3, '색상3', '색상3', '이미지의 주된 색상을 정합니다', 3);
+INSERT IGNORE INTO prompt_variables (prompt_variable_id, prompt_id, key_name, description, order_index)
+VALUES (3, 3, 'color3', '이미지의 주된 색상을 정합니다', 3);
 
 INSERT IGNORE INTO lookbook_images (prompt_id, image_url, is_representative, is_preview)
 VALUES (1, 'https://picsum.photos/seed/lb3/300/300', true, false);
