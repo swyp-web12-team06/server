@@ -135,6 +135,8 @@ public class ProductService {
         Map<String, PromptVariable> variableMap = variables.stream()
                 .collect(Collectors.toMap(PromptVariable::getKeyName, v -> v));
 
+        int totalVariableCount = variables.size();
+
         for (LookbookImageCreateDto imgDto : imageDtos) {
             // 이미지 엔티티 생성
             LookbookImage lookbookImage = new LookbookImage(
@@ -146,7 +148,12 @@ public class ProductService {
             prompt.addLookbookImage(lookbookImage);
 
             // 옵션 값 매핑
-            if (imgDto.getOptionValues() != null) {
+            if (imgDto.getOptionValues() != null && !imgDto.getOptionValues().isEmpty()) {
+                // 변수가 있는데 옵션 값이 없거나, 개수가 맞지 않으면 에러
+                if (imgDto.getOptionValues().size() != totalVariableCount) {
+                    throw new BusinessException(ErrorCode.INCOMPLETE_VARIABLE_OPTIONS);
+                }
+
                 imgDto.getOptionValues().forEach((key, value) -> {
                     String cleanKey = key.trim();
 
@@ -159,6 +166,9 @@ public class ProductService {
                         throw new BusinessException(ErrorCode.UNDEFINED_PROMPT_VARIABLE);
                     }
                 });
+            } else if (totalVariableCount > 0) {
+                // 변수는 있는데 옵션 값이 없으면 에러
+                throw new BusinessException(ErrorCode.INCOMPLETE_VARIABLE_OPTIONS);
             }
         }
     }
@@ -214,13 +224,17 @@ public class ProductService {
             throw new BusinessException(ErrorCode.LOOKBOOK_IMAGE_REQUIRED);
         }
 
-        // 1. 대표 이미지 개수 검증 (1~3개)
+        int totalImageCount = images.size();
+
+        // 1. 대표 이미지 개수 검증 (총 이미지 개수에 따라 정확히 맞아야 함)
+        // 1장: 1개 representative, 2장: 2개 representative, 3장 이상: 3개 representative
         long representativeCount = images.stream()
                 .filter(img -> Boolean.TRUE.equals(img.getIsRepresentative()))
                 .count();
 
-        if (representativeCount < 1 || representativeCount > 3) {
-            throw new BusinessException(ErrorCode.INVALID_REPRESENTATIVE_IMAGE_COUNT); // "대표 이미지는 1장 이상 3장 이하이어야 합니다"
+        int expectedRepresentativeCount = Math.min(totalImageCount, 3);
+        if (representativeCount != expectedRepresentativeCount) {
+            throw new BusinessException(ErrorCode.INVALID_REPRESENTATIVE_IMAGE_COUNT);
         }
 
         // 프리뷰 이미지 개수 검증 (정확히 1개여야 함)
