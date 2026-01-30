@@ -41,9 +41,6 @@ public class GenerationRequest {
         @JsonProperty("variable_id")
         private Long variableId;
 
-        @JsonProperty("variable_name")
-        private String variableName;
-
         private String value;
     }
 }

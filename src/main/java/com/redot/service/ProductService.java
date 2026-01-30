@@ -116,7 +116,6 @@ public class ProductService {
             PromptVariable variable = PromptVariable.builder()
                     .prompt(prompt)
                     .keyName(cleanKey)
-                    .variableName(detail != null ? detail.getVariableName() : cleanKey)
                     .description(detail != null ? detail.getDescription() : null)
                     .orderIndex(detail != null ? detail.getOrderIndex() : null)
                     .build();

@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PromptVariableCreateDto {
     private String keyName;
-    private String variableName;
     private String description;
     private Integer orderIndex;
 }

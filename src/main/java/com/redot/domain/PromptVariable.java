@@ -20,9 +20,6 @@ public class PromptVariable {
     @Column(name = "key_name", nullable = false)
     private String keyName; // e.g. "species"
 
-    @Column(name = "variable_name")
-    private String variableName; // e.g. "동물 종류"
-
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -30,10 +27,9 @@ public class PromptVariable {
     private Integer orderIndex;
 
     @Builder
-    public PromptVariable(Prompt prompt, String keyName, String variableName, String description, Integer orderIndex) {
+    public PromptVariable(Prompt prompt, String keyName, String description, Integer orderIndex) {
         this.prompt = prompt;
         this.keyName = keyName;
-        this.variableName = variableName;
         this.description = description;
         this.orderIndex = orderIndex;
     }
