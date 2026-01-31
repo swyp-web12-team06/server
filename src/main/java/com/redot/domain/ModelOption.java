@@ -31,12 +31,16 @@ public class ModelOption {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive; // 활성화 여부
 
+    @Column(name = "additional_cost", nullable = false)
+    private Integer additionalCost;
+
     @Builder
     public ModelOption(AiModel aiModel, ModelOptionType modelOptionType, String optionValue, Integer orderIndex, Boolean isActive) {
         this.aiModel = aiModel;
-        this.modelOptionType = modelOptionType; // Enum 타입 매칭
-        this.optionValue = optionValue;         // String 값 매칭
+        this.modelOptionType = modelOptionType;
+        this.optionValue = optionValue;
         this.orderIndex = (orderIndex != null) ? orderIndex : 0;
+        this.additionalCost = (additionalCost != null) ? additionalCost : 0;
         this.isActive = (isActive != null) ? isActive : true;
     }
 }
