@@ -18,22 +18,11 @@ public class GenerationRequest {
     @JsonProperty("ai_model")
     private String aiModel;
 
-    private String aspect_ratio;
-
-    @JsonProperty("ratio_x")
-    private Integer ratioX;
-
-    @JsonProperty("ratio_y")
-    private Integer ratioY;
+    @JsonProperty("aspect_ratio")
+    private String aspectRatio;
 
     @JsonProperty("variable_values")
     private List<VariableSelection> variableValues;
-
-    @JsonIgnore
-    public String getAspectRatio() {
-        if (ratioX == null || ratioY == null) return "1:1";
-        return ratioX + ":" + ratioY;
-    }
 
     @Getter
     @NoArgsConstructor

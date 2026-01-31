@@ -24,29 +24,30 @@ VALUES
 
 -- Model Options
 -- grok-imagine/text-to-image (model_id=1) - aspect_ratio만 지원
-INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index, is_active) VALUES
-    (1, 'aspect_ratio', '2:3', 1, true),
-    (1, 'aspect_ratio', '3:2', 2, true),
-    (1, 'aspect_ratio', '1:1', 3, true),
-    (1, 'aspect_ratio', '9:16', 4, true),
-    (1, 'aspect_ratio', '16:9', 5, true);
+INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index, is_active, additional_cost) VALUES
+    (1, 'ASPECT_RATIO', '2:3', 1, true, 0),
+    (1, 'ASPECT_RATIO', '3:2', 2, true, 0),
+    (1, 'ASPECT_RATIO', '1:1', 3, true, 0),
+    (1, 'ASPECT_RATIO', '9:16', 4, true, 0),
+    (1, 'ASPECT_RATIO', '16:9', 5, true, 0);
+
 
 -- nano-banana-pro (model_id=2) - aspect_ratio + resolution 지원
-INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index, is_active) VALUES
-    (2, 'aspect_ratio', '1:1', 1, true),
-    (2, 'aspect_ratio', '2:3', 2, true),
-    (2, 'aspect_ratio', '3:2', 3, true),
-    (2, 'aspect_ratio', '3:4', 4, true),
-    (2, 'aspect_ratio', '4:3', 5, true),
-    (2, 'aspect_ratio', '4:5', 6, true),
-    (2, 'aspect_ratio', '5:4', 7, true),
-    (2, 'aspect_ratio', '9:16', 8, true),
-    (2, 'aspect_ratio', '16:9', 9, true),
-    (2, 'aspect_ratio', '21:9', 10, true),
-    (2, 'aspect_ratio', 'auto', 11, true),
-    (2, 'resolution', '1K', 1, true),
-    (2, 'resolution', '2K', 2, true),
-    (2, 'resolution', '4K', 3, true);
+INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index, is_active, additional_cost) VALUES
+    (2, 'ASPECT_RATIO', '1:1', 1, true, 0),
+    (2, 'ASPECT_RATIO', '2:3', 2, true, 0),
+    (2, 'ASPECT_RATIO', '3:2', 3, true, 0),
+    (2, 'ASPECT_RATIO', '3:4', 4, true, 0),
+    (2, 'ASPECT_RATIO', '4:3', 5, true, 0),
+    (2, 'ASPECT_RATIO', '4:5', 6, true, 0),
+    (2, 'ASPECT_RATIO', '5:4', 7, true, 0),
+    (2, 'ASPECT_RATIO', '9:16', 8, true, 0),
+    (2, 'ASPECT_RATIO', '16:9', 9, true, 0),
+    (2, 'ASPECT_RATIO', '21:9', 10, true, 0),
+    (2, 'ASPECT_RATIO', 'auto', 11, true, 0),
+    (2, 'RESOLUTION', '1K', 1, true, 0),
+    (2, 'RESOLUTION', '2K', 2, true, 0),
+    (2, 'RESOLUTION', '4K', 3, true, 0);
 
 -- Users (15개)
 INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, created_at, updated_at, warning_count)
