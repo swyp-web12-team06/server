@@ -84,7 +84,7 @@ public class R2ImageManager implements ImageManager {
                 .bucket(targetBucket)
                 .key(fileName)
                 .contentType(contentType)
-                .contentLength(ImageFileUtils.MAX_FILE_SIZE) // 10MB 제한
+                // .contentLength(ImageFileUtils.MAX_FILE_SIZE) // 5MB 제한 (정확한 용량만 허용함으로 제외)
                 .build();
 
         // 5분간 유효
