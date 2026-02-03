@@ -25,6 +25,13 @@ public class CallbackController {
     ) {
         log.info(">>> [Callback 수신] AI 생성 완료 신호 도착: {}", callbackData);
 
+        String taskId = (String) callbackData.get("task_id");
+        String imageUrl = (String) callbackData.get("image_url");
+
+        if (taskId != null && imageUrl != null) {
+            generationService.completeImageGeneration(taskId, imageUrl);
+        }
+
         return ResponseEntity.ok().build();
     }
 }
