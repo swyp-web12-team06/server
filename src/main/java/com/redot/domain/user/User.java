@@ -81,6 +81,12 @@ public class User {
     @Column
     private Instant marketingConsentedAt;
 
+    @Column(nullable = false)
+    private Boolean sellerTermsAgreed = false;
+
+    @Column
+    private Instant sellerTermsAgreedAt;
+
     @CreatedDate
     @Column(name = "created_at", updatable = true)
     private Instant createdAt;
@@ -158,7 +164,12 @@ public class User {
     public void upgradeToUser() {
         this.role = Role.USER;
     }
-    public void upgradeToSeller(){this.role=Role.SELLER; }
+
+    public void upgradeToSeller() {
+        this.role = Role.SELLER;
+        this.sellerTermsAgreed = true;
+        this.sellerTermsAgreedAt = Instant.now();
+    }
 
     public void agreeToTerms(boolean marketingConsent) {
         this.termsAgreed = true;

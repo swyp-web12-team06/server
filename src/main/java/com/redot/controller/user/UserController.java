@@ -85,6 +85,18 @@ public class UserController  {
                 .body(ApiResponse.success("조회 성공", response));
     }
 
+    @PostMapping("/upgrade-seller")
+    public ResponseEntity<ApiResponse<Void>> upgradeToSeller(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody @Valid SellerUpgradeRequest request
+    ) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        userService.upgradeToSeller(userId, request);
+
+        return ResponseEntity.ok()
+                .body(ApiResponse.success("판매자로 등업되었습니다."));
+    }
+
 
 
 

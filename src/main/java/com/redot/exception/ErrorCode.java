@@ -14,6 +14,7 @@ public enum ErrorCode {
     NICKNAME_MISSING(HttpStatus.BAD_REQUEST, "닉네임은 필수 입력 값입니다."),
     BIO_TOO_LONG(HttpStatus.BAD_REQUEST, "소개글은 최대 200자까지만 작성할 수 있습니다."),
     TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "필수 약관에 동의해야 합니다."),
+    SELLER_TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "판매자 약관에 동의해야 합니다."),
     MARKETING_CONSENT_MISSING(HttpStatus.BAD_REQUEST, "마케팅 수신 동의 여부는 필수입니다."),
     VARIABLE_OPTION_MISMATCH(HttpStatus.BAD_REQUEST, "옵션 매칭 실패"),
     ALREADY_PURCHASED(HttpStatus.BAD_REQUEST, "이미 구매한 상품입니다."),
@@ -70,6 +71,7 @@ public enum ErrorCode {
 
     // 409 Conflict
     NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "이미 사용중인 닉네임입니다."),
+    ALREADY_SELLER(HttpStatus.CONFLICT, "이미 판매자 계정입니다."),
 
     // 429 TOO_MANY_REQUESTS
     TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "요청 횟수가 너무 많습니다. 잠시 후 다시 시도해주세요."),
