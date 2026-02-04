@@ -67,6 +67,7 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리가 존재하지 않습니다."),
     AI_MODEL_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 AI 모델이 존재하지 않습니다."),
     ALREADY_DELETED(HttpStatus.NOT_FOUND, "이미 탈퇴한 사용자입니다."),
+    TASK_NOT_FOUND(HttpStatus.NOT_FOUND,  "해당 작업(Task)을 찾을 수 없습니다."),
 
     // 409 Conflict
     NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "이미 사용중인 닉네임입니다."),

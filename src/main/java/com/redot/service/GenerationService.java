@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -146,5 +148,17 @@ public class GenerationService {
         return DownloadResponse.builder()
                 .downloadUrl(secureUrl)
                 .build();
+    }
+    @Transactional
+    public void completeImageGeneration(String taskId, String imageUrl) {
+        // 1. taskId로 생성 중인 이미지 레코드 찾기
+        GeneratedImage generatedImage = generatedImageRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
+
+        // 2. 상태 변경 및 URL 저장 (임시 URL -> 실제 AI 생성 URL)
+        generatedImage.updateImageUrl(imageUrl);
+        generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
+
+        log.info(">>> [비동기 완료] TaskID: {}의 이미지 생성이 완료되어 URL이 업데이트되었습니다.", taskId);
     }
 }
