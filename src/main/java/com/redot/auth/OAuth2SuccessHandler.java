@@ -53,6 +53,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .domain(".redot.store")
                 .path("/")
                 .sameSite(sameSite)      // prod: None, 서로 다른 도메인(3000 <-> 8080) 간 쿠키 전송 허용, local: Lax
                 .httpOnly(true)
