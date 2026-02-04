@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/product/**").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/product/**").hasRole("USER")
                         .requestMatchers("/user/signup", "/auth/logout").authenticated()
-                        .requestMatchers("/api/images/**").permitAll()
+                        .requestMatchers("/api/images/**").hasRole("USER")
                         .requestMatchers("/user/me/library/purchase").hasRole("USER")
                         .anyRequest().authenticated()
                 )
