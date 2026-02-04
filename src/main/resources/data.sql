@@ -50,23 +50,23 @@ INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_ind
     (2, 'RESOLUTION', '4K', 3, true, 0);
 
 -- Users (15개)
-INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, created_at, updated_at, warning_count)
+INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, seller_terms_agreed, created_at, updated_at, warning_count)
 VALUES
-    (1, 'artist1@test.com', 'AI아티스트', 'USER', 100, false, null, 'local', 'artist-001', true, false, NOW(), NOW(), 0),
-    (2, 'creator2@test.com', '크리에이터Kim', 'USER', 50, false, null, 'local', 'creator-002', true, true, NOW(), NOW(), 0),
-    (3, 'designer3@test.com', '디자이너Park', 'USER', 80, false, null, 'local', 'designer-003', true, false, NOW(), NOW(), 0),
-    (4, 'prompter4@test.com', 'PromptMaster', 'USER', 120, false, null, 'local', 'prompter-004', true, true, NOW(), NOW(), 0),
-    (5, 'user5@test.com', '그림쟁이', 'USER', 30, false, null, 'local', 'user-005', true, false, NOW(), NOW(), 0),
-    (6, 'maker6@test.com', 'ImageMaker', 'USER', 70, false, null, 'local', 'maker-006', true, false, NOW(), NOW(), 0),
-    (7, 'artist7@test.com', '예술가Lee', 'USER', 90, false, null, 'local', 'artist-007', true, true, NOW(), NOW(), 0),
-    (8, 'pro8@test.com', 'ProDesigner', 'USER', 150, false, null, 'local', 'pro-008', true, false, NOW(), NOW(), 0),
-    (9, 'creative9@test.com', '창작자Choi', 'USER', 60, false, null, 'local', 'creative-009', true, false, NOW(), NOW(), 0),
-    (10, 'pixel10@test.com', 'PixelArtist', 'USER', 40, false, null, 'local', 'pixel-010', true, true, NOW(), NOW(), 0),
-    (11, 'digital11@test.com', '디지털작가', 'USER', 110, false, null, 'local', 'digital-011', true, false, NOW(), NOW(), 0),
-    (12, 'cyber12@test.com', 'CyberCreator', 'USER', 85, false, null, 'local', 'cyber-012', true, true, NOW(), NOW(), 0),
-    (13, 'neon13@test.com', 'NeonDreamer', 'USER', 75, false, null, 'local', 'neon-013', true, false, NOW(), NOW(), 0),
-    (14, 'fantasy14@test.com', 'FantasyMaker', 'USER', 95, false, null, 'local', 'fantasy-014', true, false, NOW(), NOW(), 0),
-    (15, 'buyer15@test.com', '일반사용자', 'USER', 50, false, null, 'local', 'buyer-015', true, true, NOW(), NOW(), 0);
+    (1, 'artist1@test.com', 'AI아티스트', 'USER', 100, false, null, 'local', 'artist-001', true, false, false, NOW(), NOW(), 0),
+    (2, 'creator2@test.com', '크리에이터Kim', 'SELLER', 50, false, null, 'local', 'creator-002', true, true, true, NOW(), NOW(), 0),
+    (3, 'designer3@test.com', '디자이너Park', 'USER', 80, false, null, 'local', 'designer-003', true, false, false, NOW(), NOW(), 0),
+    (4, 'prompter4@test.com', 'PromptMaster', 'USER', 120, false, null, 'local', 'prompter-004', true, true, false, NOW(), NOW(), 0),
+    (5, 'user5@test.com', '그림쟁이', 'USER', 30, false, null, 'local', 'user-005', true, false, false, NOW(), NOW(), 0),
+    (6, 'maker6@test.com', 'ImageMaker', 'USER', 70, false, null, 'local', 'maker-006', true, false, false, NOW(), NOW(), 0),
+    (7, 'artist7@test.com', '예술가Lee', 'USER', 90, false, null, 'local', 'artist-007', true, true, false, NOW(), NOW(), 0),
+    (8, 'pro8@test.com', 'ProDesigner', 'USER', 150, false, null, 'local', 'pro-008', true, false, false, NOW(), NOW(), 0),
+    (9, 'creative9@test.com', '창작자Choi', 'USER', 60, false, null, 'local', 'creative-009', true, false, false, NOW(), NOW(), 0),
+    (10, 'pixel10@test.com', 'PixelArtist', 'USER', 40, false, null, 'local', 'pixel-010', true, true, false, NOW(), NOW(), 0),
+    (11, 'digital11@test.com', '디지털작가', 'USER', 110, false, null, 'local', 'digital-011', true, false, false, NOW(), NOW(), 0),
+    (12, 'cyber12@test.com', 'CyberCreator', 'USER', 85, false, null, 'local', 'cyber-012', true, true, false, NOW(), NOW(), 0),
+    (13, 'neon13@test.com', 'NeonDreamer', 'USER', 75, false, null, 'local', 'neon-013', true, false, false, NOW(), NOW(), 0),
+    (14, 'fantasy14@test.com', 'FantasyMaker', 'USER', 95, false, null, 'local', 'fantasy-014', true, false, false, NOW(), NOW(), 0),
+    (15, 'buyer15@test.com', '일반사용자', 'USER', 50, false, null, 'local', 'buyer-015', true, true, false, NOW(), NOW(), 0);
 
 -- Tags (15개)
 INSERT IGNORE INTO tags (tag_id, name) VALUES
