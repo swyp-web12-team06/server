@@ -70,6 +70,7 @@ public class Prompt {
             joinColumns = @JoinColumn(name = "prompt_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
+    @org.hibernate.annotations.BatchSize(size = 100)
     private Set<Tag> tags = new HashSet<>();
 
     @Column(name = "is_deleted", nullable = false)
@@ -117,6 +118,12 @@ public class Prompt {
         if (description != null) this.description = description;
         if (price != null) this.price = price;
         if (previewImageUrl != null) this.previewImageUrl = previewImageUrl;
+    }
+
+    public void updateStatus(Boolean isActive) {
+        if (isActive != null) {
+            this.status = isActive ? PromptStatus.APPROVED : PromptStatus.HIDDEN;
+        }
     }
 
     public void addLookbookImage(LookbookImage image) {

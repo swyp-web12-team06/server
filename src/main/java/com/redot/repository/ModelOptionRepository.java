@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ModelOptionRepository extends JpaRepository<ModelOption, Long> {
 
@@ -19,4 +20,6 @@ public interface ModelOptionRepository extends JpaRepository<ModelOption, Long> 
     // 여러 모델의 옵션 한번에 조회
     @Query("SELECT mo FROM ModelOption mo WHERE mo.aiModel.id IN :modelIds AND mo.isActive = true ORDER BY mo.aiModel.id, mo.orderIndex")
     List<ModelOption> findByModelIdsAndIsActiveTrue(@Param("modelIds") List<Long> modelIds);
+
+    Optional<ModelOption> findByOptionValue(String optionValue);
 }

@@ -1,17 +1,19 @@
 package com.redot.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redot.auth.CustomOAuth2User;
 import com.redot.dto.common.ApiResponse;
 import com.redot.dto.prompt.DownloadResponse;
 import com.redot.dto.prompt.GenerationRequest;
 import com.redot.dto.prompt.GenerationResponse;
 import com.redot.service.GenerationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class GenerationController {
@@ -19,17 +21,15 @@ public class GenerationController {
     private final GenerationService generationService;
 
     // 고화질 이미지 생성 API
-    @PostMapping(value = "/product/{promptId}/generate", consumes = MediaType.ALL_VALUE)
+    @PostMapping(value = "/product/{promptId}/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GenerationResponse> generateImage(
             @PathVariable Long promptId,
-            @RequestParam Long userId,
-            @RequestBody String jsonBody // 일단 문 열어주고
-    ) throws JsonProcessingException {
+            @AuthenticationPrincipal CustomOAuth2User user,
+            @RequestBody GenerationRequest request
+    ) {
+        Long userId = user.getUser().getId();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        GenerationRequest request = objectMapper.readValue(jsonBody, GenerationRequest.class);
-
-        System.out.println(">>> [변환 성공] AI 생성 로직을 호출합니다!");
+        log.info(">>> [요청 수신] 유저 ID: {}, 프롬프트 ID: {}, AI 생성 로직을 호출합니다!", userId, promptId);
 
         GenerationResponse response = generationService.generateHighQualityImage(userId, promptId, request);
 

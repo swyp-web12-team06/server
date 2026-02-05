@@ -22,28 +22,25 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
     @Query("UPDATE Prompt p SET p.isDeleted = true WHERE p.id = :promptId")
     void softDeleteById(@Param("promptId") Long promptId);
 
-    @Query("SELECT DISTINCT p FROM Prompt p " +
+    @Query("SELECT p FROM Prompt p " +
            "JOIN FETCH p.seller " +
            "JOIN FETCH p.category " +
            "JOIN FETCH p.aiModel " +
-           "LEFT JOIN FETCH p.tags " +
-           "WHERE p.id = :id AND p.isDeleted = false")
+           "WHERE p.id = :id AND p.isDeleted = false AND p.status = 'APPROVED'")
     Optional<Prompt> findByIdWithDetails(@Param("id") Long id);
 
-    @Query("SELECT DISTINCT p FROM Prompt p " +
+    @Query("SELECT p FROM Prompt p " +
            "JOIN FETCH p.seller " +
            "JOIN FETCH p.category " +
            "JOIN FETCH p.aiModel " +
-           "LEFT JOIN FETCH p.tags " +
-           "WHERE p.isDeleted = false")
+           "WHERE p.isDeleted = false AND p.status = 'APPROVED'")
     Page<Prompt> findAllWithDetails(Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Prompt p " +
+    @Query("SELECT p FROM Prompt p " +
            "JOIN FETCH p.seller " +
            "JOIN FETCH p.category " +
            "JOIN FETCH p.aiModel " +
-           "LEFT JOIN FETCH p.tags " +
-           "WHERE p.isDeleted = false AND p.category.id = :categoryId")
+           "WHERE p.isDeleted = false AND p.status = 'APPROVED' AND p.category.id = :categoryId")
     Page<Prompt> findAllByCategoryWithDetails(@Param("categoryId") Long categoryId, Pageable pageable);
 
     // 로컬(H2)용: JPQL LIKE 검색
@@ -51,8 +48,8 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
             "JOIN FETCH p.seller u " +
             "JOIN FETCH p.category " +
             "JOIN FETCH p.aiModel " +
-            "LEFT JOIN FETCH p.tags t " +
-            "WHERE p.isDeleted = false " +
+            "LEFT JOIN p.tags t " +
+            "WHERE p.isDeleted = false AND p.status = 'APPROVED' " +
             "AND (p.title LIKE %:keyword% OR u.nickname LIKE %:keyword% OR t.name LIKE %:keyword%)")
     Page<Prompt> searchByKeywordBasic(@Param("keyword") String keyword, Pageable pageable);
 
@@ -61,7 +58,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            "INNER JOIN users u ON p.user_id = u.user_id " +
            "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
            "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
-           "WHERE p.is_deleted = false " +
+           "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
            "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
            "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
            "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
@@ -69,7 +66,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
                        "INNER JOIN users u ON p.user_id = u.user_id " +
                        "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
                        "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
-                       "WHERE p.is_deleted = false " +
+                       "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
                        "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
                        "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
                        "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
@@ -81,8 +78,8 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
             "JOIN FETCH p.seller u " +
             "JOIN FETCH p.category " +
             "JOIN FETCH p.aiModel " +
-            "LEFT JOIN FETCH p.tags t " +
-            "WHERE p.isDeleted = false " +
+            "LEFT JOIN p.tags t " +
+            "WHERE p.isDeleted = false AND p.status = 'APPROVED' " +
             "AND p.category.id = :categoryId " +
             "AND (p.title LIKE %:keyword% OR u.nickname LIKE %:keyword% OR t.name LIKE %:keyword%)")
     Page<Prompt> searchByKeywordAndCategoryBasic(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
@@ -92,7 +89,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            "INNER JOIN users u ON p.user_id = u.user_id " +
            "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
            "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
-           "WHERE p.is_deleted = false " +
+           "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
            "AND p.category_id = :categoryId " +
            "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
            "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
@@ -101,7 +98,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
                        "INNER JOIN users u ON p.user_id = u.user_id " +
                        "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
                        "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
-                       "WHERE p.is_deleted = false " +
+                       "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
                        "AND p.category_id = :categoryId " +
                        "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
                        "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +

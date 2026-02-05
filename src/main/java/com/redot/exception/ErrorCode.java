@@ -14,6 +14,7 @@ public enum ErrorCode {
     NICKNAME_MISSING(HttpStatus.BAD_REQUEST, "닉네임은 필수 입력 값입니다."),
     BIO_TOO_LONG(HttpStatus.BAD_REQUEST, "소개글은 최대 200자까지만 작성할 수 있습니다."),
     TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "필수 약관에 동의해야 합니다."),
+    SELLER_TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "판매자 약관에 동의해야 합니다."),
     MARKETING_CONSENT_MISSING(HttpStatus.BAD_REQUEST, "마케팅 수신 동의 여부는 필수입니다."),
     VARIABLE_OPTION_MISMATCH(HttpStatus.BAD_REQUEST, "옵션 매칭 실패"),
     ALREADY_PURCHASED(HttpStatus.BAD_REQUEST, "이미 구매한 상품입니다."),
@@ -29,6 +30,7 @@ public enum ErrorCode {
     INVALID_TAG_COUNT(HttpStatus.BAD_REQUEST, "태그는 최소 2개, 최대 5개까지 등록 가능합니다."),
     INVALID_TAG_LENGTH(HttpStatus.BAD_REQUEST, "태그는 2~12자 이내여야 합니다."),
     INVALID_TAG_FORMAT(HttpStatus.BAD_REQUEST, "태그는 한글, 영문, 숫자, 공백만 사용 가능합니다."),
+    INVALID_MODEL_NAME(HttpStatus.BAD_REQUEST, "유효하지 않은 AI 모델명입니다."),
 
     // 상품(프롬프트) 관련 검증 (400 Bad Request)
     INVALID_PREVIEW_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "썸네일(미리보기) 이미지는 필수입니다."),
@@ -66,9 +68,11 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리가 존재하지 않습니다."),
     AI_MODEL_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 AI 모델이 존재하지 않습니다."),
     ALREADY_DELETED(HttpStatus.NOT_FOUND, "이미 탈퇴한 사용자입니다."),
+    TASK_NOT_FOUND(HttpStatus.NOT_FOUND,  "해당 작업(Task)을 찾을 수 없습니다."),
 
     // 409 Conflict
     NICKNAME_DUPLICATION(HttpStatus.CONFLICT, "이미 사용중인 닉네임입니다."),
+    ALREADY_SELLER(HttpStatus.CONFLICT, "이미 판매자 계정입니다."),
 
     // 429 TOO_MANY_REQUESTS
     TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "요청 횟수가 너무 많습니다. 잠시 후 다시 시도해주세요."),

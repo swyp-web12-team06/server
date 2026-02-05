@@ -101,6 +101,9 @@ public class GlobalExceptionHandler {
         if ("marketingConsent".equals(field)) {
             return ErrorCode.MARKETING_CONSENT_MISSING;
         }
+        if ("agreeToSellerTerms".equals(field)) {
+            return ErrorCode.SELLER_TERMS_NOT_AGREED;
+        }
 
         // 소개글 길이 관련 에러
         if ("bio".equals(field)) {

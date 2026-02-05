@@ -18,7 +18,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -373,6 +375,10 @@ public class ProductService {
             prompt.updateTags(tags);
         }
 
+        if (request.getIsActive() != null) {
+            prompt.updateStatus(request.getIsActive());
+        }
+
         return prompt.getId();
     }
 
@@ -416,21 +422,46 @@ public class ProductService {
 
         boolean isLocal = activeProfile.equals("local");
 
+        // Native Query는 snake_case, JPQL은 camelCase 필요
+        Pageable adjustedPageable = isLocal ? pageable : convertToSnakeCase(pageable);
+
         if (categoryId != null) {
             if (isLocal) {
-                prompts = promptRepository.searchByKeywordAndCategoryBasic(keyword, categoryId, pageable);
+                prompts = promptRepository.searchByKeywordAndCategoryBasic(keyword, categoryId, adjustedPageable);
             } else {
-                prompts = promptRepository.searchByKeywordAndCategoryFullText(keyword, categoryId, pageable);
+                prompts = promptRepository.searchByKeywordAndCategoryFullText(keyword, categoryId, adjustedPageable);
             }
         } else {
             if (isLocal) {
-                prompts = promptRepository.searchByKeywordBasic(keyword, pageable);
+                prompts = promptRepository.searchByKeywordBasic(keyword, adjustedPageable);
             } else {
-                prompts = promptRepository.searchByKeywordFullText(keyword, pageable);
+                prompts = promptRepository.searchByKeywordFullText(keyword, adjustedPageable);
             }
         }
 
         return prompts.map(p -> toProductResponse(p, userId));
+    }
+
+    // camelCase를 snake_case로 변환 (Native Query용)
+    private Pageable convertToSnakeCase(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        Sort newSort = Sort.unsorted();
+        for (Sort.Order order : pageable.getSort()) {
+            String property = order.getProperty();
+            // createdAt -> created_at 변환
+            if ("createdAt".equals(property)) {
+                property = "created_at";
+            } else if ("updatedAt".equals(property)) {
+                property = "updated_at";
+            }
+            // price는 그대로
+            newSort = newSort.and(Sort.by(order.getDirection(), property));
+        }
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), newSort);
     }
 
     public ProductResponse getProductDetail(Long promptId, Long userId) {
