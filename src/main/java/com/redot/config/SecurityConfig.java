@@ -59,7 +59,7 @@ public class SecurityConfig {
 
                         // Swagger 엔드포인트 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/callback/kie-ai").permitAll()
+                        .requestMatchers("/api/v1/callbacks/kie-ai", "/callback/kie-ai").permitAll()
                         .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers("/auth/logout").authenticated()
 
@@ -70,7 +70,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/user/upgrade-seller").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/product/user/**").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/product/*/purchase").hasAnyRole("USER", "SELLER")
+
                         .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/product/*/generate").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.POST, "/product/*/estimate").hasAnyRole("USER", "SELLER")
@@ -79,8 +82,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/product/**").hasRole("SELLER")
 
                         .requestMatchers(HttpMethod.GET, "/metadata/**").permitAll()
-                        .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
+                        .requestMatchers("/credit/options").permitAll()
                         .requestMatchers("/credit/**").hasAnyRole("USER", "SELLER")
+
                         .requestMatchers(HttpMethod.GET, "/image/*/download").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.GET, "/image/presigned-upload").hasAnyRole("USER", "SELLER")
                         .anyRequest().authenticated()

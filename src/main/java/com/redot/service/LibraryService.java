@@ -34,7 +34,7 @@ public class LibraryService {
         List<Purchase> purchases = purchaseRepository.findByUserIdOrderByPurchasedAtDesc(userId);
 
         return purchases.stream().map(purchase -> {
-            Prompt prompt = promptRepository.findById(purchase.getPromptId())
+            Prompt prompt = promptRepository.findById(purchase.getPrompt().getId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
             List<GeneratedImage> images = generatedImageRepository.findByPurchaseId(purchase.getId());

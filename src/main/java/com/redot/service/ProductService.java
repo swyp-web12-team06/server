@@ -2,6 +2,8 @@ package com.redot.service;
 
 import com.redot.domain.*;
 import com.redot.domain.user.User;
+import com.redot.dto.library.LibrarySalesResponse;
+import com.redot.domain.Prompt;
 import com.redot.dto.product.LookbookImageCreateDto;
 import com.redot.dto.product.ProductCreateRequest;
 import com.redot.dto.product.ProductPurchaseResponse;
@@ -513,5 +515,13 @@ public class ProductService {
         List<String> resolutions = aiModelService.getModelResolutions(modelId);
 
         return ProductPurchaseResponse.from(prompt, aspectRatios, resolutions);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LibrarySalesResponse> getUserProductList(Long userId) {
+        return promptRepository.findAllBySellerIdAndStatus(userId, PromptStatus.APPROVED)
+                .stream()
+                .map(prompt -> LibrarySalesResponse.from((Prompt) prompt))
+                .toList();
     }
 }

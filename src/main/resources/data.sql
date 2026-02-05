@@ -672,17 +672,17 @@ INSERT IGNORE INTO lookbook_image_variable_options (lookbook_image_id, prompt_va
     (105, 56, 'fractal'), (105, 57, 'purple'), (105, 58, 'gold'), (105, 59, 'hairline'), (105, 60, 'extreme');
 
 -- Purchases (10개)
-INSERT IGNORE INTO purchases (purchase_id, user_id, prompt_id, purchased_at) VALUES
-    (1, 11, 1, NOW()),
-    (2, 11, 2, NOW()),
-    (3, 12, 3, NOW()),
-    (4, 12, 4, NOW()),
-    (5, 13, 5, NOW()),
-    (6, 13, 6, NOW()),
-    (7, 14, 7, NOW()),
-    (8, 14, 8, NOW()),
-    (9, 15, 9, NOW()),
-    (10, 15, 10, NOW());
+INSERT IGNORE INTO purchases (purchase_id, user_id, prompt_id, price, purchased_at) VALUES
+    (1, 11, 1, 5, NOW()),
+    (2, 11, 2, 8, NOW()),
+    (3, 12, 3, 5, NOW()),
+    (4, 12, 4, 10, NOW()),
+    (5, 13, 5, 5, NOW()),
+    (6, 13, 6, 7, NOW()),
+    (7, 14, 7, 5, NOW()),
+    (8, 14, 8, 9, NOW()),
+    (9, 15, 9, 5, NOW()),
+    (10, 15, 10, 6, NOW());
 
 -- Credit Charge Options (5개)
 INSERT IGNORE INTO credit_charge_option (id, amount) VALUES
@@ -698,5 +698,7 @@ INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description)
     (2, 30000, 0.10, '10% Bonus'),
     (3, 50000, 0.15, '15% Bonus');
 
-INSERT IGNORE INTO purchases (user_id, prompt_id, purchased_at) VALUES
-    (1, 1, CURRENT_TIMESTAMP);
+INSERT INTO purchases (user_id, prompt_id, price, purchased_at) VALUES (1, 1, 5, CURRENT_TIMESTAMP);
+
+INSERT INTO generated_images (image_id, purchase_id, task_id, image_url, image_quality, status, created_at)
+VALUES (1, 1, 'task_sample_001', 'https://sample.com/img1.png', '1024x1024', 'COMPLETED', NOW());

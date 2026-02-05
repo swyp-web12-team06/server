@@ -1,6 +1,7 @@
 package com.redot.repository;
 
 import com.redot.domain.Prompt;
+import com.redot.domain.PromptStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -105,4 +107,6 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
                        "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
            nativeQuery = true)
     Page<Prompt> searchByKeywordAndCategoryFullText(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
+
+    Collection<Object> findAllBySellerIdAndStatus(Long userId, PromptStatus promptStatus);
 }
