@@ -119,6 +119,12 @@ public class Prompt {
         if (previewImageUrl != null) this.previewImageUrl = previewImageUrl;
     }
 
+    public void updateStatus(Boolean isActive) {
+        if (isActive != null) {
+            this.status = isActive ? PromptStatus.APPROVED : PromptStatus.HIDDEN;
+        }
+    }
+
     public void addLookbookImage(LookbookImage image) {
         this.lookbookImages.add(image);
     }

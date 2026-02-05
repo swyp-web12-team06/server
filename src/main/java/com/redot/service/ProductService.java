@@ -373,6 +373,10 @@ public class ProductService {
             prompt.updateTags(tags);
         }
 
+        if (request.getIsActive() != null) {
+            prompt.updateStatus(request.getIsActive());
+        }
+
         return prompt.getId();
     }
 
