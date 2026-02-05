@@ -40,4 +40,7 @@ public class ProductUpdateRequest {
     @Schema(description = "대표 이미지로 설정할 룩북 이미지 ID 목록 (최대 3개)", example = "[10, 11, 12]")
     @Size(max = 3, message = "대표 이미지는 최대 3개까지 선택 가능합니다.")
     private List<Long> representativeImageIds;
+
+    @Schema(description = "상품 활성화 상태 (true: 활성화, false: 비활성화)", example = "true")
+    private Boolean isActive;
 }
