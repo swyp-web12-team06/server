@@ -43,6 +43,8 @@ CREATE TABLE IF NOT EXISTS users (
     terms_agreed_at TIMESTAMP(6),
     marketing_consent BOOLEAN NOT NULL,
     marketing_consented_at TIMESTAMP(6),
+    seller_terms_agreed BOOLEAN NOT NULL DEFAULT FALSE,
+    seller_terms_agreed_at TIMESTAMP(6),
     delete_reason VARCHAR(300),
     deleted_at TIMESTAMP(6),
     nickname_updated_at TIMESTAMP(6),
@@ -125,6 +127,8 @@ CREATE TABLE IF NOT EXISTS generated_images (
     purchase_id BIGINT NOT NULL,
     image_url VARCHAR(1000) NOT NULL,
     image_quality VARCHAR(255),
+    task_id VARCHAR(255) UNIQUE,
+    status ENUM('PROCESSING','COMPLETED','FAILED') DEFAULT 'PROCESSING',
     created_at TIMESTAMP(6),
     CONSTRAINT fk_generated_images_purchase FOREIGN KEY (purchase_id) REFERENCES purchases(purchase_id)
 );
@@ -190,6 +194,7 @@ CREATE TABLE IF NOT EXISTS model_options (
     option_value VARCHAR(50) NOT NULL COMMENT '16:9, 1:1, 4K, HD 등',
     order_index INTEGER DEFAULT 0 COMMENT '표시 순서',
     is_active BOOLEAN NOT NULL DEFAULT TRUE COMMENT '활성화 여부',
+    additional_cost INTEGER NOT NULL DEFAULT 0 COMMENT '추가 비용',
     CONSTRAINT fk_model_options_model FOREIGN KEY (model_id) REFERENCES ai_models(model_id)
     );
 
