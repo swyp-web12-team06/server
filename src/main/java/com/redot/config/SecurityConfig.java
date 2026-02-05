@@ -64,7 +64,6 @@ public class SecurityConfig {
 
                         .requestMatchers("/user/signup").hasRole("GUEST")
                         .requestMatchers("/user/me/library/purchase").hasAnyRole("USER", "SELLER")
-                        .requestMatchers()
                         .requestMatchers("/user/me/**").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.POST, "/user/upgrade-seller").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
