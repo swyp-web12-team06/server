@@ -58,9 +58,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .domain(cookieDomain) // 변경: 하드코딩된 도메인 대신 주입받은 값 사용
                 .path("/")
-                .sameSite(sameSite)
+                .sameSite(sameSite) // prod: None, 서로 다른 도메인(3000 <-> 8080) 간 쿠키 전송 허용, local: Lax
                 .httpOnly(true)
-                .secure(secure)
+                .secure(secure) // local: false, prod: true
                 .maxAge(60 * 60 * 24 * 14) // 2주
                 .build();
 
