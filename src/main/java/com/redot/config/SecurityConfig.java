@@ -59,22 +59,28 @@ public class SecurityConfig {
 
                         // Swagger 엔드포인트 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
                         .requestMatchers("/auth/reissue").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/metadata/**").permitAll()
+                        .requestMatchers("/auth/logout").authenticated()
+
+                        .requestMatchers("/user/signup").hasRole("GUEST")
+                        .requestMatchers("/user/me/library/purchase").hasAnyRole("USER", "SELLER")
+                        .requestMatchers()
                         .requestMatchers("/user/me/**").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.POST, "/user/upgrade-seller").hasRole("USER")
-                        .requestMatchers("/credit/**").hasAnyRole("USER", "SELLER")
-                        .requestMatchers(HttpMethod.GET, "/image/{imageId}/download").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/product/*/purchase").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/product/*/generate").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.POST, "/product/**").hasRole("SELLER")
                         .requestMatchers(HttpMethod.PATCH, "/product/**").hasRole("SELLER")
                         .requestMatchers(HttpMethod.DELETE, "/product/**").hasRole("SELLER")
-                        .requestMatchers("/user/signup").hasRole("GUEST")
-                        .requestMatchers("/auth/logout").authenticated()
-                        .requestMatchers("/api/images/**").permitAll()
-                        .requestMatchers("/user/me/library/purchase").hasAnyRole("USER", "SELLER")
+
+                        .requestMatchers(HttpMethod.GET, "/metadata/**").permitAll()
+                        .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
+                        .requestMatchers("/credit/**").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.GET, "/image/*/download").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.GET, "/image/presigned-upload").hasAnyRole("USER", "SELLER")
                         .anyRequest().authenticated()
                 )
 
