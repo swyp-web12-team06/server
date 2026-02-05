@@ -30,6 +30,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${app.cookie.same-site}")
     private String sameSite;
 
+    @Value("${app.cookie.domain}") // 추가: 쿠키 도메인 설정 값 주입
+    private String cookieDomain;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
@@ -53,11 +56,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
-                .domain(".redot.store")
+                .domain(cookieDomain) // 변경: 하드코딩된 도메인 대신 주입받은 값 사용
                 .path("/")
-                .sameSite(sameSite)      // prod: None, 서로 다른 도메인(3000 <-> 8080) 간 쿠키 전송 허용, local: Lax
+                .sameSite(sameSite) // prod: None, 서로 다른 도메인(3000 <-> 8080) 간 쿠키 전송 허용, local: Lax
                 .httpOnly(true)
-                .secure(secure)          // local: false, prod: true
+                .secure(secure) // local: false, prod: true
                 .maxAge(60 * 60 * 24 * 14) // 2주
                 .build();
 
