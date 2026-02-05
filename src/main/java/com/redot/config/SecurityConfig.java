@@ -59,10 +59,12 @@ public class SecurityConfig {
 
                         // Swagger 엔드포인트 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/callback/kie-ai").permitAll()
                         .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers("/auth/logout").authenticated()
 
                         .requestMatchers("/user/signup").hasRole("GUEST")
+                        .requestMatchers("/user/me/library/sales").hasRole("SELLER")
                         .requestMatchers("/user/me/library/purchase").hasAnyRole("USER", "SELLER")
                         .requestMatchers("/user/me/**").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.POST, "/user/upgrade-seller").hasRole("USER")
@@ -71,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/product/*/purchase").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/product/*/generate").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.POST, "/product/*/estimate").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.POST, "/product/**").hasRole("SELLER")
                         .requestMatchers(HttpMethod.PATCH, "/product/**").hasRole("SELLER")
                         .requestMatchers(HttpMethod.DELETE, "/product/**").hasRole("SELLER")
