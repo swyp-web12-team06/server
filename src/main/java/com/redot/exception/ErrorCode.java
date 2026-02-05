@@ -55,6 +55,7 @@ public enum ErrorCode {
     // 403 Forbidden
     ALREADY_REGISTERED(HttpStatus.FORBIDDEN, "이미 가입이 완료된 회원입니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+    SELLER_ROLE_REQUIRED(HttpStatus.FORBIDDEN, "판매자 권한이 필요합니다."),
     INVALID_ORIGIN(HttpStatus.FORBIDDEN, "허용되지 않은 요청 출처입니다."),
     NOT_PURCHASED_ITEM(HttpStatus.FORBIDDEN, "구매하지 않은 프롬프트입니다."),
     CANNOT_DELETE_PURCHASED_ITEM(HttpStatus.BAD_REQUEST, "이미 판매 내역이 있는 상품은 삭제할 수 없습니다."),
