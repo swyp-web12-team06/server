@@ -70,6 +70,7 @@ public class Prompt {
             joinColumns = @JoinColumn(name = "prompt_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
+    @org.hibernate.annotations.BatchSize(size = 100)
     private Set<Tag> tags = new HashSet<>();
 
     @Column(name = "is_deleted", nullable = false)
