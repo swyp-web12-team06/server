@@ -4,10 +4,7 @@ import com.redot.auth.JwtTokenProvider;
 import com.redot.auth.repository.RefreshTokenRepository;
 import com.redot.domain.user.Role;
 import com.redot.domain.user.User;
-import com.redot.dto.user.PublicUserProfileResponse;
-import com.redot.dto.user.SignupRequest;
-import com.redot.dto.user.UserProfileResponse;
-import com.redot.dto.user.UserUpdateRequest;
+import com.redot.dto.user.*;
 import com.redot.exception.BusinessException;
 import com.redot.exception.ErrorCode;
 import com.redot.repository.PromptRepository;
@@ -112,6 +109,21 @@ public class UserService {
         String fullUrl = imageManager.getPublicUrl(user.getProfileImageKey());
 
         return PublicUserProfileResponse.from(user, fullUrl);
+    }
+
+    @Transactional
+    public void upgradeToSeller(Long userId, SellerUpgradeRequest request) {
+        User user = findActiveUser(userId);
+
+        // 이미 판매자인지 확인
+        if (user.getRole() == Role.SELLER) {
+            throw new BusinessException(ErrorCode.ALREADY_SELLER);
+        }
+
+        // 등업 처리
+        if (request.agreeToSellerTerms()) {
+            user.upgradeToSeller();
+        }
     }
 
     // 다른 서비스에서도 사용하기 위해 public으로 변경

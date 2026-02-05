@@ -64,6 +64,7 @@ public class AuthController {
 
         // 쿠키 삭제를 위한 ResponseCookie 생성
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "") // 값을 비움
+                .domain(".redot.store")
                 .path("/")
                 .sameSite(sameSite)
                 .httpOnly(true)

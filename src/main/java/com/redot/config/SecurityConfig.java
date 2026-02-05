@@ -2,6 +2,7 @@ package com.redot.config;
 
 import com.redot.auth.*;
 import com.redot.auth.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,11 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -26,9 +32,13 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
+    @Value("${security.allowed-origins}")
+    private List<String> allowedOrigins;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)//CSRF 보안 비활성화 (JWT 쓸 땐 필요 없음)
                 .httpBasic(AbstractHttpConfigurer::disable) //ID/PW 직접 인증 안 씀
                 .formLogin(AbstractHttpConfigurer::disable) //로그인 폼 안 씀
@@ -43,29 +53,33 @@ public class SecurityConfig {
 
                 // 경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/h2-console/**", "/favicon.ico","/error",
-                                "/login/**", "/oauth2/**","/dev/**").permitAll()
                         .requestMatchers("/health", "/h2-console/**", "/error", "/favicon.ico",
                                 "/login/**", "/oauth2/**", "/dev/**",
                                 "/payment-test.html", "/payment-test.css").permitAll()
 
                         // Swagger 엔드포인트 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
-
-                        .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
                         .requestMatchers("/auth/reissue").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/user/{userId}").permitAll()
+                        .requestMatchers("/auth/logout").authenticated()
+
+                        .requestMatchers("/user/signup").hasRole("GUEST")
+                        .requestMatchers("/user/me/library/purchase").hasAnyRole("USER", "SELLER")
+                        .requestMatchers("/user/me/**").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.POST, "/user/upgrade-seller").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/product/*/purchase").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/product/*/generate").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.POST, "/product/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.PATCH, "/product/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.DELETE, "/product/**").hasRole("SELLER")
+
                         .requestMatchers(HttpMethod.GET, "/metadata/**").permitAll()
-                        .requestMatchers("/user/me/**").hasRole("USER")
-                        .requestMatchers("/credit/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.GET, "/image/{imageId}/download").hasRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/product/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.PATCH, "/product/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "/product/**").hasRole("USER")
-                        .requestMatchers("/user/signup", "/auth/logout").authenticated()
-                        .requestMatchers("/api/images/**").permitAll()
-                        .requestMatchers("/user/me/library/purchase").hasRole("USER")
+                        .requestMatchers("/credit/options").permitAll() // 결제 옵션 조회 허용
+                        .requestMatchers("/credit/**").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.GET, "/image/*/download").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.GET, "/image/presigned-upload").hasAnyRole("USER", "SELLER")
                         .anyRequest().authenticated()
                 )
 
@@ -85,5 +99,20 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true); // 쿠키나 인증 정보를 포함
+        configuration.setExposedHeaders(List.of("Authorization"));  // 브라우저에 노출할 헤더
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
