@@ -30,6 +30,9 @@ public class AuthController {
     @Value("${security.allowed-origins}")
     private String allowedOrigins;
 
+    @Value("${app.cookie.domain}")
+    private String cookieDomain;
+
     @PostMapping("/reissue")
     public ApiResponse<TokenReissueResponse> reissue(
             @RequestHeader(value = "Origin", required = false) String origin,
@@ -64,7 +67,7 @@ public class AuthController {
 
         // 쿠키 삭제를 위한 ResponseCookie 생성
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "") // 값을 비움
-                .domain(".redot.store")
+                .domain(cookieDomain)
                 .path("/")
                 .sameSite(sameSite)
                 .httpOnly(true)
