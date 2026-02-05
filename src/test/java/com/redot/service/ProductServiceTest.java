@@ -66,6 +66,14 @@ class ProductServiceTest {
         }
     }
 
+    // SELLER Role을 가진 User 생성 헬퍼 메서드
+    private User createSellerUser(Long userId) {
+        User user = createEntity(User.class);
+        setField(user, "id", userId);
+        setField(user, "role", com.redot.domain.user.Role.SELLER);
+        return user;
+    }
+
     @Nested
     @DisplayName("상품 생성 기능 테스트")
     class RegisterProduct {
@@ -90,8 +98,7 @@ class ProductServiceTest {
             // given
             Long categoryId = 200L;
 
-            User testUser = createEntity(User.class);
-            setField(testUser, "id", 1L);
+            User testUser = createSellerUser(1L);
 
             given(userService.findActiveUser(1L))
                     .willReturn(testUser);
@@ -115,8 +122,7 @@ class ProductServiceTest {
         @DisplayName("modelId 검색 실패 시 예외 발생 테스트")
         void productRegister_AiModelFind_Fail() {
             // given
-            User testUser = createEntity(User.class);
-            setField(testUser, "id", 1L);
+            User testUser = createSellerUser(1L);
 
             Category testCategory = createEntity(Category.class);
             setField(testCategory, "id", 1L);
@@ -153,8 +159,7 @@ class ProductServiceTest {
         @DisplayName("가격 정책 검증 실패 시(100원 단위, 500~1000원 이내) 예외 발생 테스트")
         void productRegister_ProductPriceValid_Fail(int invalidPrice, ErrorCode expectedErrorCode) {
             // given
-            User testUser = createEntity(User.class);
-            setField(testUser, "id", 1L);
+            User testUser = createSellerUser(1L);
 
             Category testCategory = createEntity(Category.class);
             setField(testCategory, "id", 1L);
@@ -189,8 +194,7 @@ class ProductServiceTest {
         @DisplayName("이미지 정책 위반 시 예외 발생 (대표 이미지 개수, 프리뷰 설정 등)")
         void productRegister_InvalidImageScenario_Fail(List<LookbookImageCreateDto> invalidImages, ErrorCode expectedErrorCode) {
             // given
-            User testUser = createEntity(User.class);
-            setField(testUser, "id", 1L);
+            User testUser = createSellerUser(1L);
 
             Category testCategory = createEntity(Category.class);
             setField(testCategory, "id", 1L);
@@ -288,8 +292,7 @@ class ProductServiceTest {
         @DisplayName("태그 정책 위반 시 오류 발생 (최소 2개, 최대 5개, 2~12자, 한글/영문/숫자, 공백 허용)")
         void productRegister_TagValidation_Fail(List<String> invalidTags, ErrorCode expectedErrorCode) {
             // given
-            User testUser = createEntity(User.class);
-            setField(testUser, "id", 1L);
+            User testUser = createSellerUser(1L);
 
             Category testCategory = createEntity(Category.class);
             setField(testCategory, "id", 1L);
@@ -382,8 +385,7 @@ class ProductServiceTest {
         void registerProduct_AllValid_Success() {
             // given
             Long userId = 1L;
-            User testUser = createEntity(User.class);
-            setField(testUser, "id", userId);
+            User testUser = createSellerUser(userId);
 
             Long categoryId = 1L;
             Category testCategory = createEntity(Category.class);

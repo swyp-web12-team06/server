@@ -59,6 +59,7 @@ public class ProductService {
     public Long registerProduct(Long userId, ProductCreateRequest request) {
         // 단순 조회 및 검증 로직 위임
         User user = userService.findActiveUser(userId);
+        validateSellerRole(user);
         Category category = categoryService.getCategoryOrThrow(request.getCategoryId());
         AiModel aiModel = aiModelService.getModelOrThrow(request.getModelId());
 
@@ -400,6 +401,13 @@ public class ProductService {
     private void validateProductOwnership(Prompt prompt, Long userId) {
         if (!prompt.getSeller().getId().equals(userId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+    }
+
+    private void validateSellerRole(User user) {
+        if (user.getRole() != com.redot.domain.user.Role.SELLER
+            && user.getRole() != com.redot.domain.user.Role.ADMIN) {
+            throw new BusinessException(ErrorCode.SELLER_ROLE_REQUIRED);
         }
     }
 
