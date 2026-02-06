@@ -1,7 +1,9 @@
 package com.redot.controller;
 
+import java.util.List;
 import java.util.Map;
 import com.redot.dto.common.ApiResponse;
+import com.redot.dto.library.LibrarySalesResponse;
 import com.redot.dto.product.ProductCreateRequest;
 import com.redot.dto.product.ProductPurchaseResponse;
 import com.redot.dto.product.ProductResponse;
@@ -12,6 +14,7 @@ import com.redot.service.ProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +24,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/product")
 @RequiredArgsConstructor
@@ -124,5 +128,15 @@ public class ProductController {
         int estimatedPrice = generationService.getEstimatedPrice(promptId, request);
 
         return ResponseEntity.ok(ApiResponse.success("공통 메시지(예: 조회 성공)", estimatedPrice));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse<List<LibrarySalesResponse>>> getUserProducts(
+            @PathVariable Long userId
+    ) {
+        log.info(">>> [ProductController] 타인 판매 목록 조회. userId: {}", userId);
+
+        List<LibrarySalesResponse> response = productService.getUserProductList(userId);
+        return ResponseEntity.ok(ApiResponse.success("판매 목록 조회 성공", response));
     }
 }

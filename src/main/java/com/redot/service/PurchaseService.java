@@ -43,8 +43,8 @@ public class PurchaseService {
 
         // 5. 구매 내역 저장
         Purchase purchase = Purchase.builder()
-                .userId(userId)
-                .promptId(promptId)
+                .user(user)
+                .prompt(prompt)
                 .build();
 
         Purchase savedPurchase = purchaseRepository.save(purchase);
@@ -52,7 +52,7 @@ public class PurchaseService {
         // 6. 응답값 생성
         return PurchaseResponse.builder()
                 .purchase_id(savedPurchase.getId())
-                .prompt_id(savedPurchase.getPromptId())
+                .prompt_id(savedPurchase.getPrompt().getId())
                 .credit_balance(user.getCreditBalance())
                 .purchased_at(savedPurchase.getPurchasedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build();

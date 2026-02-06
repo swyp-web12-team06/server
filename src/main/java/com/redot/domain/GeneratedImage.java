@@ -18,7 +18,10 @@ public class GeneratedImage {
     @JoinColumn(name = "purchase_id", nullable = false)
     private Purchase purchase;
 
-    @Column(name = "image_url", nullable = false, length = 1000)
+    @Column(name = "task_id", unique = true)
+    private String taskId;
+
+    @Column(name = "image_url", length = 1000)
     private String imageUrl;
 
     @Column(name = "image_quality")
@@ -26,9 +29,6 @@ public class GeneratedImage {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @Column(name = "task_id", unique = true) // 💡 TaskID 추가
-    private String taskId;
 
     @Enumerated(EnumType.STRING)
     private GeneratedImageStatus status;
@@ -41,17 +41,12 @@ public class GeneratedImage {
         this.status = status;
     }
 
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
-    }
-
     @Builder
-    public GeneratedImage(Purchase purchase, String imageUrl, String imageQuality) {
+    public GeneratedImage(Purchase purchase, String taskId, String imageQuality, GeneratedImageStatus status) {
         this.purchase = purchase;
-        this.imageUrl = imageUrl;
-        this.imageQuality = imageQuality;
         this.taskId = taskId;
-        this.status = GeneratedImageStatus.PROCESSING;
+        this.imageQuality = imageQuality;
+        this.status = (status != null) ? status : GeneratedImageStatus.PROCESSING;
         this.createdAt = LocalDateTime.now();
     }
 }
