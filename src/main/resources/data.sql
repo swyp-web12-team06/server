@@ -706,3 +706,21 @@ VALUES (1, 1, 'task_sample_001', 'https://picsum.photos/seed/gi_1_1/600/400', '1
 INSERT IGNORE INTO generated_image_variable_values (image_id, prompt_variable_id, variable_value) VALUES
                                                                                                       (1, 1, 'Cyberpunk style'),  -- 1번 변수에 대한 값
                                                                                                       (1, 2, 'Neon blue');        -- 2번 변수에 대한 값
+
+-- 1. 프롬프트 추가 (MySQL 모드일 때 IGNORE 작동)
+INSERT IGNORE INTO prompts (title, price, status, user_id, category_id, model_id, is_deleted, created_at) VALUES
+                                                                                                              ('네온 사이버펑크', 10, 'APPROVED', 2, 1, 1, 0, NOW()),
+                                                                                                              ('중세 판타지 배경', 15, 'PENDING', 2, 1, 1, 0, NOW()),
+                                                                                                              ('수채화 스타일 꽃', 5, 'APPROVED', 2, 1, 1, 0, NOW()),
+                                                                                                              ('8비트 도트 캐릭터', 8, 'APPROVED', 2, 1, 1, 0, NOW()),
+                                                                                                              ('실사풍 인테리어', 20, 'REJECTED', 2, 1, 1, 0, NOW());
+
+-- 2. 구매 이력 추가
+INSERT IGNORE INTO purchases (purchase_id, price, purchased_at, prompt_id, user_id) VALUES
+                                                                                        (101, 10, NOW(), 1, 2),
+                                                                                        (102, 12, NOW(), 3, 2);
+
+-- 3. 생성 이미지 추가 (generated_images는 user_id 컬럼이 없어서 빼고 purchase_id로 연결!)
+INSERT IGNORE INTO generated_images (task_id, status, purchase_id, image_url, created_at) VALUES
+                                                                                              ('task_test_001', 'COMPLETED', 101, 'https://example.com/img1.png', NOW()),
+                                                                                              ('task_test_002', 'PROCESSING', 102, null, NOW());
