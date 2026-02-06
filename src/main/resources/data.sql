@@ -724,3 +724,14 @@ INSERT IGNORE INTO purchases (purchase_id, price, purchased_at, prompt_id, user_
 INSERT IGNORE INTO generated_images (task_id, status, purchase_id, image_url, created_at) VALUES
                                                                                               ('task_test_001', 'COMPLETED', 101, 'https://example.com/img1.png', NOW()),
                                                                                               ('task_test_002', 'PROCESSING', 102, null, NOW());
+
+-- 1. 유저 2번이 구매할 프롬프트가 더 필요하다면 추가
+INSERT IGNORE INTO prompts (title, price, status, user_id, category_id, model_id, is_deleted) VALUES
+                                                                                           ('사이버펑크 시티', 12, 'APPROVED', 1, 1, 1, false),
+                                                                                           ('우주 정거장', 8, 'APPROVED', 1, 1, 1, false);
+
+-- 2. 유저 2번의 구매 이력 추가 (purchase_id는 자동생성)
+INSERT IGNORE INTO purchases (price, purchased_at, prompt_id, user_id) VALUES
+                                                                    (12, NOW(), 6, 2),
+                                                                    (8, NOW(), 7, 2),
+                                                                    (10, NOW(), 1, 2);
