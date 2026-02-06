@@ -59,7 +59,7 @@ public class SecurityConfig {
 
                         // Swagger 엔드포인트 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/callbacks/kie-ai", "/callback/kie-ai").permitAll()
+                        .requestMatchers("/callback/kie-ai").permitAll()
                         .requestMatchers("/auth/reissue").permitAll()
                         .requestMatchers("/auth/logout").authenticated()
 

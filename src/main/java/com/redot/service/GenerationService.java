@@ -1,5 +1,7 @@
 package com.redot.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redot.domain.*;
 import com.redot.domain.user.User;
 import com.redot.dto.prompt.DownloadResponse;
@@ -11,6 +13,7 @@ import com.redot.repository.*;
 import com.redot.repository.user.UserRepository;
 import com.redot.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,15 +34,19 @@ public class GenerationService {
     private final PromptRepository promptRepository;
     private final UserRepository userRepository;
     private final ModelOptionRepository modelOptionRepository;
+    private final ObjectMapper objectMapper;
+
+    @Value("${app.callback-url:https://redot.store/callback/kie-ai}")
+    private String callbackUrl;
 
     @Transactional
     public GenerationResponse generateHighQualityImage(Long userId, Long promptId, GenerationRequest request) {
 
-        // 1. [보안 강화] DB에서 프롬프트 원본 조회 (유저가 보낸 prompt_text 대신 DB 데이터 사용)
+        // 1. DB에서 프롬프트 원본 조회 (보안 강화)
         Prompt promptEntity = promptRepository.findById(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
-        // 2. [로직 통합] 별도 확인 없이 즉시 구매 레코드 생성
+        // 2. 유저 조회 및 즉시 구매 레코드 생성
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
@@ -50,7 +57,7 @@ public class GenerationService {
                 .build();
         purchaseRepository.save(purchase);
 
-        // 3. [보안 강화] 서버 내에서 프롬프트 치환 (masterPrompt 기반)
+        // 3. 서버 내에서 프롬프트 치환 (masterPrompt 기반)
         String finalPrompt = promptEntity.getMasterPrompt();
         if (request.getVariableValues() != null) {
             for (var v : request.getVariableValues()) {
@@ -64,14 +71,13 @@ public class GenerationService {
         int totalPrice = calculateTotalPrice(promptEntity, request);
         user.decreaseCredit(totalPrice);
 
-        // 5. [비동기 처리] AI 서버 호출 (콜백 URL 포함)
-        String callbackUrl = "https://redot.store/api/v1/callbacks/kie-ai";
+        // 5. AI 서버 호출
         String taskId = kieAiClient.generateAndSaveImage(
                 finalPrompt,
-                promptEntity.getAiModel().getName(), // DB의 모델명 사용
+                promptEntity.getAiModel().getName(),
                 request.getResolution(),
                 request.getAspectRatio(),
-                callbackUrl
+                this.callbackUrl
         );
 
         // 6. 생성 이력 저장 (상태: PROCESSING)
@@ -148,16 +154,35 @@ public class GenerationService {
                 .downloadUrl(secureUrl)
                 .build();
     }
+    /**
+     * [비동기 완료 처리]
+     * @param taskId AI 서버 작업 ID
+     * @param resultJson Kie AI에서 보낸 JSON 문자열 ("{\"resultUrls\":[\"...\"]}")
+     */
     @Transactional
-    public void completeImageGeneration(String taskId, String imageUrl) {
-        // 1. taskId로 생성 중인 이미지 레코드 찾기
-        GeneratedImage generatedImage = generatedImageRepository.findByTaskId(taskId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
+    public void completeImageGeneration(String taskId, String resultJson) {
+        try {
+            // 1. taskId로 생성 중인 이미지 레코드 찾기
+            GeneratedImage generatedImage = generatedImageRepository.findByTaskId(taskId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
 
-        // 2. 상태 변경 및 URL 저장 (임시 URL -> 실제 AI 생성 URL)
-        generatedImage.updateImageUrl(imageUrl);
-        generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
+            // 2. [Kie AI 특화 로직] resultJson 문자열 파싱하여 URL 추출
+            JsonNode root = objectMapper.readTree(resultJson);
+            String imageUrl = root.path("resultUrls").get(0).asText();
 
-        log.info(">>> [비동기 완료] TaskID: {}의 이미지 생성이 완료되어 URL이 업데이트되었습니다.", taskId);
+            if (imageUrl == null || imageUrl.isBlank()) {
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+
+            // 3. 상태 변경 및 URL 저장
+            generatedImage.updateImageUrl(imageUrl);
+            generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
+
+            log.info(">>> [비동기 완료] TaskID: {}의 이미지 생성 및 URL 업데이트 성공!", taskId);
+
+        } catch (Exception e) {
+            log.error(">>> [콜백 처리 에러] JSON 파싱 중 오류 발생: {}", e.getMessage());
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 }

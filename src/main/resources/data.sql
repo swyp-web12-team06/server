@@ -698,7 +698,11 @@ INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description)
     (2, 30000, 0.10, '10% Bonus'),
     (3, 50000, 0.15, '15% Bonus');
 
-INSERT INTO purchases (user_id, prompt_id, price, purchased_at) VALUES (1, 1, 5, CURRENT_TIMESTAMP);
+INSERT IGNORE INTO purchases (user_id, prompt_id, price, purchased_at) VALUES (1, 1, 5, CURRENT_TIMESTAMP);
 
-INSERT INTO generated_images (image_id, purchase_id, task_id, image_url, image_quality, status, created_at)
-VALUES (1, 1, 'task_sample_001', 'https://sample.com/img1.png', '1024x1024', 'COMPLETED', NOW());
+INSERT IGNORE INTO generated_images (image_id, purchase_id, task_id, image_url, image_quality, status, created_at)
+VALUES (1, 1, 'task_sample_001', 'https://picsum.photos/seed/gi_1_1/600/400', '1024x1024', 'COMPLETED', NOW());
+
+INSERT IGNORE INTO generated_image_variable_values (image_id, prompt_variable_id, variable_value) VALUES
+                                                                                                      (1, 1, 'Cyberpunk style'),  -- 1번 변수에 대한 값
+                                                                                                      (1, 2, 'Neon blue');        -- 2번 변수에 대한 값
