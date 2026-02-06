@@ -10,13 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 public class GenerationRequest {
 
-    @JsonProperty("prompt_text")
-    private String promptText;
-
     private String resolution;
-
-    @JsonProperty("ai_model")
-    private String aiModel;
 
     @JsonProperty("aspect_ratio")
     private String aspectRatio;

@@ -7,6 +7,7 @@ import com.redot.domain.user.User;
 import com.redot.dto.prompt.DownloadResponse;
 import com.redot.dto.prompt.GenerationRequest;
 import com.redot.dto.prompt.GenerationResponse;
+import com.redot.dto.prompt.PriceCheckRequest;
 import com.redot.exception.BusinessException;
 import com.redot.exception.ErrorCode;
 import com.redot.repository.*;
@@ -114,29 +115,36 @@ public class GenerationService {
         }
     }
 
-    private int calculateTotalPrice(Prompt prompt, GenerationRequest request) {
+    private int calculateTotalPrice(Prompt prompt, Object requestDto) {
         int price = prompt.getPrice();
 
-        // 모델 추가 비용
-        if (request.getAiModel() != null) {
-            price += modelOptionRepository.findByOptionValue(request.getAiModel())
-                    .map(ModelOption::getAdditionalCost).orElse(0);
+        String resolution = null;
+        int variableSize = 0;
+
+        // DTO 타입에 따라 값 추출
+        if (requestDto instanceof GenerationRequest req) {
+            resolution = req.getResolution();
+            variableSize = (req.getVariableValues() != null) ? req.getVariableValues().size() : 0;
+        } else if (requestDto instanceof PriceCheckRequest req) {
+            resolution = req.getResolution();
+            variableSize = (req.getVariableValues() != null) ? req.getVariableValues().size() : 0;
         }
 
-        // 해상도 추가 비용
-        if (request.getResolution() != null) {
-            price += modelOptionRepository.findByOptionValue(request.getResolution())
+        if (prompt.getAiModel() != null) {
+        }
+
+        if (resolution != null) {
+            price += modelOptionRepository.findByOptionValue(resolution)
                     .map(ModelOption::getAdditionalCost).orElse(0);
         }
 
         // 변수당 1크레딧 추가
-        if (request.getVariableValues() != null) {
-            price += request.getVariableValues().size();
-        }
+        price += variableSize;
+
         return price;
     }
 
-    public int getEstimatedPrice(Long promptId, GenerationRequest request) {
+    public int getEstimatedPrice(Long promptId, PriceCheckRequest request) {
         Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
