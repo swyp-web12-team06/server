@@ -694,9 +694,9 @@ INSERT IGNORE INTO credit_charge_option (id, amount) VALUES
 
 -- Bonus Credit Policies (3개)
 INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description) VALUES
-    (1, 5000, 0.05, '5% Bonus'),
-    (2, 30000, 0.10, '10% Bonus'),
-    (3, 50000, 0.15, '15% Bonus');
+    (1, 5000, 0.10, '10% Bonus'),
+    (2, 10000, 0.15, '15% Bonus'),
+    (3, 30000, 0.20, '20% Bonus');
 
 INSERT IGNORE INTO purchases (user_id, prompt_id, price, purchased_at) VALUES (1, 1, 5, CURRENT_TIMESTAMP);
 
