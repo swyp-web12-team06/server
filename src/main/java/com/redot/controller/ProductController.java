@@ -9,6 +9,7 @@ import com.redot.dto.product.ProductPurchaseResponse;
 import com.redot.dto.product.ProductResponse;
 import com.redot.dto.product.ProductUpdateRequest;
 import com.redot.dto.prompt.GenerationRequest;
+import com.redot.dto.prompt.PriceCheckRequest;
 import com.redot.service.GenerationService;
 import com.redot.service.ProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -122,12 +123,12 @@ public class ProductController {
 
     @PostMapping("/{id}/estimate")
     public ResponseEntity<ApiResponse<Integer>> estimatePrice(
-            @PathVariable("id") Long promptId,
-            @RequestBody GenerationRequest request
+            @PathVariable("id") Long id,
+            @RequestBody PriceCheckRequest request
     ) {
-        int estimatedPrice = generationService.getEstimatedPrice(promptId, request);
+        int estimatedPrice = generationService.getEstimatedPrice(id, request);
 
-        return ResponseEntity.ok(ApiResponse.success("공통 메시지(예: 조회 성공)", estimatedPrice));
+        return ResponseEntity.ok(ApiResponse.success("예상 가격 조회 성공", estimatedPrice));
     }
 
     @GetMapping("/user/{userId}")

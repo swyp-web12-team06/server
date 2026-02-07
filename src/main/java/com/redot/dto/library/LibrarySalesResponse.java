@@ -17,6 +17,7 @@ public class LibrarySalesResponse {
     private String title;
     private Integer price;
     private PromptStatus status;
+    private String preview_image_url;
     private Integer sales_count;
     private Integer total_revenue;
     private String created_at;
@@ -27,6 +28,7 @@ public class LibrarySalesResponse {
                 .title(prompt.getTitle())
                 .price(prompt.getPrice())
                 .status(prompt.getStatus())
+                .preview_image_url(prompt.getPreviewImageUrl())
                 .sales_count(0)
                 .total_revenue(0)
                 .created_at(prompt.getCreatedAt() != null ?
