@@ -150,7 +150,7 @@ public class GenerationService {
                     .map(ModelOption::getAdditionalCost).orElse(0);
         }
 
-        price += variableSize;
+        price += (variableSize * 3);
         return price;
     }
 
