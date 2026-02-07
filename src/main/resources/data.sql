@@ -47,7 +47,7 @@ INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_ind
     (2, 'ASPECT_RATIO', 'auto', 11, true, 0),
     (2, 'RESOLUTION', '1K', 1, true, 0),
     (2, 'RESOLUTION', '2K', 2, true, 0),
-    (2, 'RESOLUTION', '4K', 3, true, 0);
+    (2, 'RESOLUTION', '4K', 3, true, 3);
 
 -- Users (15개)
 INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, seller_terms_agreed, created_at, updated_at, warning_count)
