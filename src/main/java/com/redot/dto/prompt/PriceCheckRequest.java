@@ -16,4 +16,8 @@ public class PriceCheckRequest {
 
     @JsonProperty("ai_model")
     private String aiModel;
+
+    public String getAspectRatio() {
+        return null;
+    }
 }

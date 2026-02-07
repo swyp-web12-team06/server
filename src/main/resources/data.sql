@@ -707,31 +707,19 @@ INSERT IGNORE INTO generated_image_variable_values (image_id, prompt_variable_id
                                                                                                       (1, 1, 'Cyberpunk style'),  -- 1번 변수에 대한 값
                                                                                                       (1, 2, 'Neon blue');        -- 2번 변수에 대한 값
 
--- 1. 프롬프트 추가 (MySQL 모드일 때 IGNORE 작동)
-INSERT IGNORE INTO prompts (title, price, status, user_id, category_id, model_id, is_deleted, created_at) VALUES
-                                                                                                              ('네온 사이버펑크', 10, 'APPROVED', 2, 1, 1, 0, NOW()),
-                                                                                                              ('중세 판타지 배경', 15, 'PENDING', 2, 1, 1, 0, NOW()),
-                                                                                                              ('수채화 스타일 꽃', 5, 'APPROVED', 2, 1, 1, 0, NOW()),
-                                                                                                              ('8비트 도트 캐릭터', 8, 'APPROVED', 2, 1, 1, 0, NOW()),
-                                                                                                              ('실사풍 인테리어', 20, 'REJECTED', 2, 1, 1, 0, NOW());
+-- 1. 판매 목록용 프롬프트 추가 (이미지 경로 추가됨!)
+INSERT IGNORE INTO prompts (title, price, status, user_id, category_id, model_id, is_deleted, preview_image_url, created_at) VALUES
+                                                                                                                                 ('네온 사이버펑크', 10, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/neon/200/300', NOW()),
+                                                                                                                                 ('중세 판타지 배경', 15, 'PENDING', 2, 1, 1, 0, 'https://picsum.photos/seed/fantasy/200/300', NOW()),
+                                                                                                                                 ('수채화 스타일 꽃', 5, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/flower/200/300', NOW()),
+                                                                                                                                 ('8비트 도트 캐릭터', 8, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/dot/200/300', NOW()),
+                                                                                                                                 ('실사풍 인테리어', 20, 'REJECTED', 2, 1, 1, 0, 'https://picsum.photos/seed/room/200/300', NOW());
 
--- 2. 구매 이력 추가
+-- 2. 구매 이력 및 생성 이미지 (기존 유지)
 INSERT IGNORE INTO purchases (purchase_id, price, purchased_at, prompt_id, user_id) VALUES
                                                                                         (101, 10, NOW(), 1, 2),
                                                                                         (102, 12, NOW(), 3, 2);
 
--- 3. 생성 이미지 추가 (generated_images는 user_id 컬럼이 없어서 빼고 purchase_id로 연결!)
 INSERT IGNORE INTO generated_images (task_id, status, purchase_id, image_url, created_at) VALUES
                                                                                               ('task_test_001', 'COMPLETED', 101, 'https://example.com/img1.png', NOW()),
                                                                                               ('task_test_002', 'PROCESSING', 102, null, NOW());
-
--- 1. 유저 2번이 구매할 프롬프트가 더 필요하다면 추가
-INSERT IGNORE INTO prompts (title, price, status, user_id, category_id, model_id, is_deleted) VALUES
-                                                                                           ('사이버펑크 시티', 12, 'APPROVED', 1, 1, 1, false),
-                                                                                           ('우주 정거장', 8, 'APPROVED', 1, 1, 1, false);
-
--- 2. 유저 2번의 구매 이력 추가 (purchase_id는 자동생성)
-INSERT IGNORE INTO purchases (price, purchased_at, prompt_id, user_id) VALUES
-                                                                    (12, NOW(), 6, 2),
-                                                                    (8, NOW(), 7, 2),
-                                                                    (10, NOW(), 1, 2);

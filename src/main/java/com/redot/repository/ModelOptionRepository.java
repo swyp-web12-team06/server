@@ -21,5 +21,11 @@ public interface ModelOptionRepository extends JpaRepository<ModelOption, Long> 
     @Query("SELECT mo FROM ModelOption mo WHERE mo.aiModel.id IN :modelIds AND mo.isActive = true ORDER BY mo.aiModel.id, mo.orderIndex")
     List<ModelOption> findByModelIdsAndIsActiveTrue(@Param("modelIds") List<Long> modelIds);
 
+    Optional<ModelOption> findByAiModel_IdAndModelOptionTypeAndOptionValueAndIsActiveTrue(
+            Long modelId,
+            ModelOptionType optionType,
+            String optionValue
+    );
+
     Optional<ModelOption> findByOptionValue(String optionValue);
 }
