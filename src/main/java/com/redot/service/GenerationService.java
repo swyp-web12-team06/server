@@ -98,11 +98,6 @@ public class GenerationService {
         // 7. 사용된 변수 값 저장
         saveVariableValues(savedImage, request);
 
-        String currentImageUrl = null;
-        if (savedImage.getImageUrl() != null) {
-            currentImageUrl = imageManager.getPresignedGetUrl(savedImage.getImageUrl());
-        }
-
         return GenerationResponse.builder()
                 .imageId(savedImage.getId())
                 .taskId(taskId)
