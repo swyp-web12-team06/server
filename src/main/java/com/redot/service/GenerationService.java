@@ -72,10 +72,15 @@ public class GenerationService {
         int totalPrice = calculateTotalPrice(promptEntity, request);
         user.decreaseCredit(totalPrice);
 
-        // 5. AI 서버 호출
+        // 5. AI 서버 호출 (Grok 모델은 1장 생성 기준)
+        String modelName = promptEntity.getAiModel().getName();
+
+        log.info(">>> [AI 생성 요청] 모델: {}, 해상도: {}, 비율: {}",
+                modelName, request.getResolution(), request.getAspectRatio());
+
         String taskId = kieAiClient.generateAndSaveImage(
                 finalPrompt,
-                promptEntity.getAiModel().getName(),
+                modelName,
                 request.getResolution(),
                 request.getAspectRatio(),
                 this.callbackUrl
@@ -101,7 +106,6 @@ public class GenerationService {
         return GenerationResponse.builder()
                 .imageId(savedImage.getId())
                 .taskId(taskId)
-                .imageUrl(currentImageUrl)
                 .totalPrice(totalPrice)
                 .currentCredit(user.getCreditBalance().longValue())
                 .build();
@@ -122,35 +126,27 @@ public class GenerationService {
     }
 
     private int calculateTotalPrice(Prompt prompt, Object requestDto) {
+        // 1. 기본 판매자 설정 가격
         int price = prompt.getPrice();
-        String resolution = null;
-        String aspectRatio = null;
-        int variableSize = 0;
 
-        // DTO 타입별 값 추출
+        String resolution = null;
+        // promptEntity를 통해 현재 모델명을 가져옴
+        String modelName = (prompt.getAiModel() != null) ? prompt.getAiModel().getName() : "";
+
+        // DTO 타입별로 resolution 값만 추출 (기존 aspectRatio, variableSize 로직은 기획 제외에 따라 제거)
         if (requestDto instanceof GenerationRequest req) {
             resolution = req.getResolution();
-            aspectRatio = req.getAspectRatio();
-            variableSize = (req.getVariableValues() != null) ? req.getVariableValues().size() : 0;
         } else if (requestDto instanceof PriceCheckRequest req) {
             resolution = req.getResolution();
-            aspectRatio = req.getAspectRatio();
-            variableSize = (req.getVariableValues() != null) ? req.getVariableValues().size() : 0;
         }
 
-        if (aspectRatio != null) {
-            price += modelOptionRepository.findByAiModel_IdAndModelOptionTypeAndOptionValueAndIsActiveTrue(
-                            prompt.getAiModel().getId(), ModelOptionType.ASPECT_RATIO, aspectRatio)
-                    .map(ModelOption::getAdditionalCost).orElse(0);
+        // 2. [최종 기획 반영] 나노바나나 모델이면서 4K 해상도일 때만 +3 크레딧 추가
+        // DB의 모델명이 "Nano Banana" 또는 "NanoBanana" 등일 수 있으니 포함(contains)이나 equalsIgnoreCase 권장
+        if (modelName.equalsIgnoreCase("Nano Banana") && "4K".equalsIgnoreCase(resolution)) {
+            price += 3;
+            log.info(">>> [가격 정책] Nano Banana 4K 옵션 적용: 기본가 {} + 추가 3크레딧", prompt.getPrice());
         }
 
-        if (resolution != null) {
-            price += modelOptionRepository.findByAiModel_IdAndModelOptionTypeAndOptionValueAndIsActiveTrue(
-                            prompt.getAiModel().getId(), ModelOptionType.RESOLUTION, resolution)
-                    .map(ModelOption::getAdditionalCost).orElse(0);
-        }
-
-        price += (variableSize * 3);
         return price;
     }
 
