@@ -14,10 +14,9 @@ public class PriceCheckRequest {
 
     private String resolution;
 
+    @JsonProperty("aspect_ratio")
+    private String aspectRatio;
+
     @JsonProperty("ai_model")
     private String aiModel;
-
-    public String getAspectRatio() {
-        return null;
-    }
 }

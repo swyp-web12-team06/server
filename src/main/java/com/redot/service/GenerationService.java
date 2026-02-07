@@ -93,9 +93,15 @@ public class GenerationService {
         // 7. 사용된 변수 값 저장
         saveVariableValues(savedImage, request);
 
+        String currentImageUrl = null;
+        if (savedImage.getImageUrl() != null) {
+            currentImageUrl = imageManager.getPresignedGetUrl(savedImage.getImageUrl());
+        }
+
         return GenerationResponse.builder()
                 .imageId(savedImage.getId())
                 .taskId(taskId)
+                .imageUrl(currentImageUrl)
                 .totalPrice(totalPrice)
                 .currentCredit(user.getCreditBalance().longValue())
                 .build();
@@ -186,27 +192,29 @@ public class GenerationService {
             JsonNode resultUrls = root.path("resultUrls");
             if (resultUrls.isMissingNode() || resultUrls.isEmpty()) {
                 log.error(">>> [콜백 데이터 오류] resultUrls가 비어있습니다. TaskID: {}", taskId);
-                generatedImage.updateStatus(GeneratedImageStatus.FAILED); // 실패 상태로 변경
+                generatedImage.updateStatus(GeneratedImageStatus.FAILED);
                 return;
             }
 
             String tempAiUrl = resultUrls.get(0).asText();
 
-            // 2. R2 업로드
-            String r2StoredUrl = imageManager.uploadFromUrl(
+            // 2. R2 업로드 (isSecret: true로 시크릿 버킷 사용)
+            // R2ImageManager.uploadFromUrl은 이미 순수 Key(경로)를 반환하도록 설계되어 있음
+            String r2StoredKey = imageManager.uploadFromUrl(
                     tempAiUrl,
                     "generated-images/" + taskId,
-                    false
+                    true
             );
 
-            generatedImage.updateImageUrl(r2StoredUrl);
+            // 3. DB에는 도메인이 없는 순수 Key만 저장
+            generatedImage.updateImageUrl(r2StoredKey);
             generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
 
-            log.info(">>> [R2 업로드 및 생성 완료] TaskID: {}, URL: {}", taskId, r2StoredUrl);
+            // 로그에서도 URL 대신 Key임을 명시
+            log.info(">>> [R2 업로드 완료] TaskID: {}, 저장된 Key: {}", taskId, r2StoredKey);
 
         } catch (Exception e) {
             log.error(">>> [콜백 처리 에러] TaskID: {}, 사유: {}", taskId, e.getMessage());
-            // 예외 발생 시 트랜잭션 롤백되겠지만, 로그는 남겨야 함
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
