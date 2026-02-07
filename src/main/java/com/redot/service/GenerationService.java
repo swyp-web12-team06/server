@@ -119,15 +119,18 @@ public class GenerationService {
         int price = prompt.getPrice();
 
         String resolution = null;
+        String aspectRatio = null;
         int variableSize = 0;
 
-        // DTO 타입에 따라 값 추출
         if (requestDto instanceof GenerationRequest req) {
             resolution = req.getResolution();
+            aspectRatio = req.getAspectRatio();
             variableSize = (req.getVariableValues() != null) ? req.getVariableValues().size() : 0;
-        } else if (requestDto instanceof PriceCheckRequest req) {
-            resolution = req.getResolution();
-            variableSize = (req.getVariableValues() != null) ? req.getVariableValues().size() : 0;
+        }
+
+        if (aspectRatio != null) {
+            price += modelOptionRepository.findByOptionValue(aspectRatio)
+                    .map(ModelOption::getAdditionalCost).orElse(0);
         }
 
         if (prompt.getAiModel() != null) {
