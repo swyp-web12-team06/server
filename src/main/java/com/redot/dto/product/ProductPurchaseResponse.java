@@ -22,6 +22,9 @@ public class ProductPurchaseResponse {
     @Schema(description = "프롬프트 설명", example = "다양한 스타일의 프로필 사진을 생성할 수 있습니다.")
     private String description;
 
+    @Schema(description = "상품 가격 (크레딧)", example = "5")
+    private Integer price;
+
     @Schema(description = "미리보기 이미지 URL", example = "https://example.com/preview.jpg")
     private String previewImageUrl;
 
@@ -71,6 +74,7 @@ public class ProductPurchaseResponse {
                 .promptId(prompt.getId())
                 .title(prompt.getTitle())
                 .description(prompt.getDescription())
+                .price(prompt.getPrice())
                 .previewImageUrl(prompt.getPreviewImageUrl())
                 .modelInfo(ModelInfo.builder()
                         .modelId(prompt.getAiModel().getId())
