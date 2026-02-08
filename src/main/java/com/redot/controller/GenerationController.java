@@ -50,9 +50,11 @@ public class GenerationController {
 
     @GetMapping("/image/{imageId}/download")
     public ResponseEntity<ApiResponse<DownloadResponse>> downloadImage(
-            @PathVariable Long imageId
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        DownloadResponse response = generationService.getDownloadUrl(imageId);
+        Long userId = Long.parseLong(userDetails.getUsername());
+        DownloadResponse response = generationService.getDownloadUrl(imageId, userId);
 
         return ResponseEntity.ok(ApiResponse.success("다운로드 URL 발급 성공", response));
     }
