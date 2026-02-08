@@ -64,6 +64,7 @@ public enum ErrorCode {
     // 404 Not Found
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."),
     USER_NOT_FOUND_LOGOUT(HttpStatus.NOT_FOUND, "이미 로그아웃 된 사용자입니다."),
+    IMAGE_NOT_READY(HttpStatus.BAD_REQUEST, "이미지가 아직 생성되지 않았습니다."),
     IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 이미지를 찾을 수 없습니다."),
     PROMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "프롬프트 정보를 찾을 수 없습니다."),
     VARIABLE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 변수 정보를 찾을 수 없습니다."),
