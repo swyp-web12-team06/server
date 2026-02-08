@@ -27,5 +27,6 @@ public class LibraryResponse {
     public static class ImageInfo {
         private Long id;
         private String image_url;
+        private String status;
     }
 }

@@ -59,7 +59,10 @@ public class LibraryService {
                     .generated_images(images.stream()
                             .map(img -> LibraryResponse.ImageInfo.builder()
                                     .id(img.getId())
-                                    .image_url(imageManager.getPresignedGetUrl(img.getImageUrl()))
+                                    .image_url(img.getStatus() == GeneratedImageStatus.COMPLETED
+                                            ? imageManager.getPresignedGetUrl(img.getImageUrl())
+                                            : null)
+                                    .status(img.getStatus().name())
                                     .build())
                             .collect(Collectors.toList()))
                     .purchased_at(purchase.getPurchasedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")))
