@@ -8,6 +8,8 @@ import com.redot.exception.ErrorCode;
 import com.redot.repository.*;
 import com.redot.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,16 +32,10 @@ public class LibraryService {
      * [구매 목록 조회]
      * 사용자가 구매한 프롬프트와 그로 인해 생성된 이미지/변수 정보를 조회합니다.
      */
-    public List<LibraryResponse> getMyPurchases(Long userId) {
-        List<Purchase> purchases = purchaseRepository.findByUserIdOrderByPurchasedAtDesc(userId);
+    public Page<LibraryResponse> getMyPurchases(Long userId, Pageable pageable) {
+        Page<Purchase> purchases = purchaseRepository.findValidPurchasesByUserId(userId, pageable);
 
-        return purchases.stream()
-                .filter(purchase -> {
-                    List<GeneratedImage> images = generatedImageRepository.findByPurchaseId(purchase.getId());
-                    if (images.isEmpty()) return false;
-                    return images.getFirst().getStatus() != GeneratedImageStatus.FAILED;
-                })
-                .map(purchase -> {
+        return purchases.map(purchase -> {
             Prompt prompt = promptRepository.findById(purchase.getPrompt().getId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
@@ -69,7 +65,7 @@ public class LibraryService {
                             .build()))
                     .purchased_at(purchase.getPurchasedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")))
                     .build();
-        }).collect(Collectors.toList());
+        });
     }
 
     /**
