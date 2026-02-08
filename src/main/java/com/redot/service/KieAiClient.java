@@ -37,7 +37,7 @@ public class KieAiClient {
             body.put("model", (modelName != null && !modelName.isEmpty()) ? modelName : "nano-banana-pro");
 
             if (callbackUrl != null) {
-                body.put("callback_url", callbackUrl);
+                body.put("callBackUrl", callbackUrl);
             }
 
             Map<String, Object> input = new HashMap<>();

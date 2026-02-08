@@ -33,8 +33,10 @@ public class CallbackController {
                     request.getData().getResultJson()
             );
         } else {
-            log.error(">>> [AI 생성 실패] TaskID: {}, 사유: {}",
-                    request.getData().getTaskId(), request.getData().getFailMsg());
+            generationService.failImageGeneration(
+                    request.getData().getTaskId(),
+                    request.getData().getFailMsg()
+            );
         }
 
         return ResponseEntity.ok().build();
