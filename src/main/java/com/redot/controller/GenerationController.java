@@ -4,6 +4,7 @@ import com.redot.dto.common.ApiResponse;
 import com.redot.dto.prompt.DownloadResponse;
 import com.redot.dto.prompt.GenerationRequest;
 import com.redot.dto.prompt.GenerationResponse;
+import com.redot.dto.prompt.ImageStatusResponse;
 import com.redot.service.GenerationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,18 @@ public class GenerationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/images/{imageId}/download")
+    @GetMapping("/image/{imageId}/status")
+    public ResponseEntity<ApiResponse<ImageStatusResponse>> getImageStatus(
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        ImageStatusResponse response = generationService.getImageStatus(imageId, userId);
+
+        return ResponseEntity.ok(ApiResponse.success("이미지 상태 조회 성공", response));
+    }
+
+    @GetMapping("/image/{imageId}/download")
     public ResponseEntity<ApiResponse<DownloadResponse>> downloadImage(
             @PathVariable Long imageId
     ) {

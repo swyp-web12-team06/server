@@ -7,6 +7,7 @@ import com.redot.domain.user.User;
 import com.redot.dto.prompt.DownloadResponse;
 import com.redot.dto.prompt.GenerationRequest;
 import com.redot.dto.prompt.GenerationResponse;
+import com.redot.dto.prompt.ImageStatusResponse;
 import com.redot.dto.prompt.PriceCheckRequest;
 import com.redot.exception.BusinessException;
 import com.redot.exception.ErrorCode;
@@ -160,6 +161,34 @@ public class GenerationService {
                 .downloadUrl(secureUrl)
                 .build();
     }
+    public ImageStatusResponse getImageStatus(Long imageId, Long userId) {
+        GeneratedImage image = generatedImageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
+
+        if (!image.getPurchase().getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        String downloadUrl = null;
+        if (image.getStatus() == GeneratedImageStatus.COMPLETED) {
+            downloadUrl = imageManager.getPresignedGetUrl(image.getImageUrl());
+        }
+
+        return ImageStatusResponse.builder()
+                .imageId(image.getId())
+                .status(image.getStatus().name())
+                .downloadUrl(downloadUrl)
+                .build();
+    }
+
+    @Transactional
+    public void failImageGeneration(String taskId, String failMsg) {
+        generatedImageRepository.findByTaskId(taskId).ifPresent(image -> {
+            image.updateStatus(GeneratedImageStatus.FAILED);
+            log.error(">>> [이미지 생성 실패] TaskID: {}, 사유: {}", taskId, failMsg);
+        });
+    }
+
     /**
      * [비동기 완료 처리]
      * @param taskId AI 서버 작업 ID
