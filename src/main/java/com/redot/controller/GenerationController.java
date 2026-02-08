@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -25,7 +26,7 @@ public class GenerationController {
     public ResponseEntity<GenerationResponse> generateImage(
             @PathVariable Long promptId,
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody GenerationRequest request
+            @Valid @RequestBody GenerationRequest request
     ) {
         Long userId = Long.parseLong(userDetails.getUsername());
 
