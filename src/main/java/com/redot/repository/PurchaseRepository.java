@@ -1,7 +1,11 @@
 package com.redot.repository;
 
 import com.redot.domain.Purchase;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,6 +27,15 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     Optional<Purchase> findByUserIdAndPromptId(Long userId, Long promptId);
 
     List<Purchase> findByUserIdOrderByPurchasedAtDesc(Long userId);
+
+    /**
+     * 구매 목록 페이지네이션 (FAILED 및 이미지 없는 건 제외)
+     */
+    @Query("SELECT p FROM Purchase p " +
+           "WHERE p.user.id = :userId " +
+           "AND EXISTS (SELECT gi FROM GeneratedImage gi WHERE gi.purchase = p AND gi.status <> 'FAILED') " +
+           "ORDER BY p.purchasedAt DESC")
+    Page<Purchase> findValidPurchasesByUserId(@Param("userId") Long userId, Pageable pageable);
 
     // 특정 프롬프트가 몇 번 팔렸는지 계산
     int countByPromptId(Long promptId);
