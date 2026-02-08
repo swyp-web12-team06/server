@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import com.redot.domain.user.User;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
@@ -17,19 +18,25 @@ public class Purchase {
     @Column(name = "purchase_id")
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "prompt_id", nullable = false)
-    private Long promptId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "prompt_id", nullable = false)
+    private Prompt prompt;
+
+    @Column(name = "price", nullable = false)
+    private int price;
 
     @Column(name = "purchased_at", nullable = false)
     private LocalDateTime purchasedAt;
 
     @Builder
-    public Purchase(Long userId, Long promptId) {
-        this.userId = userId;
-        this.promptId = promptId;
+    public Purchase(com.redot.domain.user.User user, Prompt prompt, int price) {
+        this.user = user;
+        this.prompt = prompt;
+        this.price = price; // 💡 가격 저장
         this.purchasedAt = LocalDateTime.now();
     }
 }

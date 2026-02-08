@@ -1,16 +1,17 @@
 package com.redot.controller;
 
-import com.redot.auth.CustomOAuth2User;
 import com.redot.dto.common.ApiResponse;
 import com.redot.dto.prompt.DownloadResponse;
 import com.redot.dto.prompt.GenerationRequest;
 import com.redot.dto.prompt.GenerationResponse;
+import com.redot.dto.prompt.ImageStatusResponse;
 import com.redot.service.GenerationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -20,14 +21,13 @@ public class GenerationController {
 
     private final GenerationService generationService;
 
-    // 고화질 이미지 생성 API
     @PostMapping(value = "/product/{promptId}/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GenerationResponse> generateImage(
             @PathVariable Long promptId,
-            @AuthenticationPrincipal CustomOAuth2User user,
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody GenerationRequest request
     ) {
-        Long userId = user.getUser().getId();
+        Long userId = Long.parseLong(userDetails.getUsername());
 
         log.info(">>> [요청 수신] 유저 ID: {}, 프롬프트 ID: {}, AI 생성 로직을 호출합니다!", userId, promptId);
 
@@ -36,7 +36,18 @@ public class GenerationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/images/{imageId}/download")
+    @GetMapping("/image/{imageId}/status")
+    public ResponseEntity<ApiResponse<ImageStatusResponse>> getImageStatus(
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        ImageStatusResponse response = generationService.getImageStatus(imageId, userId);
+
+        return ResponseEntity.ok(ApiResponse.success("이미지 상태 조회 성공", response));
+    }
+
+    @GetMapping("/image/{imageId}/download")
     public ResponseEntity<ApiResponse<DownloadResponse>> downloadImage(
             @PathVariable Long imageId
     ) {

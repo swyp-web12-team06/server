@@ -47,7 +47,7 @@ INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_ind
     (2, 'ASPECT_RATIO', 'auto', 11, true, 0),
     (2, 'RESOLUTION', '1K', 1, true, 0),
     (2, 'RESOLUTION', '2K', 2, true, 0),
-    (2, 'RESOLUTION', '4K', 3, true, 0);
+    (2, 'RESOLUTION', '4K', 3, true, 3);
 
 -- Users (15개)
 INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, seller_terms_agreed, created_at, updated_at, warning_count)
@@ -672,17 +672,17 @@ INSERT IGNORE INTO lookbook_image_variable_options (lookbook_image_id, prompt_va
     (105, 56, 'fractal'), (105, 57, 'purple'), (105, 58, 'gold'), (105, 59, 'hairline'), (105, 60, 'extreme');
 
 -- Purchases (10개)
-INSERT IGNORE INTO purchases (purchase_id, user_id, prompt_id, purchased_at) VALUES
-    (1, 11, 1, NOW()),
-    (2, 11, 2, NOW()),
-    (3, 12, 3, NOW()),
-    (4, 12, 4, NOW()),
-    (5, 13, 5, NOW()),
-    (6, 13, 6, NOW()),
-    (7, 14, 7, NOW()),
-    (8, 14, 8, NOW()),
-    (9, 15, 9, NOW()),
-    (10, 15, 10, NOW());
+INSERT IGNORE INTO purchases (purchase_id, user_id, prompt_id, price, purchased_at) VALUES
+    (1, 11, 1, 5, NOW()),
+    (2, 11, 2, 8, NOW()),
+    (3, 12, 3, 5, NOW()),
+    (4, 12, 4, 10, NOW()),
+    (5, 13, 5, 5, NOW()),
+    (6, 13, 6, 7, NOW()),
+    (7, 14, 7, 5, NOW()),
+    (8, 14, 8, 9, NOW()),
+    (9, 15, 9, 5, NOW()),
+    (10, 15, 10, 6, NOW());
 
 -- Credit Charge Options (5개)
 INSERT IGNORE INTO credit_charge_option (id, amount) VALUES
@@ -694,9 +694,32 @@ INSERT IGNORE INTO credit_charge_option (id, amount) VALUES
 
 -- Bonus Credit Policies (3개)
 INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description) VALUES
-    (1, 5000, 0.05, '5% Bonus'),
-    (2, 30000, 0.10, '10% Bonus'),
-    (3, 50000, 0.15, '15% Bonus');
+    (1, 5000, 0.10, '10% Bonus'),
+    (2, 10000, 0.15, '15% Bonus'),
+    (3, 30000, 0.20, '20% Bonus');
 
-INSERT IGNORE INTO purchases (user_id, prompt_id, purchased_at) VALUES
-    (1, 1, CURRENT_TIMESTAMP);
+INSERT IGNORE INTO purchases (user_id, prompt_id, price, purchased_at) VALUES (1, 1, 5, CURRENT_TIMESTAMP);
+
+INSERT IGNORE INTO generated_images (image_id, purchase_id, task_id, image_url, image_quality, status, created_at)
+VALUES (1, 1, 'task_sample_001', 'https://picsum.photos/seed/gi_1_1/600/400', '1024x1024', 'COMPLETED', NOW());
+
+INSERT IGNORE INTO generated_image_variable_values (image_id, prompt_variable_id, variable_value) VALUES
+                                                                                                      (1, 1, 'Cyberpunk style'),  -- 1번 변수에 대한 값
+                                                                                                      (1, 2, 'Neon blue');        -- 2번 변수에 대한 값
+
+-- 1. 판매 목록용 프롬프트 추가 (이미지 경로 추가됨!)
+INSERT IGNORE INTO prompts (title, price, status, user_id, category_id, model_id, is_deleted, preview_image_url, created_at) VALUES
+                                                                                                                                 ('네온 사이버펑크', 10, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/neon/200/300', NOW()),
+                                                                                                                                 ('중세 판타지 배경', 15, 'PENDING', 2, 1, 1, 0, 'https://picsum.photos/seed/fantasy/200/300', NOW()),
+                                                                                                                                 ('수채화 스타일 꽃', 5, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/flower/200/300', NOW()),
+                                                                                                                                 ('8비트 도트 캐릭터', 8, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/dot/200/300', NOW()),
+                                                                                                                                 ('실사풍 인테리어', 20, 'REJECTED', 2, 1, 1, 0, 'https://picsum.photos/seed/room/200/300', NOW());
+
+-- 2. 구매 이력 및 생성 이미지 (기존 유지)
+INSERT IGNORE INTO purchases (purchase_id, price, purchased_at, prompt_id, user_id) VALUES
+                                                                                        (101, 10, NOW(), 1, 2),
+                                                                                        (102, 12, NOW(), 3, 2);
+
+INSERT IGNORE INTO generated_images (task_id, status, purchase_id, image_url, created_at) VALUES
+                                                                                              ('task_test_001', 'COMPLETED', 101, 'https://example.com/img1.png', NOW()),
+                                                                                              ('task_test_002', 'PROCESSING', 102, null, NOW());

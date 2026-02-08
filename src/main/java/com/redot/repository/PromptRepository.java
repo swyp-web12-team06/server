@@ -1,6 +1,7 @@
 package com.redot.repository;
 
 import com.redot.domain.Prompt;
+import com.redot.domain.PromptStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,23 +55,23 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
             "AND (p.title LIKE %:keyword% OR u.nickname LIKE %:keyword% OR t.name LIKE %:keyword%)")
     Page<Prompt> searchByKeywordBasic(@Param("keyword") String keyword, Pageable pageable);
 
-    // Full-Text Search 사용 (MySQL 전용)
+    // MySQL용: LIKE 검색
     @Query(value = "SELECT DISTINCT p.* FROM prompts p " +
            "INNER JOIN users u ON p.user_id = u.user_id " +
            "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
            "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
            "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
-           "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-           "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-           "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+           "AND (p.title LIKE CONCAT('%', :keyword, '%') " +
+           "OR u.nickname LIKE CONCAT('%', :keyword, '%') " +
+           "OR t.name LIKE CONCAT('%', :keyword, '%'))",
            countQuery = "SELECT COUNT(DISTINCT p.prompt_id) FROM prompts p " +
                        "INNER JOIN users u ON p.user_id = u.user_id " +
                        "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
                        "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
                        "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
-                       "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-                       "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-                       "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+                       "AND (p.title LIKE CONCAT('%', :keyword, '%') " +
+                       "OR u.nickname LIKE CONCAT('%', :keyword, '%') " +
+                       "OR t.name LIKE CONCAT('%', :keyword, '%'))",
            nativeQuery = true)
     Page<Prompt> searchByKeywordFullText(@Param("keyword") String keyword, Pageable pageable);
 
@@ -84,25 +86,27 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
             "AND (p.title LIKE %:keyword% OR u.nickname LIKE %:keyword% OR t.name LIKE %:keyword%)")
     Page<Prompt> searchByKeywordAndCategoryBasic(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
 
-    // Full-Text Search 사용 (MySQL 전용)
+    // MySQL용: LIKE 검색 + 카테고리 필터
     @Query(value = "SELECT DISTINCT p.* FROM prompts p " +
            "INNER JOIN users u ON p.user_id = u.user_id " +
            "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
            "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
            "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
            "AND p.category_id = :categoryId " +
-           "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-           "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-           "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+           "AND (p.title LIKE CONCAT('%', :keyword, '%') " +
+           "OR u.nickname LIKE CONCAT('%', :keyword, '%') " +
+           "OR t.name LIKE CONCAT('%', :keyword, '%'))",
            countQuery = "SELECT COUNT(DISTINCT p.prompt_id) FROM prompts p " +
                        "INNER JOIN users u ON p.user_id = u.user_id " +
                        "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
                        "LEFT JOIN tags t ON pt.tag_id = t.tag_id " +
                        "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
                        "AND p.category_id = :categoryId " +
-                       "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-                       "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-                       "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+                       "AND (p.title LIKE CONCAT('%', :keyword, '%') " +
+                       "OR u.nickname LIKE CONCAT('%', :keyword, '%') " +
+                       "OR t.name LIKE CONCAT('%', :keyword, '%'))",
            nativeQuery = true)
     Page<Prompt> searchByKeywordAndCategoryFullText(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
+
+    Collection<Object> findAllBySellerIdAndStatus(Long userId, PromptStatus promptStatus);
 }

@@ -1,16 +1,21 @@
 package com.redot.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redot.domain.*;
 import com.redot.domain.user.User;
 import com.redot.dto.prompt.DownloadResponse;
 import com.redot.dto.prompt.GenerationRequest;
 import com.redot.dto.prompt.GenerationResponse;
+import com.redot.dto.prompt.ImageStatusResponse;
+import com.redot.dto.prompt.PriceCheckRequest;
 import com.redot.exception.BusinessException;
 import com.redot.exception.ErrorCode;
 import com.redot.repository.*;
 import com.redot.repository.user.UserRepository;
 import com.redot.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,67 +36,82 @@ public class GenerationService {
     private final PromptRepository promptRepository;
     private final UserRepository userRepository;
     private final ModelOptionRepository modelOptionRepository;
+    private final ObjectMapper objectMapper;
 
+    @Value("${app.callback-url:https://redot.store/callback/kie-ai}")
+    private String callbackUrl;
 
     @Transactional
     public GenerationResponse generateHighQualityImage(Long userId, Long promptId, GenerationRequest request) {
 
-        // 1. 구매 여부 확인
-        Purchase purchase = purchaseRepository.findByUserIdAndPromptId(userId, promptId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_PURCHASED_ITEM));
-
-        // 2. promptEntity 조회 및 프롬프트 치환
+        // 1. DB에서 프롬프트 원본 조회 (보안 강화)
         Prompt promptEntity = promptRepository.findById(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
-        String finalPrompt = promptEntity.getMasterPrompt();
+        // 2. 유저 조회 및 즉시 구매 레코드 생성
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        Purchase purchase = Purchase.builder()
+                .user(user)
+                .prompt(promptEntity)
+                .price(promptEntity.getPrice())
+                .build();
+        purchaseRepository.save(purchase);
+
+        // 3. 서버 내에서 프롬프트 치환 (masterPrompt 기반)
+        String finalPrompt = promptEntity.getMasterPrompt();
         if (request.getVariableValues() != null) {
             for (var v : request.getVariableValues()) {
                 PromptVariable pv = promptVariableRepository.findById(v.getVariableId())
                         .orElseThrow(() -> new BusinessException(ErrorCode.VARIABLE_NOT_FOUND));
-
                 finalPrompt = finalPrompt.replace("[" + pv.getKeyName() + "]", v.getValue());
             }
         }
 
-        // 3. 가격 계산 (크레딧 단위 조정 100:1)
+        // 4. 가격 계산 및 크레딧 차감
         int totalPrice = calculateTotalPrice(promptEntity, request);
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
         user.decreaseCredit(totalPrice);
 
-        // 4. KieAiClient 모델명 예외처리 및 AI 호출
-        if (request.getAiModel() == null || request.getAiModel().isBlank()) {
-            throw new BusinessException(ErrorCode.INVALID_MODEL_NAME);
-        }
+        // 5. AI 서버 호출 (Grok 모델은 1장 생성 기준)
+        String modelName = promptEntity.getAiModel().getName();
 
-        String resolution = (request.getResolution() != null && !request.getResolution().isBlank())
-                ? request.getResolution() : null;
+        log.info(">>> [AI 생성 요청] 모델: {}, 해상도: {}, 비율: {}",
+                modelName, request.getResolution(), request.getAspectRatio());
 
         String taskId = kieAiClient.generateAndSaveImage(
                 finalPrompt,
-                request.getAiModel(),
-                resolution,
-                request.getAspectRatio()
+                modelName,
+                request.getResolution(),
+                request.getAspectRatio(),
+                this.callbackUrl
         );
 
-        // 5. 생성 이력 저장
+        // 6. 생성 이력 저장 (상태: PROCESSING)
         GeneratedImage image = GeneratedImage.builder()
                 .purchase(purchase)
-                .imageUrl(taskId)
+                .taskId(taskId)
                 .imageQuality(request.getResolution())
+                .status(GeneratedImageStatus.PROCESSING)
                 .build();
         GeneratedImage savedImage = generatedImageRepository.save(image);
 
-        // 6. 사용된 옵션 기록
+        // 7. 사용된 변수 값 저장
+        saveVariableValues(savedImage, request);
+
+        return GenerationResponse.builder()
+                .imageId(savedImage.getId())
+                .taskId(taskId)
+                .totalPrice(totalPrice)
+                .currentCredit(user.getCreditBalance().longValue())
+                .build();
+    }
+
+    private void saveVariableValues(GeneratedImage savedImage, GenerationRequest request) {
         if (request.getVariableValues() != null) {
             for (var v : request.getVariableValues()) {
                 PromptVariable pv = promptVariableRepository.findById(v.getVariableId())
                         .orElseThrow(() -> new BusinessException(ErrorCode.VARIABLE_NOT_FOUND));
-
                 imageValueRepository.save(GeneratedImageVariableValue.builder()
                         .generatedImage(savedImage)
                         .promptVariable(pv)
@@ -99,39 +119,31 @@ public class GenerationService {
                         .build());
             }
         }
-
-        // 응답 시에도 Presigned URL 적용
-        return GenerationResponse.builder()
-                .imageId(savedImage.getId())
-                .imageUrl(taskId)
-                .totalPrice(totalPrice)
-                .currentCredit(user.getCreditBalance().longValue())
-                .build();
     }
 
-    private int calculateTotalPrice(Prompt prompt, GenerationRequest request) {
+    private int calculateTotalPrice(Prompt prompt, Object requestDto) {
         int price = prompt.getPrice();
+        String resolution = null;
 
-        // 모델 추가 비용
-        if (request.getAiModel() != null) {
-            price += modelOptionRepository.findByOptionValue(request.getAiModel())
-                    .map(ModelOption::getAdditionalCost).orElse(0);
+        if (requestDto instanceof GenerationRequest req) {
+            resolution = req.getResolution();
+        } else if (requestDto instanceof PriceCheckRequest req) {
+            resolution = req.getResolution();
         }
 
-        // 해상도 추가 비용
-        if (request.getResolution() != null) {
-            price += modelOptionRepository.findByOptionValue(request.getResolution())
-                    .map(ModelOption::getAdditionalCost).orElse(0);
+        if (resolution != null) {
+            price += modelOptionRepository.findByAiModel_IdAndModelOptionTypeAndOptionValueAndIsActiveTrue(
+                            prompt.getAiModel().getId(),
+                            ModelOptionType.RESOLUTION,
+                            resolution)
+                    .map(ModelOption::getAdditionalCost)
+                    .orElse(0);
         }
 
-        // 변수당 1크레딧 추가
-        if (request.getVariableValues() != null) {
-            price += request.getVariableValues().size();
-        }
         return price;
     }
 
-    public int getEstimatedPrice(Long promptId, GenerationRequest request) {
+    public int getEstimatedPrice(Long promptId, PriceCheckRequest request) {
         Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
@@ -149,16 +161,78 @@ public class GenerationService {
                 .downloadUrl(secureUrl)
                 .build();
     }
+    public ImageStatusResponse getImageStatus(Long imageId, Long userId) {
+        GeneratedImage image = generatedImageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
+
+        if (!image.getPurchase().getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        String downloadUrl = null;
+        if (image.getStatus() == GeneratedImageStatus.COMPLETED) {
+            downloadUrl = imageManager.getPresignedGetUrl(image.getImageUrl());
+        }
+
+        return ImageStatusResponse.builder()
+                .imageId(image.getId())
+                .status(image.getStatus().name())
+                .downloadUrl(downloadUrl)
+                .build();
+    }
+
     @Transactional
-    public void completeImageGeneration(String taskId, String imageUrl) {
-        // 1. taskId로 생성 중인 이미지 레코드 찾기
-        GeneratedImage generatedImage = generatedImageRepository.findByTaskId(taskId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
+    public void failImageGeneration(String taskId, String failMsg) {
+        generatedImageRepository.findByTaskId(taskId).ifPresent(image -> {
+            image.updateStatus(GeneratedImageStatus.FAILED);
+            log.error(">>> [이미지 생성 실패] TaskID: {}, 사유: {}", taskId, failMsg);
+        });
+    }
 
-        // 2. 상태 변경 및 URL 저장 (임시 URL -> 실제 AI 생성 URL)
-        generatedImage.updateImageUrl(imageUrl);
-        generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
+    /**
+     * [비동기 완료 처리]
+     * @param taskId AI 서버 작업 ID
+     * @param resultJson Kie AI에서 보낸 JSON 문자열 ("{\"resultUrls\":[\"...\"]}")
+     */
+    @Transactional
+    public void completeImageGeneration(String taskId, String resultJson) {
+        try {
+            GeneratedImage generatedImage = generatedImageRepository.findByTaskId(taskId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
 
-        log.info(">>> [비동기 완료] TaskID: {}의 이미지 생성이 완료되어 URL이 업데이트되었습니다.", taskId);
+            if (generatedImage.getStatus() == GeneratedImageStatus.COMPLETED) {
+                log.warn(">>> [중복 콜백] 이미 완료된 TaskID입니다: {}", taskId);
+                return;
+            }
+
+            JsonNode root = objectMapper.readTree(resultJson);
+            JsonNode resultUrls = root.path("resultUrls");
+            if (resultUrls.isMissingNode() || resultUrls.isEmpty()) {
+                log.error(">>> [콜백 데이터 오류] resultUrls가 비어있습니다. TaskID: {}", taskId);
+                generatedImage.updateStatus(GeneratedImageStatus.FAILED);
+                return;
+            }
+
+            String tempAiUrl = resultUrls.get(0).asText();
+
+            // 2. R2 업로드 (isSecret: true로 시크릿 버킷 사용)
+            // R2ImageManager.uploadFromUrl은 이미 순수 Key(경로)를 반환하도록 설계되어 있음
+            String r2StoredKey = imageManager.uploadFromUrl(
+                    tempAiUrl,
+                    "generated-images/" + taskId,
+                    true
+            );
+
+            // 3. DB에는 도메인이 없는 순수 Key만 저장
+            generatedImage.updateImageUrl(r2StoredKey);
+            generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
+
+            // 로그에서도 URL 대신 Key임을 명시
+            log.info(">>> [R2 업로드 완료] TaskID: {}, 저장된 Key: {}", taskId, r2StoredKey);
+
+        } catch (Exception e) {
+            log.error(">>> [콜백 처리 에러] TaskID: {}, 사유: {}", taskId, e.getMessage());
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 }

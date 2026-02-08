@@ -23,9 +23,9 @@ public class KieAiClient {
     @Value("${kie.api.key}")
     private String apiKey;
 
-    public String generateAndSaveImage(String prompt, String modelName, String resolution, String aspectRatio) {
+    public String generateAndSaveImage(String prompt, String modelName, String resolution, String aspectRatio, String callbackUrl) {
         try {
-            log.info(">>> [KieAiClient] 태스크 생성 요청 - 모델: {}, 비율: {}", modelName, aspectRatio);
+            log.info(">>> [KieAiClient] 태스크 생성 요청 - 모델: {}, 비율: {}, 콜백: {}", modelName, aspectRatio, callbackUrl);
 
             String createUrl = "https://api.kie.ai/api/v1/jobs/createTask";
             HttpHeaders headers = new HttpHeaders();
@@ -35,6 +35,10 @@ public class KieAiClient {
             // 1. 요청 바디 구성
             Map<String, Object> body = new HashMap<>();
             body.put("model", (modelName != null && !modelName.isEmpty()) ? modelName : "nano-banana-pro");
+
+            if (callbackUrl != null) {
+                body.put("callBackUrl", callbackUrl);
+            }
 
             Map<String, Object> input = new HashMap<>();
             input.put("prompt", prompt);

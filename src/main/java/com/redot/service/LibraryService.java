@@ -34,7 +34,7 @@ public class LibraryService {
         List<Purchase> purchases = purchaseRepository.findByUserIdOrderByPurchasedAtDesc(userId);
 
         return purchases.stream().map(purchase -> {
-            Prompt prompt = promptRepository.findById(purchase.getPromptId())
+            Prompt prompt = promptRepository.findById(purchase.getPrompt().getId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
             List<GeneratedImage> images = generatedImageRepository.findByPurchaseId(purchase.getId());
@@ -59,7 +59,7 @@ public class LibraryService {
                     .generated_images(images.stream()
                             .map(img -> LibraryResponse.ImageInfo.builder()
                                     .id(img.getId())
-                                    .image_url(imageManager.getPublicUrl(img.getImageUrl()))
+                                    .image_url(imageManager.getPresignedGetUrl(img.getImageUrl()))
                                     .build())
                             .collect(Collectors.toList()))
                     .purchased_at(purchase.getPurchasedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")))
@@ -88,6 +88,7 @@ public class LibraryService {
                     .title(prompt.getTitle())
                     .price(prompt.getPrice())
                     .status(prompt.getStatus())
+                    .preview_image_url(imageManager.getPublicUrl(prompt.getPreviewImageUrl()))
                     .sales_count(salesCount)
                     .total_revenue(prompt.getPrice() * salesCount)
                     .created_at(formattedDate)

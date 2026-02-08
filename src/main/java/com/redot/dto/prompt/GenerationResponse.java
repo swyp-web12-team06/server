@@ -18,4 +18,7 @@ public class GenerationResponse {
 
     @JsonProperty("current_credit")
     private Long currentCredit;
+
+    @JsonProperty("task_id")
+    private String taskId;
 }
