@@ -164,16 +164,25 @@ public class GenerationService {
         return calculateTotalPrice(prompt, request);
     }
 
-    public DownloadResponse getDownloadUrl(Long imageId) {
+    public DownloadResponse getDownloadUrl(Long imageId, Long userId) {
 
         GeneratedImage image = generatedImageRepository.findById(imageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
+
+        if (!image.getPurchase().getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
 
         if (image.getStatus() != GeneratedImageStatus.COMPLETED || image.getImageUrl() == null) {
             throw new BusinessException(ErrorCode.IMAGE_NOT_READY);
         }
 
-        String secureUrl = imageManager.getPresignedGetUrl(image.getImageUrl());
+        // 파일명: imageKey에서 확장자 추출하여 다운로드 파일명 생성
+        String imageKey = image.getImageUrl();
+        String extension = imageKey.substring(imageKey.lastIndexOf('.'));
+        String downloadFilename = "redot-image-" + imageId + extension;
+
+        String secureUrl = imageManager.getPresignedDownloadUrl(imageKey, downloadFilename);
 
         return DownloadResponse.builder()
                 .downloadUrl(secureUrl)
