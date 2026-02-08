@@ -521,7 +521,7 @@ public class ProductService {
     public List<LibrarySalesResponse> getUserProductList(Long userId) {
         return promptRepository.findAllBySellerIdAndStatus(userId, PromptStatus.APPROVED)
                 .stream()
-                .map(prompt -> LibrarySalesResponse.from((Prompt) prompt))
+                .map(prompt -> LibrarySalesResponse.builder().build())
                 .toList();
     }
 }
