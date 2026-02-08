@@ -88,6 +88,7 @@ public class LibraryService {
                     .title(prompt.getTitle())
                     .price(prompt.getPrice())
                     .status(prompt.getStatus())
+                    .preview_image_url(imageManager.getPresignedGetUrl(prompt.getPreviewImageUrl()))
                     .sales_count(salesCount)
                     .total_revenue(prompt.getPrice() * salesCount)
                     .created_at(formattedDate)

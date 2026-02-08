@@ -2,6 +2,7 @@ package com.redot.dto.library;
 
 import com.redot.domain.Prompt;
 import com.redot.domain.PromptStatus;
+import com.redot.service.image.ImageManager;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,8 +11,8 @@ import java.time.format.DateTimeFormatter;
 
 @Getter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class LibrarySalesResponse {
     private Long prompt_id;
     private String title;
@@ -21,18 +22,4 @@ public class LibrarySalesResponse {
     private Integer sales_count;
     private Integer total_revenue;
     private String created_at;
-
-    public static LibrarySalesResponse from(Prompt prompt) {
-        return LibrarySalesResponse.builder()
-                .prompt_id(prompt.getId())
-                .title(prompt.getTitle())
-                .price(prompt.getPrice())
-                .status(prompt.getStatus())
-                .preview_image_url(prompt.getPreviewImageUrl())
-                .sales_count(0)
-                .total_revenue(0)
-                .created_at(prompt.getCreatedAt() != null ?
-                        prompt.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
-                .build();
-    }
 }
