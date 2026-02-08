@@ -163,6 +163,10 @@ public class GenerationService {
         GeneratedImage image = generatedImageRepository.findById(imageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
 
+        if (image.getStatus() != GeneratedImageStatus.COMPLETED || image.getImageUrl() == null) {
+            throw new BusinessException(ErrorCode.IMAGE_NOT_READY);
+        }
+
         String secureUrl = imageManager.getPresignedGetUrl(image.getImageUrl());
 
         return DownloadResponse.builder()
