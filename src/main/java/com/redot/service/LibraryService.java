@@ -33,7 +33,13 @@ public class LibraryService {
     public List<LibraryResponse> getMyPurchases(Long userId) {
         List<Purchase> purchases = purchaseRepository.findByUserIdOrderByPurchasedAtDesc(userId);
 
-        return purchases.stream().map(purchase -> {
+        return purchases.stream()
+                .filter(purchase -> {
+                    List<GeneratedImage> images = generatedImageRepository.findByPurchaseId(purchase.getId());
+                    if (images.isEmpty()) return false;
+                    return images.getFirst().getStatus() != GeneratedImageStatus.FAILED;
+                })
+                .map(purchase -> {
             Prompt prompt = promptRepository.findById(purchase.getPrompt().getId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
@@ -63,8 +69,7 @@ public class LibraryService {
                             .build()))
                     .purchased_at(purchase.getPurchasedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")))
                     .build();
-        }).filter(response -> !response.getStatus().equals("FAILED"))
-          .collect(Collectors.toList());
+        }).collect(Collectors.toList());
     }
 
     /**
