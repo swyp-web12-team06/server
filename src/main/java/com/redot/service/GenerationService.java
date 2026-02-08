@@ -84,15 +84,21 @@ public class GenerationService {
         // 6. AI 서버 호출 (Grok 모델은 1장 생성 기준)
         String modelName = promptEntity.getAiModel().getName();
 
-        log.info(">>> [AI 생성 요청] 모델: {}, 해상도: {}, 비율: {}",
-                modelName, request.getResolution(), request.getAspectRatio());
+        // 참조 이미지: previewImageUrl을 publicUrl로 변환하여 전달
+        String referenceImageUrl = promptEntity.getPreviewImageUrl() != null
+                ? imageManager.getPublicUrl(promptEntity.getPreviewImageUrl())
+                : null;
+
+        log.info(">>> [AI 생성 요청] 모델: {}, 해상도: {}, 비율: {}, 참조이미지: {}",
+                modelName, request.getResolution(), request.getAspectRatio(), referenceImageUrl != null);
 
         String taskId = kieAiClient.generateAndSaveImage(
                 finalPrompt,
                 modelName,
                 request.getResolution(),
                 request.getAspectRatio(),
-                this.callbackUrl
+                this.callbackUrl,
+                referenceImageUrl
         );
 
         // 7. 생성 이력 저장 (상태: PROCESSING)
