@@ -36,7 +36,7 @@ public class GenerationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/images/{imageId}/status")
+    @GetMapping("/image/{imageId}/status")
     public ResponseEntity<ApiResponse<ImageStatusResponse>> getImageStatus(
             @PathVariable Long imageId,
             @AuthenticationPrincipal UserDetails userDetails
@@ -47,7 +47,7 @@ public class GenerationController {
         return ResponseEntity.ok(ApiResponse.success("이미지 상태 조회 성공", response));
     }
 
-    @GetMapping("/images/{imageId}/download")
+    @GetMapping("/image/{imageId}/download")
     public ResponseEntity<ApiResponse<DownloadResponse>> downloadImage(
             @PathVariable Long imageId
     ) {

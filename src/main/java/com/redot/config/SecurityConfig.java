@@ -85,7 +85,7 @@ public class SecurityConfig {
                         .requestMatchers("/credit/options").permitAll()
                         .requestMatchers("/credit/**").hasAnyRole("USER", "SELLER")
 
-                        .requestMatchers(HttpMethod.GET, "/images/*/status").hasAnyRole("USER", "SELLER")
+                        .requestMatchers(HttpMethod.GET, "/image/*/status").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.GET, "/image/*/download").hasAnyRole("USER", "SELLER")
                         .requestMatchers(HttpMethod.GET, "/image/presigned-upload").hasAnyRole("USER", "SELLER")
                         .anyRequest().authenticated()
