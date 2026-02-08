@@ -22,7 +22,7 @@ public class ImageFileUtils {
     );
 
     // 최대 파일 크기: 5MB
-    public static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+    public static final long MAX_FILE_SIZE = 15 * 1024 * 1024; // 5MB in bytes
 
     /**
      * Content-Type 검증
