@@ -63,7 +63,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
            "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
            "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-           "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+           "OR t.name LIKE CONCAT('%', :keyword, '%'))",
            countQuery = "SELECT COUNT(DISTINCT p.prompt_id) FROM prompts p " +
                        "INNER JOIN users u ON p.user_id = u.user_id " +
                        "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
@@ -71,7 +71,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
                        "WHERE p.is_deleted = false AND p.status = 'APPROVED' " +
                        "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
                        "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-                       "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+                       "OR t.name LIKE CONCAT('%', :keyword, '%'))",
            nativeQuery = true)
     Page<Prompt> searchByKeywordFullText(@Param("keyword") String keyword, Pageable pageable);
 
@@ -95,7 +95,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            "AND p.category_id = :categoryId " +
            "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
            "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-           "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+           "OR t.name LIKE CONCAT('%', :keyword, '%'))",
            countQuery = "SELECT COUNT(DISTINCT p.prompt_id) FROM prompts p " +
                        "INNER JOIN users u ON p.user_id = u.user_id " +
                        "LEFT JOIN prompt_tags pt ON p.prompt_id = pt.prompt_id " +
@@ -104,7 +104,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
                        "AND p.category_id = :categoryId " +
                        "AND (MATCH(p.title) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
                        "OR MATCH(u.nickname) AGAINST(:keyword IN NATURAL LANGUAGE MODE) " +
-                       "OR MATCH(t.name) AGAINST(:keyword IN NATURAL LANGUAGE MODE))",
+                       "OR t.name LIKE CONCAT('%', :keyword, '%'))",
            nativeQuery = true)
     Page<Prompt> searchByKeywordAndCategoryFullText(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
 
