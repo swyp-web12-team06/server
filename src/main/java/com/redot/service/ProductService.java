@@ -514,7 +514,7 @@ public class ProductService {
         List<String> aspectRatios = aiModelService.getModelAspectRatios(modelId);
         List<String> resolutions = aiModelService.getModelResolutions(modelId);
 
-        return ProductPurchaseResponse.from(prompt, aspectRatios, resolutions);
+        return ProductPurchaseResponse.from(prompt, aspectRatios, resolutions, imageManager::getPublicUrl);
     }
 
     @Transactional(readOnly = true)
