@@ -37,37 +37,34 @@ public class LibraryService {
             Prompt prompt = promptRepository.findById(purchase.getPrompt().getId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
-            List<GeneratedImage> images = generatedImageRepository.findByPurchaseId(purchase.getId());
+            GeneratedImage image = generatedImageRepository.findByPurchaseId(purchase.getId()).getFirst();
 
-            // 변수 정보 추출 (첫 번째 이미지 기준)
-            List<LibraryResponse.VariableInfo> variableInfos = List.of();
-            if (!images.isEmpty()) {
-                variableInfos = imageVariableRepository.findByGeneratedImageId(images.getFirst().getId())
-                        .stream().map(v -> LibraryResponse.VariableInfo.builder()
-                                .variable_id(v.getPromptVariable().getId())
-                                .value(v.getValue())
-                                .build())
-                        .collect(Collectors.toList());
-            }
+            // 변수 정보 추출
+            List<LibraryResponse.VariableInfo> variableInfos = imageVariableRepository.findByGeneratedImageId(image.getId())
+                    .stream().map(v -> LibraryResponse.VariableInfo.builder()
+                            .variable_id(v.getPromptVariable().getId())
+                            .value(v.getValue())
+                            .build())
+                    .collect(Collectors.toList());
 
             return LibraryResponse.builder()
                     .purchase_id(purchase.getId())
                     .prompt_id(prompt.getId())
                     .title(prompt.getTitle())
                     .amount(prompt.getPrice())
+                    .status(image.getStatus().name())
                     .variables(variableInfos)
-                    .generated_images(images.stream()
-                            .map(img -> LibraryResponse.ImageInfo.builder()
-                                    .id(img.getId())
-                                    .image_url(img.getStatus() == GeneratedImageStatus.COMPLETED
-                                            ? imageManager.getPresignedGetUrl(img.getImageUrl())
-                                            : null)
-                                    .status(img.getStatus().name())
-                                    .build())
-                            .collect(Collectors.toList()))
+                    .generated_images(List.of(LibraryResponse.ImageInfo.builder()
+                            .id(image.getId())
+                            .image_url(image.getStatus() == GeneratedImageStatus.COMPLETED
+                                    ? imageManager.getPresignedGetUrl(image.getImageUrl())
+                                    : null)
+                            .status(image.getStatus().name())
+                            .build()))
                     .purchased_at(purchase.getPurchasedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")))
                     .build();
-        }).collect(Collectors.toList());
+        }).filter(response -> !response.getStatus().equals("FAILED"))
+          .collect(Collectors.toList());
     }
 
     /**

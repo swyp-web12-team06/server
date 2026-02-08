@@ -11,6 +11,7 @@ public class LibraryResponse {
     private Long prompt_id;
     private String title;
     private Integer amount;
+    private String status;
     private List<VariableInfo> variables;
     private List<ImageInfo> generated_images;
     private String purchased_at;
