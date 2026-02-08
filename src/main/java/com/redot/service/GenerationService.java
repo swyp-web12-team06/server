@@ -185,6 +185,13 @@ public class GenerationService {
     public void failImageGeneration(String taskId, String failMsg) {
         generatedImageRepository.findByTaskId(taskId).ifPresent(image -> {
             image.updateStatus(GeneratedImageStatus.FAILED);
+
+            // 크레딧 환불
+            Purchase purchase = image.getPurchase();
+            purchase.getUser().addCredit(purchase.getPrice());
+            log.info(">>> [크레딧 환불] TaskID: {}, 유저ID: {}, 환불액: {}",
+                    taskId, purchase.getUser().getId(), purchase.getPrice());
+
             log.error(">>> [이미지 생성 실패] TaskID: {}, 사유: {}", taskId, failMsg);
         });
     }
