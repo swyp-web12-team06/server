@@ -52,7 +52,7 @@ public class KieAiClient {
             // 참조 이미지 (모델별 필드명 분기)
             if (referenceImageUrl != null && !referenceImageUrl.isBlank()) {
                 if ("nano-banana-pro".equals(modelName)) {
-                    input.put("image_input", referenceImageUrl);
+                    input.put("image_input", List.of(referenceImageUrl));
                 } else if ("grok-imagine/image-to-image".equals(modelName)) {
                     input.put("image_urls", List.of(referenceImageUrl));
                 }
