@@ -1,7 +1,6 @@
 package com.redot.service;
 
 import com.redot.service.image.ImageManager;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +9,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -23,7 +23,7 @@ public class KieAiClient {
     @Value("${kie.api.key}")
     private String apiKey;
 
-    public String generateAndSaveImage(String prompt, String modelName, String resolution, String aspectRatio, String callbackUrl) {
+    public String generateAndSaveImage(String prompt, String modelName, String resolution, String aspectRatio, String callbackUrl, String referenceImageUrl) {
         try {
             log.info(">>> [KieAiClient] 태스크 생성 요청 - 모델: {}, 비율: {}, 콜백: {}", modelName, aspectRatio, callbackUrl);
 
@@ -48,6 +48,16 @@ public class KieAiClient {
             }
 
             if (aspectRatio != null) input.put("aspect_ratio", aspectRatio);
+
+            // 참조 이미지 (모델별 필드명 분기)
+            if (referenceImageUrl != null && !referenceImageUrl.isBlank()) {
+                if ("nano-banana-pro".equals(modelName)) {
+                    input.put("image_input", referenceImageUrl);
+                } else if ("grok-imagine/image-to-image".equals(modelName)) {
+                    input.put("image_urls", List.of(referenceImageUrl));
+                }
+            }
+
             body.put("input", input);
 
             // 2. 태스크 생성 요청
