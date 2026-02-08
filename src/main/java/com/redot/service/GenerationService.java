@@ -38,7 +38,7 @@ public class GenerationService {
     private final ModelOptionRepository modelOptionRepository;
     private final ObjectMapper objectMapper;
 
-    @Value("${app.callback-url:https://redot.store/callback/kie-ai}")
+    @Value("${app.callback-url}")
     private String callbackUrl;
 
     @Transactional
