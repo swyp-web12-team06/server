@@ -16,10 +16,11 @@ import com.redot.repository.user.UserRepository;
 import com.redot.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -59,21 +60,28 @@ public class GenerationService {
                 .build();
         purchaseRepository.save(purchase);
 
-        // 3. 서버 내에서 프롬프트 치환 (masterPrompt 기반)
-        String finalPrompt = promptEntity.getMasterPrompt();
-        if (request.getVariableValues() != null) {
-            for (var v : request.getVariableValues()) {
-                PromptVariable pv = promptVariableRepository.findById(v.getVariableId())
-                        .orElseThrow(() -> new BusinessException(ErrorCode.VARIABLE_NOT_FOUND));
-                finalPrompt = finalPrompt.replace("[" + pv.getKeyName() + "]", v.getValue());
-            }
+        // 3. 변수 검증: 프롬프트에 변수가 있으면 반드시 값이 있어야 함
+        List<PromptVariable> requiredVariables = promptEntity.getPromptVariables();
+        List<GenerationRequest.VariableSelection> submittedValues =
+                request.getVariableValues() != null ? request.getVariableValues() : List.of();
+
+        if (!requiredVariables.isEmpty() && requiredVariables.size() != submittedValues.size()) {
+            throw new BusinessException(ErrorCode.MISSING_VARIABLE_VALUES);
         }
 
-        // 4. 가격 계산 및 크레딧 차감
+        // 4. 서버 내에서 프롬프트 치환 (masterPrompt 기반)
+        String finalPrompt = promptEntity.getMasterPrompt();
+        for (var v : submittedValues) {
+            PromptVariable pv = promptVariableRepository.findById(v.getVariableId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.VARIABLE_NOT_FOUND));
+            finalPrompt = finalPrompt.replace("[" + pv.getKeyName() + "]", v.getValue());
+        }
+
+        // 5. 가격 계산 및 크레딧 차감
         int totalPrice = calculateTotalPrice(promptEntity, request);
         user.decreaseCredit(totalPrice);
 
-        // 5. AI 서버 호출 (Grok 모델은 1장 생성 기준)
+        // 6. AI 서버 호출 (Grok 모델은 1장 생성 기준)
         String modelName = promptEntity.getAiModel().getName();
 
         log.info(">>> [AI 생성 요청] 모델: {}, 해상도: {}, 비율: {}",
@@ -87,7 +95,7 @@ public class GenerationService {
                 this.callbackUrl
         );
 
-        // 6. 생성 이력 저장 (상태: PROCESSING)
+        // 7. 생성 이력 저장 (상태: PROCESSING)
         GeneratedImage image = GeneratedImage.builder()
                 .purchase(purchase)
                 .taskId(taskId)
@@ -96,7 +104,7 @@ public class GenerationService {
                 .build();
         GeneratedImage savedImage = generatedImageRepository.save(image);
 
-        // 7. 사용된 변수 값 저장
+        // 8. 사용된 변수 값 저장
         saveVariableValues(savedImage, request);
 
         return GenerationResponse.builder()
