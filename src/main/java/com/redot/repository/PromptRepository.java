@@ -35,6 +35,13 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            "JOIN FETCH p.seller " +
            "JOIN FETCH p.category " +
            "JOIN FETCH p.aiModel " +
+           "WHERE p.id = :id AND p.isDeleted = false")
+    Optional<Prompt> findByIdNotDeleted(@Param("id") Long id);
+
+    @Query("SELECT p FROM Prompt p " +
+           "JOIN FETCH p.seller " +
+           "JOIN FETCH p.category " +
+           "JOIN FETCH p.aiModel " +
            "WHERE p.isDeleted = false AND p.status = 'APPROVED'")
     Page<Prompt> findAllWithDetails(Pageable pageable);
 
