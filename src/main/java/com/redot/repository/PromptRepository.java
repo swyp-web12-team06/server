@@ -108,5 +108,5 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            nativeQuery = true)
     Page<Prompt> searchByKeywordAndCategoryFullText(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
 
-    Collection<Object> findAllBySellerIdAndStatus(Long userId, PromptStatus promptStatus);
+    List<Prompt> findAllBySellerIdAndStatusAndIsDeletedFalse(Long sellerId, PromptStatus status);
 }
