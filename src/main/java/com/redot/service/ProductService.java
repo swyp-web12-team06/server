@@ -477,8 +477,14 @@ public class ProductService {
     }
 
     public ProductResponse getProductDetail(Long promptId, Long userId) {
-        Prompt prompt = promptRepository.findByIdWithDetails(promptId)
+        Prompt prompt = promptRepository.findByIdNotDeleted(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
+
+        // 본인 상품이 아닌 경우 APPROVED만 조회 가능
+        boolean isOwner = prompt.getSeller().getId().equals(userId);
+        if (!isOwner && prompt.getStatus() != PromptStatus.APPROVED) {
+            throw new BusinessException(ErrorCode.PROMPT_NOT_FOUND);
+        }
 
         return toProductResponse(prompt, userId);
     }
