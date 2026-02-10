@@ -16,6 +16,8 @@ import java.util.Optional;
 public interface PromptRepository extends JpaRepository<Prompt, Long> {
     List<Prompt> findBySeller_IdOrderByCreatedAtDesc(Long sellerId);
 
+    Page<Prompt> findBySeller_IdOrderByCreatedAtDesc(Long sellerId, Pageable pageable);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Prompt p SET p.isDeleted = true WHERE p.seller.id = :userId")
     void softDeleteAllByUserId(@Param("userId") Long userId);

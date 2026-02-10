@@ -52,7 +52,9 @@ public class LibraryController {
      * [판매 내역 조회]
      */
     @GetMapping("/sales")
-    public ResponseEntity<ApiResponse<List<LibrarySalesResponse>>> getSales(
+    public ResponseEntity<ApiResponse<Page<LibrarySalesResponse>>> getSales(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         if (userDetails == null) {
@@ -60,8 +62,8 @@ public class LibraryController {
         }
         Long userId = Long.parseLong(userDetails.getUsername());
 
-        log.info(">>> [조회] 유저 {}의 판매 내역을 조회합니다.", userId);
-        List<LibrarySalesResponse> data = libraryService.getMySalesList(userId);
+        log.info(">>> [조회] 유저 {}의 판매 내역을 조회합니다. (page={}, size={})", userId, page, size);
+        Page<LibrarySalesResponse> data = libraryService.getMySalesList(userId, PageRequest.of(page, size));
 
         return ResponseEntity.ok(ApiResponse.success("판매 내역 조회 성공", data));
     }

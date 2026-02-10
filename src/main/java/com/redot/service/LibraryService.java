@@ -72,14 +72,12 @@ public class LibraryService {
      * [판매 목록 조회]
      * 판매자가 등록한 프롬프트의 판매 현황(누적 판매수, 수익)을 조회합니다.
      */
-    public List<LibrarySalesResponse> getMySalesList(Long userId) {
-        List<Prompt> myPrompts = promptRepository.findBySeller_IdOrderByCreatedAtDesc(userId);
+    public Page<LibrarySalesResponse> getMySalesList(Long userId, Pageable pageable) {
+        Page<Prompt> myPrompts = promptRepository.findBySeller_IdOrderByCreatedAtDesc(userId, pageable);
 
-        return myPrompts.stream().map(prompt -> {
-            // 해당 프롬프트의 총 판매 개수 계산
+        return myPrompts.map(prompt -> {
             int salesCount = purchaseRepository.countByPromptId(prompt.getId());
 
-            // createdAt이 null일 경우를 대비한 안전한 처리
             String formattedDate = (prompt.getCreatedAt() != null)
                     ? prompt.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME)
                     : "";
@@ -94,6 +92,6 @@ public class LibraryService {
                     .total_revenue(prompt.getPrice() * salesCount)
                     .created_at(formattedDate)
                     .build();
-        }).collect(Collectors.toList());
+        });
     }
 }
