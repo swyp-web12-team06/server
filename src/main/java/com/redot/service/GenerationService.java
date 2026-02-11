@@ -81,24 +81,27 @@ public class GenerationService {
         int totalPrice = calculateTotalPrice(promptEntity, request);
         user.decreaseCredit(totalPrice);
 
-        // 6. AI 서버 호출 (Grok 모델은 1장 생성 기준)
-        String modelName = promptEntity.getAiModel().getName();
+        // 6. AI 서버 호출
+        AiModel aiModel = promptEntity.getAiModel();
+        String apiIdentifier = aiModel.getApiIdentifier();
 
-        // 참조 이미지: previewImageUrl을 publicUrl로 변환하여 전달
-        String referenceImageUrl = promptEntity.getPreviewImageUrl() != null
-                ? imageManager.getPublicUrl(promptEntity.getPreviewImageUrl())
-                : null;
+        // 참조 이미지: useReferenceImage 플래그가 true일 때만 전달
+        String referenceImageUrl = null;
+        if (Boolean.TRUE.equals(aiModel.getUseReferenceImage()) && promptEntity.getPreviewImageUrl() != null) {
+            referenceImageUrl = imageManager.getPublicUrl(promptEntity.getPreviewImageUrl());
+        }
 
-        log.info(">>> [AI 생성 요청] 모델: {}, 해상도: {}, 비율: {}, 참조이미지: {}",
-                modelName, request.getResolution(), request.getAspectRatio(), referenceImageUrl != null);
+        log.info(">>> [AI 생성 요청] 모델: {}, apiId: {}, 해상도: {}, 비율: {}, 참조이미지: {}",
+                aiModel.getName(), apiIdentifier, request.getResolution(), request.getAspectRatio(), referenceImageUrl != null);
 
         String taskId = kieAiClient.generateAndSaveImage(
                 finalPrompt,
-                modelName,
+                apiIdentifier,
                 request.getResolution(),
                 request.getAspectRatio(),
                 this.callbackUrl,
-                referenceImageUrl
+                referenceImageUrl,
+                aiModel.getSpeed()
         );
 
         // 7. 생성 이력 저장 (상태: PROCESSING)
@@ -266,6 +269,38 @@ public class GenerationService {
 
         } catch (Exception e) {
             log.error(">>> [콜백 처리 에러] TaskID: {}, 사유: {}", taskId, e.getMessage());
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * [Midjourney 비동기 완료 처리]
+     * MJ 콜백은 resultUrls가 직접 전달되므로 JSON 파싱 없이 URL을 바로 받음
+     */
+    @Transactional
+    public void completeMjImageGeneration(String taskId, String imageUrl) {
+        try {
+            GeneratedImage generatedImage = generatedImageRepository.findByTaskId(taskId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
+
+            if (generatedImage.getStatus() == GeneratedImageStatus.COMPLETED) {
+                log.warn(">>> [중복 MJ 콜백] 이미 완료된 TaskID입니다: {}", taskId);
+                return;
+            }
+
+            String r2StoredKey = imageManager.uploadFromUrl(
+                    imageUrl,
+                    "generated-images/" + taskId,
+                    true
+            );
+
+            generatedImage.updateImageUrl(r2StoredKey);
+            generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
+
+            log.info(">>> [MJ R2 업로드 완료] TaskID: {}, 저장된 Key: {}", taskId, r2StoredKey);
+
+        } catch (Exception e) {
+            log.error(">>> [MJ 콜백 처리 에러] TaskID: {}, 사유: {}", taskId, e.getMessage());
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }

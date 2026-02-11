@@ -16,11 +16,12 @@ VALUES
     (9, '추상', 9, true, NOW(), NOW()),
     (10, '그래픽', 10, true, NOW(), NOW());
 
--- AI Models (2개)
-INSERT IGNORE INTO ai_models (model_id, name, order_index, is_active, created_at, updated_at)
+-- AI Models (3개)
+INSERT IGNORE INTO ai_models (model_id, name, api_identifier, use_reference_image, speed, order_index, is_active, created_at, updated_at)
 VALUES
-    (1, 'grok-imagine/text-to-image', 1, true, NOW(), NOW()),
-    (2, 'nano-banana-pro', 2, true, NOW(), NOW());
+    (1, 'Grok', 'grok-imagine/text-to-image', false, null, 1, true, NOW(), NOW()),
+    (2, 'NanoBanana Pro', 'nano-banana-pro', true, null, 2, true, NOW(), NOW()),
+    (3, 'Midjourney', 'mj_img2img', true, 'fast', 3, true, NOW(), NOW());
 
 -- Model Options
 -- grok-imagine/text-to-image (model_id=1) - aspect_ratio만 지원
@@ -48,6 +49,20 @@ INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_ind
     (2, 'RESOLUTION', '1K', 1, true, 0),
     (2, 'RESOLUTION', '2K', 2, true, 0),
     (2, 'RESOLUTION', '4K', 3, true, 3);
+
+-- Midjourney (model_id=3) - aspect_ratio만 지원
+INSERT IGNORE INTO model_options (model_id, option_type, option_value, order_index, is_active, additional_cost) VALUES
+    (3, 'ASPECT_RATIO', '1:2', 1, true, 0),
+    (3, 'ASPECT_RATIO', '9:16', 2, true, 0),
+    (3, 'ASPECT_RATIO', '2:3', 3, true, 0),
+    (3, 'ASPECT_RATIO', '3:4', 4, true, 0),
+    (3, 'ASPECT_RATIO', '5:6', 5, true, 0),
+    (3, 'ASPECT_RATIO', '6:5', 6, true, 0),
+    (3, 'ASPECT_RATIO', '4:3', 7, true, 0),
+    (3, 'ASPECT_RATIO', '3:2', 8, true, 0),
+    (3, 'ASPECT_RATIO', '1:1', 9, true, 0),
+    (3, 'ASPECT_RATIO', '16:9', 10, true, 0),
+    (3, 'ASPECT_RATIO', '2:1', 11, true, 0);
 
 -- Users (15개)
 INSERT IGNORE INTO users (user_id, email, nickname, role, credit_balance, is_banned, deleted_at, provider, provider_id, terms_agreed, marketing_consent, seller_terms_agreed, created_at, updated_at, warning_count)
@@ -93,40 +108,40 @@ INSERT IGNORE INTO prompts (prompt_id, user_id, category_id, model_id, title, de
 -- 패턴 2: 변수 2개
 (2, 1, 3, 2, '네온 일러스트', 'Neon glowing illustration', 8, 'Glowing neon illustration of [subject] in [color_tone] colors, vibrant', 'APPROVED', 'https://picsum.photos/seed/lb2-preview/400/400', false, NOW(), NOW()),
 -- 패턴 3: 변수 3개
-(3, 2, 2, 1, '미래 도시', 'Futuristic cityscape', 7, 'Futuristic city at [location] during [time_of_day] with [weather] weather, flying cars', 'APPROVED', 'https://picsum.photos/seed/lb3-preview/400/400', false, NOW(), NOW()),
+(3, 2, 2, 3, '미래 도시', 'Futuristic cityscape', 7, 'Futuristic city at [location] during [time_of_day] with [weather] weather, flying cars', 'APPROVED', 'https://picsum.photos/seed/lb3-preview/400/400', false, NOW(), NOW()),
 -- 패턴 4: 변수 4개
-(4, 2, 1, 2, '인물 초상화', 'Emotional portrait', 5, 'Portrait with [mood] emotion, [lighting] lighting, [gaze] gaze, against [background] background', 'APPROVED', 'https://picsum.photos/seed/lb4-preview/400/400', false, NOW(), NOW()),
+(4, 2, 1, 1, '인물 초상화', 'Emotional portrait', 5, 'Portrait with [mood] emotion, [lighting] lighting, [gaze] gaze, against [background] background', 'APPROVED', 'https://picsum.photos/seed/lb4-preview/400/400', false, NOW(), NOW()),
 -- 패턴 5: 변수 5개
-(5, 3, 3, 1, '귀여운 동물 일러스트', 'Cute animal illustration', 5, 'Cute [animal] wearing [accessory], doing [action], [background_color] background, in [art_style] style', 'APPROVED', 'https://picsum.photos/seed/lb5-preview/400/400', false, NOW(), NOW()),
+(5, 3, 3, 2, '귀여운 동물 일러스트', 'Cute animal illustration', 5, 'Cute [animal] wearing [accessory], doing [action], [background_color] background, in [art_style] style', 'APPROVED', 'https://picsum.photos/seed/lb5-preview/400/400', false, NOW(), NOW()),
 
 -- 패턴 1: 변수 1개
-(6, 3, 2, 2, '자연 풍경', 'Seasonal landscape', 7, 'Beautiful natural landscape in [season], peaceful', 'APPROVED', 'https://picsum.photos/seed/lb6-preview/400/400', false, NOW(), NOW()),
+(6, 3, 2, 3, '자연 풍경', 'Seasonal landscape', 7, 'Beautiful natural landscape in [season], peaceful', 'APPROVED', 'https://picsum.photos/seed/lb6-preview/400/400', false, NOW(), NOW()),
 -- 패턴 2: 변수 2개
 (7, 4, 4, 1, '추상 예술', 'Abstract art', 10, 'Abstract art with [color] color theme and [shape] shapes, modern', 'APPROVED', 'https://picsum.photos/seed/lb7-preview/400/400', false, NOW(), NOW()),
 -- 패턴 3: 변수 3개
 (8, 4, 5, 2, '건축물', 'Architectural style', 10, '[style] architecture building made of [material] in [environment], detailed', 'APPROVED', 'https://picsum.photos/seed/lb8-preview/400/400', false, NOW(), NOW()),
 -- 패턴 4: 변수 4개
-(9, 5, 1, 1, '판타지 전사', 'Fantasy warrior', 10, 'Fantasy warrior [character] wielding [weapon] wearing [armor], performing [action]', 'APPROVED', 'https://picsum.photos/seed/lb9-preview/400/400', false, NOW(), NOW()),
+(9, 5, 1, 3, '판타지 전사', 'Fantasy warrior', 10, 'Fantasy warrior [character] wielding [weapon] wearing [armor], performing [action]', 'APPROVED', 'https://picsum.photos/seed/lb9-preview/400/400', false, NOW(), NOW()),
 -- 패턴 5: 변수 5개
-(10, 5, 3, 2, '디지털 아트', 'Digital art object', 9, 'Digital art featuring [object] made of [material_finish], [lighting_setup] lighting, [background_gradient] gradient, rendered in [render_engine]', 'APPROVED', 'https://picsum.photos/seed/lb10-preview/400/400', false, NOW(), NOW()),
+(10, 5, 3, 1, '디지털 아트', 'Digital art object', 9, 'Digital art featuring [object] made of [material_finish], [lighting_setup] lighting, [background_gradient] gradient, rendered in [render_engine]', 'APPROVED', 'https://picsum.photos/seed/lb10-preview/400/400', false, NOW(), NOW()),
 
 -- 패턴 1: 변수 1개
-(11, 6, 2, 1, '도시 풍경', 'City scene', 5, 'City landscape at [time], atmospheric, realistic', 'APPROVED', 'https://picsum.photos/seed/lb11-preview/400/400', false, NOW(), NOW()),
+(11, 6, 2, 2, '도시 풍경', 'City scene', 5, 'City landscape at [time], atmospheric, realistic', 'APPROVED', 'https://picsum.photos/seed/lb11-preview/400/400', false, NOW(), NOW()),
 -- 패턴 2: 변수 2개
-(12, 6, 1, 2, '인물 초상', 'Age-specific portrait', 5, 'Portrait of [age] person of [gender] gender, realistic, expressive', 'APPROVED', 'https://picsum.photos/seed/lb12-preview/400/400', false, NOW(), NOW()),
+(12, 6, 1, 3, '인물 초상', 'Age-specific portrait', 5, 'Portrait of [age] person of [gender] gender, realistic, expressive', 'APPROVED', 'https://picsum.photos/seed/lb12-preview/400/400', false, NOW(), NOW()),
 -- 패턴 3: 변수 3개
 (13, 7, 4, 1, '추상화', 'Themed abstract', 10, 'Abstract painting with [theme] theme, [texture] texture, [emotion] feeling', 'APPROVED', 'https://picsum.photos/seed/lb13-preview/400/400', false, NOW(), NOW()),
 -- 패턴 4: 변수 4개
 (14, 7, 2, 2, '자연 요소', 'Nature element', 7, 'Natural scene featuring [element] from [perspective] view, [lighting_mood] lighting, surrounded by [flora]', 'APPROVED', 'https://picsum.photos/seed/lb14-preview/400/400', false, NOW(), NOW()),
 -- 패턴 5: 변수 5개
-(15, 8, 3, 1, '신화 생물', 'Mythical creature', 8, 'Mythical [creature] with [element_power] power, [wing_style] wings, [eye_color] eyes, living in [habitat]', 'APPROVED', 'https://picsum.photos/seed/lb15-preview/400/400', false, NOW(), NOW()),
+(15, 8, 3, 3, '신화 생물', 'Mythical creature', 8, 'Mythical [creature] with [element_power] power, [wing_style] wings, [eye_color] eyes, living in [habitat]', 'APPROVED', 'https://picsum.photos/seed/lb15-preview/400/400', false, NOW(), NOW()),
 
 -- 패턴 1: 변수 1개
-(16, 8, 5, 2, '시대 건축', 'Historical architecture', 8, 'Architecture from [period] period, authentic, detailed', 'APPROVED', 'https://picsum.photos/seed/lb16-preview/400/400', false, NOW(), NOW()),
+(16, 8, 5, 1, '시대 건축', 'Historical architecture', 8, 'Architecture from [period] period, authentic, detailed', 'APPROVED', 'https://picsum.photos/seed/lb16-preview/400/400', false, NOW(), NOW()),
 -- 패턴 2: 변수 2개
-(17, 9, 1, 1, '직업 초상', 'Professional portrait', 7, 'Portrait of [profession] wearing [clothing], realistic, professional', 'APPROVED', 'https://picsum.photos/seed/lb17-preview/400/400', false, NOW(), NOW()),
+(17, 9, 1, 2, '직업 초상', 'Professional portrait', 7, 'Portrait of [profession] wearing [clothing], realistic, professional', 'APPROVED', 'https://picsum.photos/seed/lb17-preview/400/400', false, NOW(), NOW()),
 -- 패턴 3: 변수 3개
-(18, 9, 2, 2, '날씨 풍경', 'Weather landscape', 9, 'Landscape in [weather] weather showing [terrain] terrain with [vegetation], atmospheric', 'APPROVED', 'https://picsum.photos/seed/lb18-preview/400/400', false, NOW(), NOW()),
+(18, 9, 2, 3, '날씨 풍경', 'Weather landscape', 9, 'Landscape in [weather] weather showing [terrain] terrain with [vegetation], atmospheric', 'APPROVED', 'https://picsum.photos/seed/lb18-preview/400/400', false, NOW(), NOW()),
 -- 패턴 4: 변수 4개
 (19, 10, 3, 1, '음식 일러스트', 'Food illustration', 8, 'Delicious [food] on [plate_style], garnished with [garnish], served with [drink]', 'APPROVED', 'https://picsum.photos/seed/lb19-preview/400/400', false, NOW(), NOW()),
 -- 패턴 5: 변수 5개
