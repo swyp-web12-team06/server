@@ -80,6 +80,9 @@ public class ProductResponse {
 
         @Schema(description = "판매자 닉네임", example = "프롬프트마스터")
         private String nickname;
+
+        @Schema(description = "판매자 프로필 이미지 URL", example = "https://example.com/profile.jpg")
+        private String profileImageUrl;
     }
 
     @Schema(description = "프롬프트 변수 상세 정보")
@@ -192,6 +195,9 @@ public class ProductResponse {
                 .seller(SellerInfo.builder()
                         .id(prompt.getSeller().getId())
                         .nickname(prompt.getSeller().getNickname())
+                        .profileImageUrl(prompt.getSeller().getProfileImageKey() != null
+                                ? urlConverter.apply(prompt.getSeller().getProfileImageKey())
+                                : null)
                         .build())
                 .createdAt(prompt.getCreatedAt())
                 .updatedAt(prompt.getUpdatedAt())

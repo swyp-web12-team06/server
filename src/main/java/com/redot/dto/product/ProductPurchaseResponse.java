@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Schema(description = "상품 구매 후 응답 (프롬프트 사용을 위한 정보)")
@@ -66,12 +67,12 @@ public class ProductPurchaseResponse {
     }
 
     // Entity -> DTO 변환 메서드
-    public static ProductPurchaseResponse from(Prompt prompt, List<String> aspectRatios, List<String> resolutions) {
+    public static ProductPurchaseResponse from(Prompt prompt, List<String> aspectRatios, List<String> resolutions, Function<String, String> urlResolver) {
         return ProductPurchaseResponse.builder()
                 .promptId(prompt.getId())
                 .title(prompt.getTitle())
                 .description(prompt.getDescription())
-                .previewImageUrl(prompt.getPreviewImageUrl())
+                .previewImageUrl(urlResolver.apply(prompt.getPreviewImageUrl()))
                 .modelInfo(ModelInfo.builder()
                         .modelId(prompt.getAiModel().getId())
                         .modelName(prompt.getAiModel().getName())
