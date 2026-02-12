@@ -16,10 +16,11 @@ import com.redot.repository.user.UserRepository;
 import com.redot.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -38,8 +39,11 @@ public class GenerationService {
     private final ModelOptionRepository modelOptionRepository;
     private final ObjectMapper objectMapper;
 
-    @Value("${app.callback-url:https://redot.store/callback/kie-ai}")
+    @Value("${app.callback-url}")
     private String callbackUrl;
+    private String taskId;
+    private String imageUrl;
+    private Object String;
 
     @Transactional
     public GenerationResponse generateHighQualityImage(Long userId, Long promptId, GenerationRequest request) {
@@ -59,35 +63,51 @@ public class GenerationService {
                 .build();
         purchaseRepository.save(purchase);
 
-        // 3. 서버 내에서 프롬프트 치환 (masterPrompt 기반)
-        String finalPrompt = promptEntity.getMasterPrompt();
-        if (request.getVariableValues() != null) {
-            for (var v : request.getVariableValues()) {
-                PromptVariable pv = promptVariableRepository.findById(v.getVariableId())
-                        .orElseThrow(() -> new BusinessException(ErrorCode.VARIABLE_NOT_FOUND));
-                finalPrompt = finalPrompt.replace("[" + pv.getKeyName() + "]", v.getValue());
-            }
+        // 3. 변수 검증: 프롬프트에 변수가 있으면 반드시 값이 있어야 함
+        List<PromptVariable> requiredVariables = promptEntity.getPromptVariables();
+        List<GenerationRequest.VariableSelection> submittedValues =
+                request.getVariableValues() != null ? request.getVariableValues() : List.of();
+
+        if (!requiredVariables.isEmpty() && requiredVariables.size() != submittedValues.size()) {
+            throw new BusinessException(ErrorCode.MISSING_VARIABLE_VALUES);
         }
 
-        // 4. 가격 계산 및 크레딧 차감
+        // 4. 서버 내에서 프롬프트 치환 (masterPrompt 기반)
+        String finalPrompt = promptEntity.getMasterPrompt();
+        for (var v : submittedValues) {
+            PromptVariable pv = promptVariableRepository.findById(v.getVariableId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.VARIABLE_NOT_FOUND));
+            finalPrompt = finalPrompt.replace("[" + pv.getKeyName() + "]", v.getValue());
+        }
+
+        // 5. 가격 계산 및 크레딧 차감
         int totalPrice = calculateTotalPrice(promptEntity, request);
         user.decreaseCredit(totalPrice);
 
-        // 5. AI 서버 호출 (Grok 모델은 1장 생성 기준)
-        String modelName = promptEntity.getAiModel().getName();
+        // 6. AI 서버 호출
+        AiModel aiModel = promptEntity.getAiModel();
+        String apiIdentifier = aiModel.getApiIdentifier();
 
-        log.info(">>> [AI 생성 요청] 모델: {}, 해상도: {}, 비율: {}",
-                modelName, request.getResolution(), request.getAspectRatio());
+        // 참조 이미지: useReferenceImage 플래그가 true일 때만 전달
+        String referenceImageUrl = null;
+        if (Boolean.TRUE.equals(aiModel.getUseReferenceImage()) && promptEntity.getPreviewImageUrl() != null) {
+            referenceImageUrl = imageManager.getPublicUrl(promptEntity.getPreviewImageUrl());
+        }
+
+        log.info(">>> [AI 생성 요청] 모델: {}, apiId: {}, 해상도: {}, 비율: {}, 참조이미지: {}",
+                aiModel.getName(), apiIdentifier, request.getResolution(), request.getAspectRatio(), referenceImageUrl != null);
 
         String taskId = kieAiClient.generateAndSaveImage(
                 finalPrompt,
-                modelName,
+                apiIdentifier,
                 request.getResolution(),
                 request.getAspectRatio(),
-                this.callbackUrl
+                this.callbackUrl,
+                referenceImageUrl,
+                aiModel.getSpeed()
         );
 
-        // 6. 생성 이력 저장 (상태: PROCESSING)
+        // 7. 생성 이력 저장 (상태: PROCESSING)
         GeneratedImage image = GeneratedImage.builder()
                 .purchase(purchase)
                 .taskId(taskId)
@@ -96,7 +116,7 @@ public class GenerationService {
                 .build();
         GeneratedImage savedImage = generatedImageRepository.save(image);
 
-        // 7. 사용된 변수 값 저장
+        // 8. 사용된 변수 값 저장
         saveVariableValues(savedImage, request);
 
         return GenerationResponse.builder()
@@ -150,17 +170,31 @@ public class GenerationService {
         return calculateTotalPrice(prompt, request);
     }
 
-    public DownloadResponse getDownloadUrl(Long imageId) {
+    public DownloadResponse getDownloadUrl(Long imageId, Long userId) {
 
         GeneratedImage image = generatedImageRepository.findById(imageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
 
-        String secureUrl = imageManager.getPresignedGetUrl(image.getImageUrl());
+        if (!image.getPurchase().getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        if (image.getStatus() != GeneratedImageStatus.COMPLETED || image.getImageUrl() == null) {
+            throw new BusinessException(ErrorCode.IMAGE_NOT_READY);
+        }
+
+        // 파일명: imageKey에서 확장자 추출하여 다운로드 파일명 생성
+        String imageKey = image.getImageUrl();
+        String extension = imageKey.substring(imageKey.lastIndexOf('.'));
+        String downloadFilename = "redot-image-" + imageId + extension;
+
+        String secureUrl = imageManager.getPresignedDownloadUrl(imageKey, downloadFilename);
 
         return DownloadResponse.builder()
                 .downloadUrl(secureUrl)
                 .build();
     }
+
     public ImageStatusResponse getImageStatus(Long imageId, Long userId) {
         GeneratedImage image = generatedImageRepository.findById(imageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
@@ -185,13 +219,21 @@ public class GenerationService {
     public void failImageGeneration(String taskId, String failMsg) {
         generatedImageRepository.findByTaskId(taskId).ifPresent(image -> {
             image.updateStatus(GeneratedImageStatus.FAILED);
+
+            // 크레딧 환불
+            Purchase purchase = image.getPurchase();
+            purchase.getUser().addCredit(purchase.getPrice());
+            log.info(">>> [크레딧 환불] TaskID: {}, 유저ID: {}, 환불액: {}",
+                    taskId, purchase.getUser().getId(), purchase.getPrice());
+
             log.error(">>> [이미지 생성 실패] TaskID: {}, 사유: {}", taskId, failMsg);
         });
     }
 
     /**
      * [비동기 완료 처리]
-     * @param taskId AI 서버 작업 ID
+     *
+     * @param taskId     AI 서버 작업 ID
      * @param resultJson Kie AI에서 보낸 JSON 문자열 ("{\"resultUrls\":[\"...\"]}")
      */
     @Transactional
@@ -248,4 +290,35 @@ public class GenerationService {
 
         image.updateVisibility(isPublic);
     }
-}
+        /**
+         * [Midjourney 비동기 완료 처리]
+         * MJ 콜백은 resultUrls가 직접 전달되므로 JSON 파싱 없이 URL을 바로 받음
+         */
+        @Transactional
+        public void completeMjImageGeneration (String taskId, String imageUrl){
+            try {
+                GeneratedImage generatedImage = generatedImageRepository.findByTaskId(taskId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
+
+                if (generatedImage.getStatus() == GeneratedImageStatus.COMPLETED) {
+                    log.warn(">>> [중복 MJ 콜백] 이미 완료된 TaskID입니다: {}", taskId);
+                    return;
+                }
+
+                String r2StoredKey = imageManager.uploadFromUrl(
+                        imageUrl,
+                        "generated-images/" + taskId,
+                        true
+                );
+
+                generatedImage.updateImageUrl(r2StoredKey);
+                generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
+
+                log.info(">>> [MJ R2 업로드 완료] TaskID: {}, 저장된 Key: {}", taskId, r2StoredKey);
+
+            } catch (Exception e) {
+                log.error(">>> [MJ 콜백 처리 에러] TaskID: {}, 사유: {}", taskId, e.getMessage());
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }

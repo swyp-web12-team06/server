@@ -3,12 +3,11 @@ package com.redot.controller;
 import java.util.List;
 import java.util.Map;
 import com.redot.dto.common.ApiResponse;
-import com.redot.dto.library.LibrarySalesResponse;
+import com.redot.dto.library.UserLibraryResponse;
 import com.redot.dto.product.ProductCreateRequest;
 import com.redot.dto.product.ProductPurchaseResponse;
 import com.redot.dto.product.ProductResponse;
 import com.redot.dto.product.ProductUpdateRequest;
-import com.redot.dto.prompt.GenerationRequest;
 import com.redot.dto.prompt.PriceCheckRequest;
 import com.redot.service.GenerationService;
 import com.redot.service.ProductService;
@@ -132,12 +131,12 @@ public class ProductController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<LibrarySalesResponse>>> getUserProducts(
+    public ResponseEntity<ApiResponse<List<UserLibraryResponse>>> getUserProducts(
             @PathVariable Long userId
     ) {
         log.info(">>> [ProductController] 타인 판매 목록 조회. userId: {}", userId);
 
-        List<LibrarySalesResponse> response = productService.getUserProductList(userId);
+        List<UserLibraryResponse> response = productService.getUserProductList(userId);
         return ResponseEntity.ok(ApiResponse.success("판매 목록 조회 성공", response));
     }
 }

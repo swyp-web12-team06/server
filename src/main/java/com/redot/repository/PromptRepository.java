@@ -16,6 +16,8 @@ import java.util.Optional;
 public interface PromptRepository extends JpaRepository<Prompt, Long> {
     List<Prompt> findBySeller_IdOrderByCreatedAtDesc(Long sellerId);
 
+    Page<Prompt> findBySeller_IdOrderByCreatedAtDesc(Long sellerId, Pageable pageable);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Prompt p SET p.isDeleted = true WHERE p.seller.id = :userId")
     void softDeleteAllByUserId(@Param("userId") Long userId);
@@ -30,6 +32,13 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            "JOIN FETCH p.aiModel " +
            "WHERE p.id = :id AND p.isDeleted = false AND p.status = 'APPROVED'")
     Optional<Prompt> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("SELECT p FROM Prompt p " +
+           "JOIN FETCH p.seller " +
+           "JOIN FETCH p.category " +
+           "JOIN FETCH p.aiModel " +
+           "WHERE p.id = :id AND p.isDeleted = false")
+    Optional<Prompt> findByIdNotDeleted(@Param("id") Long id);
 
     @Query("SELECT p FROM Prompt p " +
            "JOIN FETCH p.seller " +
@@ -108,5 +117,5 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
            nativeQuery = true)
     Page<Prompt> searchByKeywordAndCategoryFullText(@Param("keyword") String keyword, @Param("categoryId") Long categoryId, Pageable pageable);
 
-    Collection<Object> findAllBySellerIdAndStatus(Long userId, PromptStatus promptStatus);
+    List<Prompt> findAllBySellerIdAndStatusAndIsDeletedFalse(Long sellerId, PromptStatus status);
 }

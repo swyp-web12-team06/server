@@ -22,6 +22,18 @@ public class AiModel {
 
     private String name;
 
+    // API 호출 시 사용하는 식별자 (ex: "nano-banana-pro", "mj_img2img")
+    @Column(name = "api_identifier")
+    private String apiIdentifier;
+
+    // 참조 이미지 사용 여부 (false: txt2img, true: img2img)
+    @Column(name = "use_reference_image", nullable = false)
+    private Boolean useReferenceImage;
+
+    // MJ 전용: 생성 속도 (fast, relaxed, turbo)
+    @Column(name = "speed")
+    private String speed;
+
     // 모델 노출 순서 (인기 모델 상단 노출용)
     @Column(name = "order_index")
     private Integer orderIndex;
@@ -38,9 +50,16 @@ public class AiModel {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public void updateApiIdentifier(String apiIdentifier) {
+        this.apiIdentifier = apiIdentifier;
+    }
+
     @Builder
-    public AiModel(String name, Integer orderIndex, Boolean isActive) {
+    public AiModel(String name, String apiIdentifier, Boolean useReferenceImage, String speed, Integer orderIndex, Boolean isActive) {
         this.name = name;
+        this.apiIdentifier = apiIdentifier;
+        this.useReferenceImage = (useReferenceImage != null) ? useReferenceImage : true;
+        this.speed = speed;
         this.orderIndex = orderIndex;
 
         // 기본값 설정

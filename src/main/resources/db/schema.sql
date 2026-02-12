@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS prompts (
     description TEXT,
     master_prompt TEXT,
     price INTEGER NOT NULL,
-    status ENUM('APPROVED','PENDING','REJECTED') NOT NULL,
+    status ENUM('APPROVED','HIDDEN','PENDING','REJECTED') NOT NULL,
     user_id BIGINT NOT NULL,
     model_id BIGINT NOT NULL,
     category_id BIGINT NOT NULL,
@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS purchases (
     purchase_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     prompt_id BIGINT NOT NULL,
+    price INTEGER NOT NULL DEFAULT 0,
     purchased_at TIMESTAMP(6) NOT NULL,
     CONSTRAINT fk_purchases_user FOREIGN KEY (user_id) REFERENCES users(user_id),
     CONSTRAINT fk_purchases_prompt FOREIGN KEY (prompt_id) REFERENCES prompts(prompt_id)
@@ -125,7 +126,7 @@ CREATE TABLE IF NOT EXISTS purchases (
 CREATE TABLE IF NOT EXISTS generated_images (
     image_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     purchase_id BIGINT NOT NULL,
-    image_url VARCHAR(1000) NOT NULL,
+    image_url VARCHAR(1000),
     image_quality VARCHAR(255),
     task_id VARCHAR(255) UNIQUE,
     is_public BOOLEAN NOT NULL DEFAULT FALSE,
@@ -178,7 +179,7 @@ CREATE TABLE IF NOT EXISTS credit_transactions (
 
 -- 17. 결제 내역 (PG사 연동용) 테이블
 CREATE TABLE IF NOT EXISTS payment_history (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    payment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     payment_uid VARCHAR(255),
     order_uid VARCHAR(255),

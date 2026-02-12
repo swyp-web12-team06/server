@@ -11,6 +11,7 @@ public class LibraryResponse {
     private Long prompt_id;
     private String title;
     private Integer amount;
+    private String status;
     private List<VariableInfo> variables;
     private List<ImageInfo> generated_images;
     private String purchased_at;
@@ -28,5 +29,6 @@ public class LibraryResponse {
         private Long id;
         private String image_url;
         private boolean is_public;
+        private String status;
     }
 }

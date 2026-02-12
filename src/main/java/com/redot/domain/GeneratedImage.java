@@ -44,6 +44,10 @@ public class GeneratedImage {
     @Column(name = "is_public", nullable = false)
     private boolean isPublic = false; // 기본값 비공개
 
+    public boolean isPublic() {
+        return this.isPublic;
+    }
+
     public void updateVisibility(boolean isPublic) {
         this.isPublic = isPublic;
     }

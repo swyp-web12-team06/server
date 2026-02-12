@@ -2,7 +2,7 @@ package com.redot.service;
 
 import com.redot.domain.*;
 import com.redot.domain.user.User;
-import com.redot.dto.library.LibrarySalesResponse;
+import com.redot.dto.library.UserLibraryResponse;
 import com.redot.domain.Prompt;
 import com.redot.dto.product.LookbookImageCreateDto;
 import com.redot.dto.product.ProductCreateRequest;
@@ -25,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.format.DateTimeFormatter;
 
 import com.redot.dto.product.UserProductStatus;
 
@@ -475,8 +477,14 @@ public class ProductService {
     }
 
     public ProductResponse getProductDetail(Long promptId, Long userId) {
-        Prompt prompt = promptRepository.findByIdWithDetails(promptId)
+        Prompt prompt = promptRepository.findByIdNotDeleted(promptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
+
+        // 본인 상품이 아닌 경우 APPROVED만 조회 가능
+        boolean isOwner = prompt.getSeller().getId().equals(userId);
+        if (!isOwner && prompt.getStatus() != PromptStatus.APPROVED) {
+            throw new BusinessException(ErrorCode.PROMPT_NOT_FOUND);
+        }
 
         return toProductResponse(prompt, userId);
     }
@@ -514,14 +522,26 @@ public class ProductService {
         List<String> aspectRatios = aiModelService.getModelAspectRatios(modelId);
         List<String> resolutions = aiModelService.getModelResolutions(modelId);
 
-        return ProductPurchaseResponse.from(prompt, aspectRatios, resolutions);
+        return ProductPurchaseResponse.from(prompt, aspectRatios, resolutions, imageManager::getPublicUrl);
     }
 
     @Transactional(readOnly = true)
-    public List<LibrarySalesResponse> getUserProductList(Long userId) {
-        return promptRepository.findAllBySellerIdAndStatus(userId, PromptStatus.APPROVED)
+    public List<UserLibraryResponse> getUserProductList(Long userId) {
+        return promptRepository.findAllBySellerIdAndStatusAndIsDeletedFalse(userId, PromptStatus.APPROVED)
                 .stream()
-                .map(prompt -> LibrarySalesResponse.builder().build())
+                .map(prompt -> {
+                    String formattedDate = (prompt.getCreatedAt() != null)
+                            ? prompt.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME)
+                            : "";
+
+                    return UserLibraryResponse.builder()
+                            .prompt_id(prompt.getId())
+                            .title(prompt.getTitle())
+                            .price(prompt.getPrice())
+                            .preview_image_url(imageManager.getPublicUrl(prompt.getPreviewImageUrl()))
+                            .created_at(formattedDate)
+                            .build();
+                })
                 .toList();
     }
 }

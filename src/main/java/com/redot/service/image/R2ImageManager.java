@@ -96,18 +96,33 @@ public class R2ImageManager implements ImageManager {
         return s3Presigner.presignPutObject(presignRequest).url().toString();
     }
 
-    // 다운로드용 URL 발급 (GET) - 비밀 버킷 전용
+    // 조회용 URL 발급 (GET) - 비밀 버킷 전용, 브라우저에서 이미지 표시
     @Override
     public String getPresignedGetUrl(String key) {
-        // 다운로드 프리사인드는 무조건 Secret Bucket 대상이라고 가정
-
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(secretBucket)
                 .key(key)
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5)) // 5분 뒤 링크 폭파
+                .signatureDuration(Duration.ofMinutes(5))
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
+
+    // 다운로드용 URL 발급 (GET) - Content-Disposition: attachment로 브라우저 다운로드 트리거
+    @Override
+    public String getPresignedDownloadUrl(String key, String downloadFilename) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(secretBucket)
+                .key(key)
+                .responseContentDisposition("attachment; filename=\"" + downloadFilename + "\"")
+                .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(5))
                 .getObjectRequest(getObjectRequest)
                 .build();
 
