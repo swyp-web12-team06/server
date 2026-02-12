@@ -698,74 +698,21 @@ INSERT IGNORE INTO bonus_credit_policy (id, min_amount, bonus_rate, description)
     (2, 10000, 0.15, '15% Bonus'),
     (3, 30000, 0.20, '20% Bonus');
 
-INSERT IGNORE INTO purchases (user_id, prompt_id, price, purchased_at) VALUES (1, 1, 5, CURRENT_TIMESTAMP);
-
-INSERT IGNORE INTO generated_images (image_id, purchase_id, task_id, image_url, image_quality, status, created_at)
-VALUES (1, 1, 'task_sample_001', 'https://picsum.photos/seed/gi_1_1/600/400', '1024x1024', 'COMPLETED', NOW());
-
-INSERT IGNORE INTO generated_image_variable_values (image_id, prompt_variable_id, variable_value) VALUES
-                                                                                                      (1, 1, 'Cyberpunk style'),  -- 1번 변수에 대한 값
-                                                                                                      (1, 2, 'Neon blue');        -- 2번 변수에 대한 값
-
--- 1. 판매 목록용 프롬프트 추가 (이미지 경로 추가됨!)
-INSERT IGNORE INTO prompts (title, price, status, user_id, category_id, model_id, is_deleted, preview_image_url, created_at) VALUES
-                                                                                                                                 ('네온 사이버펑크', 10, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/neon/200/300', NOW()),
-                                                                                                                                 ('중세 판타지 배경', 15, 'PENDING', 2, 1, 1, 0, 'https://picsum.photos/seed/fantasy/200/300', NOW()),
-                                                                                                                                 ('수채화 스타일 꽃', 5, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/flower/200/300', NOW()),
-                                                                                                                                 ('8비트 도트 캐릭터', 8, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/dot/200/300', NOW()),
-                                                                                                                                 ('실사풍 인테리어', 20, 'REJECTED', 2, 1, 1, 0, 'https://picsum.photos/seed/room/200/300', NOW());
-
--- 2. 구매 이력 및 생성 이미지 (기존 유지)
-INSERT IGNORE INTO purchases (purchase_id, price, purchased_at, prompt_id, user_id) VALUES
-                                                                                        (101, 10, NOW(), 1, 2),
-                                                                                        (102, 12, NOW(), 3, 2);
-
-INSERT IGNORE INTO generated_images (task_id, status, purchase_id, image_url, created_at) VALUES
-                                                                                              ('task_test_001', 'COMPLETED', 101, 'https://example.com/img1.png', NOW()),
-                                                                                              ('task_test_002', 'PROCESSING', 102, null, NOW());
-
--- ==========================================================
--- Generated Images (구매 내역 ID 1~10번에 대응하는 생성 결과)
--- ==========================================================
+-- 1. Generated Images (is_public 포함, 겹치지 않는 ID 사용)
 INSERT IGNORE INTO generated_images (image_id, purchase_id, task_id, image_url, image_quality, status, is_public, created_at)
 VALUES
-    (11, 1, 'task_p1_001', 'https://picsum.photos/seed/gen1/600/400', '1K', 'COMPLETED', true, NOW()),
-    (12, 2, 'task_p2_002', 'https://picsum.photos/seed/gen2/600/400', '1K', 'COMPLETED', false, NOW()),
-    (13, 3, 'task_p3_003', 'https://picsum.photos/seed/gen3/600/400', '2K', 'COMPLETED', true, NOW()),
-    (14, 4, 'task_p4_004', 'https://picsum.photos/seed/gen4/600/400', '1K', 'COMPLETED', false, NOW()),
-    (15, 5, 'task_p5_005', 'https://picsum.photos/seed/gen5/600/400', '4K', 'COMPLETED', true, NOW()),
-    (16, 6, 'task_p6_006', 'https://picsum.photos/seed/gen6/600/400', '1K', 'COMPLETED', true, NOW()),
-    (17, 7, 'task_p7_007', 'https://picsum.photos/seed/gen7/600/400', '1K', 'COMPLETED', false, NOW()),
-    (18, 8, 'task_p8_008', 'https://picsum.photos/seed/gen8/600/400', '2K', 'COMPLETED', true, NOW()),
-    (19, 9, 'task_p9_009', 'https://picsum.photos/seed/gen9/600/400', '1K', 'FAILED', false, NOW()),
-    (20, 10, 'task_p10_010', null, '4K', 'PROCESSING', false, NOW());
+    (10001, 1, 'task_final_10001', 'https://picsum.photos/seed/10001/600/400', '1K', 'COMPLETED', true, NOW()),
+    (10002, 2, 'task_final_10002', 'https://picsum.photos/seed/10002/600/400', '1K', 'COMPLETED', false, NOW()),
+    (10003, 3, 'task_final_10003', 'https://picsum.photos/seed/10003/600/400', '2K', 'COMPLETED', true, NOW());
 
--- ==========================================================
--- Generated Image Variable Values (각 이미지 생성 시 사용된 변수 값)
--- ==========================================================
-INSERT IGNORE INTO generated_image_variable_values (image_id, prompt_variable_id, value)
+-- 2. Generated Image Variable Values (variable_value 컬럼명 일치)
+INSERT IGNORE INTO generated_image_variable_values (id, image_id, prompt_variable_id, variable_value)
 VALUES
-    -- Image 11 (Prompt 1: subject)
-    (11, 1, 'cyberpunk hacker'),
+    (10001, 10001, 1, 'final test value 1'),
+    (10002, 10002, 2, 'final test value 2'),
+    (10003, 10002, 3, 'final test value 3');
 
-    -- Image 12 (Prompt 2: subject, color_tone)
-    (12, 2, 'sleeping robot'),
-    (12, 3, 'neon blue'),
-
-    -- Image 13 (Prompt 3: location, time, weather)
-    (13, 4, 'floating city'),
-    (13, 5, 'sunset'),
-    (13, 6, 'rainy'),
-
-    -- Image 14 (Prompt 4: mood, lighting, gaze, background)
-    (14, 7, 'happy'),
-    (14, 8, 'natural light'),
-    (14, 9, 'direct'),
-    (14, 10, 'flower garden'),
-
-    -- Image 15 (Prompt 5: animal, accessory, action, bg_color, style)
-    (15, 11, 'cat'),
-    (15, 12, 'glasses'),
-    (15, 13, 'reading a book'),
-    (15, 14, 'warm yellow'),
-    (15, 15, 'oil painting');
+-- 3. 판매 목록 테스트용 추가 프롬프트
+INSERT IGNORE INTO prompts (prompt_id, title, price, status, user_id, category_id, model_id, is_deleted, preview_image_url, created_at) VALUES
+                                                                                                                                            (101, '네온 사이버펑크', 10, 'APPROVED', 2, 1, 1, 0, 'https://picsum.photos/seed/neon/200/300', NOW()),
+                                                                                                                                            (102, '중세 판타지 배경', 15, 'PENDING', 2, 1, 1, 0, 'https://picsum.photos/seed/fantasy/200/300', NOW());
