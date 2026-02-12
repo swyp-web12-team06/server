@@ -235,4 +235,17 @@ public class GenerationService {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Transactional
+    public void updateImageVisibility(Long imageId, Long userId, boolean isPublic) {
+        GeneratedImage image = generatedImageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
+
+        // 본인 확인
+        if (!image.getPurchase().getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        image.updateVisibility(isPublic);
+    }
 }

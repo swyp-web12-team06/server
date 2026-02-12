@@ -60,6 +60,7 @@ public class LibraryService {
                             .map(img -> LibraryResponse.ImageInfo.builder()
                                     .id(img.getId())
                                     .image_url(imageManager.getPresignedGetUrl(img.getImageUrl()))
+                                    .is_public(img.isPublic())
                                     .build())
                             .collect(Collectors.toList()))
                     .purchased_at(purchase.getPurchasedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")))

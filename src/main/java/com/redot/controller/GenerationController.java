@@ -55,4 +55,15 @@ public class GenerationController {
 
         return ResponseEntity.ok(ApiResponse.success("다운로드 URL 발급 성공", response));
     }
+
+    @PatchMapping("/{imageId}/visibility")
+    public ResponseEntity<ApiResponse<Void>> changeVisibility(
+            @PathVariable Long imageId,
+            @RequestParam boolean isPublic,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        generationService.updateImageVisibility(imageId, userId, isPublic);
+        return ResponseEntity.ok(ApiResponse.success("공개 설정이 변경되었습니다.", null));
+    }
 }
