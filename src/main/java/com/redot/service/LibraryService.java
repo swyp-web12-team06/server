@@ -6,6 +6,7 @@ import com.redot.dto.library.LibraryResponse;
 import com.redot.dto.library.LibrarySalesResponse;
 import com.redot.exception.ErrorCode;
 import com.redot.repository.*;
+import com.redot.domain.GeneratedImage;
 import com.redot.service.image.ImageManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,10 +40,15 @@ public class LibraryService {
             Prompt prompt = promptRepository.findById(purchase.getPrompt().getId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.PROMPT_NOT_FOUND));
 
-            GeneratedImage image = generatedImageRepository.findByPurchaseId(purchase.getId()).getFirst();
+            List<GeneratedImage> images = generatedImageRepository.findByPurchaseId(purchase.getId());
 
-            // 변수 정보 추출
-            List<LibraryResponse.VariableInfo> variableInfos = imageVariableRepository.findByGeneratedImageId(image.getId())
+            // 2. 이미지가 없을 경우를 대비한 안전한 처리
+            if (images.isEmpty()) {
+                throw new BusinessException(ErrorCode.IMAGE_NOT_FOUND);
+            }
+
+            // 3. 변수 정보 추출 (첫 번째 이미지 기준)
+            List<LibraryResponse.VariableInfo> variableInfos = imageVariableRepository.findByGeneratedImageId(images.get(0).getId())
                     .stream().map(v -> LibraryResponse.VariableInfo.builder()
                             .variable_id(v.getPromptVariable().getId())
                             .value(v.getValue())
@@ -54,15 +60,20 @@ public class LibraryService {
                     .prompt_id(prompt.getId())
                     .title(prompt.getTitle())
                     .amount(prompt.getPrice())
-                    .status(image.getStatus().name())
+                    .status(images.get(0).getStatus().name()) // 첫 번째 이미지 상태 기준
                     .variables(variableInfos)
-                    .generated_images(List.of(LibraryResponse.ImageInfo.builder()
-                            .id(image.getId())
-                            .image_url(image.getStatus() == GeneratedImageStatus.COMPLETED
-                                    ? imageManager.getPresignedGetUrl(image.getImageUrl())
-                                    : null)
-                            .status(image.getStatus().name())
-                            .build()))
+
+                    // 4. 중복 호출되던 generated_images를 하나로 통합하고 img.isPublic() 호출
+                    .generated_images(images.stream()
+                            .map(img -> LibraryResponse.ImageInfo.builder()
+                                    .id(img.getId())
+                                    .image_url(img.getStatus() == GeneratedImageStatus.COMPLETED
+                                            ? imageManager.getPresignedGetUrl(img.getImageUrl())
+                                            : null)
+                                    .status(img.getStatus().name())
+                                    .is_public(img.isPublic())
+                                    .build())
+                            .collect(Collectors.toList()))
                     .purchased_at(purchase.getPurchasedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")))
                     .build();
         });
