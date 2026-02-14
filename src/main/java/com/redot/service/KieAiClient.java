@@ -1,58 +1,59 @@
 package com.redot.service;
 
-import com.redot.service.image.ImageManager;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redot.service.ai.AiGenerationParams;
+import com.redot.service.ai.AiRequestStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import java.util.HashMap;
+
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class KieAiClient {
+
+    private static final String KIE_BASE_URL = "https://api.kie.ai";
+
     private final RestTemplate restTemplate;
-    private final ImageManager imageManager;
-    private final ObjectMapper objectMapper;
+    private final List<AiRequestStrategy> strategies;
 
     @Value("${kie.api.key}")
     private String apiKey;
 
-    public String generateAndSaveImage(String prompt, String modelName, String resolution, String aspectRatio, String callbackUrl) {
+    public String generateAndSaveImage(String prompt, String apiIdentifier, String resolution, String aspectRatio, String callbackUrl, String referenceImageUrl, String speed) {
         try {
-            log.info(">>> [KieAiClient] 태스크 생성 요청 - 모델: {}, 비율: {}, 콜백: {}", modelName, aspectRatio, callbackUrl);
+            AiRequestStrategy strategy = strategies.stream()
+                    .filter(s -> s.supports(apiIdentifier))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("지원하지 않는 AI 모델: " + apiIdentifier));
 
-            String createUrl = "https://api.kie.ai/api/v1/jobs/createTask";
+            String url = KIE_BASE_URL + strategy.getEndpointPath();
+
+            log.info(">>> [KieAiClient] 태스크 생성 요청 - apiId: {}, 엔드포인트: {}, 콜백: {}", apiIdentifier, strategy.getEndpointPath(), callbackUrl);
+
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + apiKey);
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // 1. 요청 바디 구성
-            Map<String, Object> body = new HashMap<>();
-            body.put("model", (modelName != null && !modelName.isEmpty()) ? modelName : "nano-banana-pro");
+            AiGenerationParams params = AiGenerationParams.builder()
+                    .prompt(prompt)
+                    .apiIdentifier(apiIdentifier)
+                    .resolution(resolution)
+                    .aspectRatio(aspectRatio)
+                    .callbackUrl(callbackUrl)
+                    .referenceImageUrl(referenceImageUrl)
+                    .speed(speed)
+                    .build();
 
-            if (callbackUrl != null) {
-                body.put("callBackUrl", callbackUrl);
-            }
+            Map<String, Object> body = strategy.buildRequestBody(params);
 
-            Map<String, Object> input = new HashMap<>();
-            input.put("prompt", prompt);
-
-            if (resolution != null && !resolution.isBlank()) {
-                input.put("resolution", resolution);
-            }
-
-            if (aspectRatio != null) input.put("aspect_ratio", aspectRatio);
-            body.put("input", input);
-
-            // 2. 태스크 생성 요청
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-            ResponseEntity<Map> response = restTemplate.postForEntity(createUrl, entity, Map.class);
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
 
             Map<String, Object> responseBody = response.getBody();
             if (responseBody == null || responseBody.get("data") == null) {

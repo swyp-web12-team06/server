@@ -8,6 +8,8 @@ import com.redot.exception.BusinessException;
 import com.redot.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,19 +32,18 @@ public class LibraryController {
      * [구매 목록 조회]
      */
     @GetMapping("/purchases")
-    public ResponseEntity<ApiResponse<List<LibraryResponse>>> getPurchases(
-            @RequestParam(defaultValue = "1") int page,
+    public ResponseEntity<ApiResponse<Page<LibraryResponse>>> getPurchases(
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        // 💡 2. NPE 방지 및 userId 추출 로직 변경
         if (userDetails == null) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED);
         }
         Long userId = Long.parseLong(userDetails.getUsername());
 
-        log.info(">>> [조회] 유저 {}의 구매 목록을 조회합니다.", userId);
-        List<LibraryResponse> data = libraryService.getMyPurchases(userId);
+        log.info(">>> [조회] 유저 {}의 구매 목록을 조회합니다. (page={}, size={})", userId, page, size);
+        Page<LibraryResponse> data = libraryService.getMyPurchases(userId, PageRequest.of(page, size));
 
         return ResponseEntity.ok(ApiResponse.success("조회 성공", data));
     }
@@ -51,7 +52,9 @@ public class LibraryController {
      * [판매 내역 조회]
      */
     @GetMapping("/sales")
-    public ResponseEntity<ApiResponse<List<LibrarySalesResponse>>> getSales(
+    public ResponseEntity<ApiResponse<Page<LibrarySalesResponse>>> getSales(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         if (userDetails == null) {
@@ -59,8 +62,8 @@ public class LibraryController {
         }
         Long userId = Long.parseLong(userDetails.getUsername());
 
-        log.info(">>> [조회] 유저 {}의 판매 내역을 조회합니다.", userId);
-        List<LibrarySalesResponse> data = libraryService.getMySalesList(userId);
+        log.info(">>> [조회] 유저 {}의 판매 내역을 조회합니다. (page={}, size={})", userId, page, size);
+        Page<LibrarySalesResponse> data = libraryService.getMySalesList(userId, PageRequest.of(page, size));
 
         return ResponseEntity.ok(ApiResponse.success("판매 내역 조회 성공", data));
     }

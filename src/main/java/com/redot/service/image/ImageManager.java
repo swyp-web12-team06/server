@@ -19,10 +19,16 @@ public interface ImageManager {
     String getPresignedPutUrl(String fileName, String contentType, boolean isSecret);
 
     /**
-     * 3. 다운로드용 Presigned URL 발급 (GET)
+     * 3. 조회용 Presigned URL 발급 (GET) - 브라우저에서 이미지 표시용
      * 오직 '비밀 버킷'에 있는 파일을 조회할 때 사용
      */
     String getPresignedGetUrl(String key);
+
+    /**
+     * 3-1. 다운로드용 Presigned URL 발급 (GET) - Content-Disposition: attachment
+     * 브라우저에서 바로 다운로드 트리거
+     */
+    String getPresignedDownloadUrl(String key, String downloadFilename);
 
     /**
      * 4. 파일 삭제

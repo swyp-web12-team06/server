@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -25,7 +26,7 @@ public class GenerationController {
     public ResponseEntity<GenerationResponse> generateImage(
             @PathVariable Long promptId,
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody GenerationRequest request
+            @Valid @RequestBody GenerationRequest request
     ) {
         Long userId = Long.parseLong(userDetails.getUsername());
 
@@ -49,9 +50,11 @@ public class GenerationController {
 
     @GetMapping("/image/{imageId}/download")
     public ResponseEntity<ApiResponse<DownloadResponse>> downloadImage(
-            @PathVariable Long imageId
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        DownloadResponse response = generationService.getDownloadUrl(imageId);
+        Long userId = Long.parseLong(userDetails.getUsername());
+        DownloadResponse response = generationService.getDownloadUrl(imageId, userId);
 
         return ResponseEntity.ok(ApiResponse.success("다운로드 URL 발급 성공", response));
     }
