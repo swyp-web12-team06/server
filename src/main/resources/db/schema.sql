@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS generated_images (
     image_url VARCHAR(1000),
     image_quality VARCHAR(255),
     task_id VARCHAR(255) UNIQUE,
+    is_public BOOLEAN NOT NULL DEFAULT FALSE,
     status ENUM('PROCESSING','COMPLETED','FAILED') DEFAULT 'PROCESSING',
     created_at TIMESTAMP(6),
     CONSTRAINT fk_generated_images_purchase FOREIGN KEY (purchase_id) REFERENCES purchases(purchase_id)

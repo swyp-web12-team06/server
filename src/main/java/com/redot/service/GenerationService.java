@@ -41,6 +41,9 @@ public class GenerationService {
 
     @Value("${app.callback-url}")
     private String callbackUrl;
+    private String taskId;
+    private String imageUrl;
+    private Object String;
 
     @Transactional
     public GenerationResponse generateHighQualityImage(Long userId, Long promptId, GenerationRequest request) {
@@ -191,6 +194,7 @@ public class GenerationService {
                 .downloadUrl(secureUrl)
                 .build();
     }
+
     public ImageStatusResponse getImageStatus(Long imageId, Long userId) {
         GeneratedImage image = generatedImageRepository.findById(imageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
@@ -228,7 +232,8 @@ public class GenerationService {
 
     /**
      * [비동기 완료 처리]
-     * @param taskId AI 서버 작업 ID
+     *
+     * @param taskId     AI 서버 작업 ID
      * @param resultJson Kie AI에서 보낸 JSON 문자열 ("{\"resultUrls\":[\"...\"]}")
      */
     @Transactional
@@ -273,35 +278,47 @@ public class GenerationService {
         }
     }
 
-    /**
-     * [Midjourney 비동기 완료 처리]
-     * MJ 콜백은 resultUrls가 직접 전달되므로 JSON 파싱 없이 URL을 바로 받음
-     */
     @Transactional
-    public void completeMjImageGeneration(String taskId, String imageUrl) {
-        try {
-            GeneratedImage generatedImage = generatedImageRepository.findByTaskId(taskId)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
+    public void updateImageVisibility(Long imageId, Long userId, boolean isPublic) {
+        GeneratedImage image = generatedImageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND));
 
-            if (generatedImage.getStatus() == GeneratedImageStatus.COMPLETED) {
-                log.warn(">>> [중복 MJ 콜백] 이미 완료된 TaskID입니다: {}", taskId);
-                return;
+        // 본인 확인
+        if (!image.getPurchase().getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        image.updateVisibility(isPublic);
+    }
+        /**
+         * [Midjourney 비동기 완료 처리]
+         * MJ 콜백은 resultUrls가 직접 전달되므로 JSON 파싱 없이 URL을 바로 받음
+         */
+        @Transactional
+        public void completeMjImageGeneration (String taskId, String imageUrl){
+            try {
+                GeneratedImage generatedImage = generatedImageRepository.findByTaskId(taskId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
+
+                if (generatedImage.getStatus() == GeneratedImageStatus.COMPLETED) {
+                    log.warn(">>> [중복 MJ 콜백] 이미 완료된 TaskID입니다: {}", taskId);
+                    return;
+                }
+
+                String r2StoredKey = imageManager.uploadFromUrl(
+                        imageUrl,
+                        "generated-images/" + taskId,
+                        true
+                );
+
+                generatedImage.updateImageUrl(r2StoredKey);
+                generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
+
+                log.info(">>> [MJ R2 업로드 완료] TaskID: {}, 저장된 Key: {}", taskId, r2StoredKey);
+
+            } catch (Exception e) {
+                log.error(">>> [MJ 콜백 처리 에러] TaskID: {}, 사유: {}", taskId, e.getMessage());
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
             }
-
-            String r2StoredKey = imageManager.uploadFromUrl(
-                    imageUrl,
-                    "generated-images/" + taskId,
-                    true
-            );
-
-            generatedImage.updateImageUrl(r2StoredKey);
-            generatedImage.updateStatus(GeneratedImageStatus.COMPLETED);
-
-            log.info(">>> [MJ R2 업로드 완료] TaskID: {}, 저장된 Key: {}", taskId, r2StoredKey);
-
-        } catch (Exception e) {
-            log.error(">>> [MJ 콜백 처리 에러] TaskID: {}, 사유: {}", taskId, e.getMessage());
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
-}

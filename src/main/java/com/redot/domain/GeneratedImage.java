@@ -41,6 +41,17 @@ public class GeneratedImage {
         this.status = status;
     }
 
+    @Column(name = "is_public", nullable = false)
+    private boolean isPublic = false; // 기본값 비공개
+
+    public boolean isPublic() {
+        return this.isPublic;
+    }
+
+    public void updateVisibility(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
     @Builder
     public GeneratedImage(Purchase purchase, String taskId, String imageQuality, GeneratedImageStatus status) {
         this.purchase = purchase;
